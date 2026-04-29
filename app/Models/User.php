@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+
+class User extends Authenticatable
+{
+    use HasApiTokens, Notifiable;
+
+    protected $fillable = [
+        'name', 'email', 'password', 'avatar', 'asrama', 'no_induk',
+        'tgl_masuk', 'tgl_keluar', 'alamat_sekarang', 'pekerjaan',
+        'universitas', 'fakultas', 'prodi', 'angkatan',
+        'tgl_seminar', 'tgl_skripsi', 'tgl_wisuda',
+        'nik', 'alamat', 'provinsi', 'kota', 'kecamatan',
+        'kode_pos', 'no_telp', 'asal_sekolah', 'tgl_lahir',
+        'prestasi', 'organisasi', 'nama_ayah', 'nama_ibu', 'role',
+    ];
+
+    protected $hidden = [
+        'password', 'remember_token', 'captcha', 'email_verified_at'
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    public function scopeAlumni($query)
+    {
+        return $query->where('role', 'alumni');
+    }
+
+    public function akademiks()
+    {
+        return $this->hasMany(Akademik::class);
+    }
+
+    public function leaderships()
+    {
+        return $this->hasMany(Leadership::class);
+    }
+
+    public function karakters()
+    {
+        return $this->hasMany(Karakter::class);
+    }
+
+    public function kreatifs()
+    {
+        return $this->hasMany(Kreatif::class);
+    }
+} 
