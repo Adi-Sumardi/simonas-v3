@@ -25,7 +25,7 @@ const folder = {
             {"name": "bootstrap-datepicker", "assets": ["./node_modules/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js","./node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css"]},
             {"name": "bootstrap-editable", "assets": ["./node_modules/bootstrap-editable/js/index.js", "./node_modules/bootstrap-editable/css/bootstrap-editable.css"]},
             {"name": "bootstrap-touchspin", "assets": ["./node_modules/bootstrap-touchspin/dist/jquery.bootstrap-touchspin.min.js", "./node_modules/bootstrap-touchspin/dist/jquery.bootstrap-touchspin.css"] },
-            {"name": "bootstrap-maxlength", "assets": ["./node_modules/bootstrap-maxlength/bootstrap-maxlength.min.js"]},
+            {"name": "bootstrap-maxlength", "assets": ["./node_modules/bootstrap-maxlength/dist/bootstrap-maxlength.min.js"]},
             {"name": "bootstrap-colorpicker", "assets": ["./node_modules/bootstrap-colorpicker/dist/js/bootstrap-colorpicker.min.js", "./node_modules/bootstrap-colorpicker/dist/css/bootstrap-colorpicker.min.css"]},
             {"name": "bootstrap-rating", "assets": ["./node_modules/bootstrap-rating/bootstrap-rating.min.js", "./node_modules/bootstrap-rating/bootstrap-rating.css"]},
             {"name": "metismenu", "assets": ["./node_modules/metismenu/dist/metisMenu.js"]},
@@ -84,8 +84,7 @@ const folder = {
                     "./node_modules/flot-charts/jquery.flot.selection.js",
                     "./node_modules/flot-charts/jquery.flot.stack.js",
                     "./node_modules/flot-charts/jquery.flot.crosshair.js",
-                    "./node_modules/jquery.flot.tooltip/js/jquery.flot.tooltip.min.js",
-                    "./node_modules/flot-orderbars/js/jquery.flot.orderBars.js"]
+                    "./node_modules/jquery.flot.tooltip/js/jquery.flot.tooltip.min.js"]
             },
             {"name": "magnific-popup", "assets": ["./node_modules/magnific-popup/dist/jquery.magnific-popup.min.js", "./node_modules/magnific-popup/dist/magnific-popup.css"]},
             {"name": "parsleyjs", "assets": ["./node_modules/parsleyjs/dist/parsley.min.js"]},
