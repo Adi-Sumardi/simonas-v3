@@ -2,10 +2,27 @@
 
 namespace App\Models;
 
-class Kreatif extends BaseAktivitas
+use Illuminate\Database\Eloquent\Model;
+
+class Kreatif extends Model
 {
-    protected $table = 'kreatifs';
-    protected $primaryKey = 'id';
-    protected $keyType = 'bigint';
-    public $incrementing = true;
+    protected $fillable = [
+        'user_id', 
+        'komponen_id', 
+        'nama_warga',
+        'komponen',
+        'asrama',
+        'kegiatan',
+        'waktu',
+        'tempat',
+        'keterangan',
+        'file',
+        'nama_penilai',
+        'nilai'
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

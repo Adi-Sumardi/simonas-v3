@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Event;
-use App\KegiatanKalender;
+use App\Models\Event;
+use App\Models\KegiatanKalender;
 use Illuminate\Http\Request;
 
 class KalenderController extends Controller

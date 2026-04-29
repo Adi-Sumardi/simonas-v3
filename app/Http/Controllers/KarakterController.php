@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Karakter;
-use App\Komponen;
+use App\Models\Karakter;
+use App\Models\Komponen;
 use Illuminate\Http\Request;
 
 class KarakterController extends Controller

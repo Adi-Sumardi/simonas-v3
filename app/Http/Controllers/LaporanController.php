@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Akademik;
-use App\Leadership;
-use App\Karakter;
-use App\Kreatif;
-use App\User;
+use App\Models\Akademik;
+use App\Models\Leadership;
+use App\Models\Karakter;
+use App\Models\Kreatif;
+use App\Models\User;
 use DB;
 
 class LaporanController extends Controller

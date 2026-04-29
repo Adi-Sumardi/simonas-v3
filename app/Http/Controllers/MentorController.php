@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Akademik;
-use App\Alumni;
-use App\Asrama;
-use App\Karakter;
-use App\Kegiatan;
-use App\Kreatif;
-use App\Leadership;
-use App\User;
+use App\Models\Akademik;
+use App\Models\Alumni;
+use App\Models\Asrama;
+use App\Models\Karakter;
+use App\Models\Kegiatan;
+use App\Models\Kreatif;
+use App\Models\Leadership;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

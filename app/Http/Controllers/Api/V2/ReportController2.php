@@ -13,7 +13,7 @@ use App\Models\Karakter;
 use App\Models\Kreatif;
 use Illuminate\Database\QueryException;
 
-class ReportController extends Controller
+class ReportController2 extends Controller
 {
     public function getSummary(Request $request)
     {

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Kegiatan;
+use App\Models\Kegiatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;

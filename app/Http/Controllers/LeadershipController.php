@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Komponen;
-use App\Leadership;
+use App\Models\Komponen;
+use App\Models\Leadership;
 use Illuminate\Http\Request;
 
 class LeadershipController extends Controller

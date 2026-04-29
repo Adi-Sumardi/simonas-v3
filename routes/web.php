@@ -132,16 +132,16 @@ Route::middleware(['auth', 'super'])->group(function () {
     Route::patch('/super-kegiatan-asrama-update/{id}', 'KegiatanController@update')->name('super-kegiatan-asrama-update');
     Route::delete('/super-kegiatan-asrama-delete/{id}', 'KegiatanController@delete')->name('super-kegiatan-asrama-delete');
 
-    Route::get('/super-attendance-kegiatan', 'AttendanceController@index')->name('super-attendance-kegiatan');
-    Route::get('/super-attendance-kegiatan-detail/{id}', 'AttendanceController@detail')->name('super-attendance-kegiatan-detail');
-    Route::get('/super-attendance-kegiatan-create', 'AttendanceController@create')->name('super-attendance-kegiatan-create');
-    Route::get('/super-attendance-kegiatan-edit/{id}', 'AttendanceController@edit')->name('super-attendance-kegiatan-edit');
-    Route::post('/super-attendance-kegiatan-store', 'AttendanceController@store')->name('super-attendance-kegiatan-store');
-    Route::patch('/super-attendance-kegiatan-update/{id}', 'AttendanceController@update')->name('super-attendance-kegiatan-update');
-    Route::delete('/super-attendance-kegiatan-delete/{id}', 'AttendanceController@delete')->name('super-attendance-kegiatan-delete');
+    // Route::get('/super-attendance-kegiatan', 'AttendanceController@index')->name('super-attendance-kegiatan');
+    // Route::get('/super-attendance-kegiatan-detail/{id}', 'AttendanceController@detail')->name('super-attendance-kegiatan-detail');
+    // Route::get('/super-attendance-kegiatan-create', 'AttendanceController@create')->name('super-attendance-kegiatan-create');
+    // Route::get('/super-attendance-kegiatan-edit/{id}', 'AttendanceController@edit')->name('super-attendance-kegiatan-edit');
+    // Route::post('/super-attendance-kegiatan-store', 'AttendanceController@store')->name('super-attendance-kegiatan-store');
+    // Route::patch('/super-attendance-kegiatan-update/{id}', 'AttendanceController@update')->name('super-attendance-kegiatan-update');
+    // Route::delete('/super-attendance-kegiatan-delete/{id}', 'AttendanceController@delete')->name('super-attendance-kegiatan-delete');
 
     Route::get('/super-alumni-asrama', 'AlumniController@index')->name('super-alumni-asrama');
-    Route::get('/super-alumni-asrama-detail/{id}', 'ALumniController@detail')->name('super-alumni-asrama-detail');
+    Route::get('/super-alumni-asrama-detail/{id}', 'AlumniController@detail')->name('super-alumni-asrama-detail');
     Route::get('/super-alumni-asrama-create', 'AlumniController@create')->name('super-alumni-asrama-create');
     Route::get('/super-alumni-asrama-edit/{id}', 'AlumniController@edit')->name('super-alumni-asrama-edit');
     Route::post('/super-alumni-asrama-store', 'AlumniController@store')->name('super-alumni-asrama-store');

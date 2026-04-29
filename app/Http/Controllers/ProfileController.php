@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Akademik;
-use App\Ipk;
-use App\Karakter;
-use App\Komponen;
-use App\Kreatif;
-use App\Leadership;
-use App\User;
+use App\Models\Akademik;
+use App\Models\Ipk;
+use App\Models\Karakter;
+use App\Models\Komponen;
+use App\Models\Kreatif;
+use App\Models\Leadership;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\CssSelector\Node\FunctionNode;

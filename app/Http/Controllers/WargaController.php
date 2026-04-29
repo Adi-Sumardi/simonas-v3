@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Akademik;
-use App\Karakter;
-use App\Kreatif;
-use App\Leadership;
-use App\Komponen;
-use App\User;
-use App\Ipk;
+use App\Models\Akademik;
+use App\Models\Karakter;
+use App\Models\Kreatif;
+use App\Models\Leadership;
+use App\Models\Komponen;
+use App\Models\User;
+use App\Models\Ipk;
 use Carbon\Carbon;
 use Facade\FlareClient\Http\Response;
 use Illuminate\Http\Request;

@@ -2,10 +2,27 @@
 
 namespace App\Models;
 
-class Leadership extends BaseAktivitas
+use Illuminate\Database\Eloquent\Model;
+
+class Leadership extends Model
 {
-    protected $table = 'leaderships';
-    protected $primaryKey = 'id';
-    protected $keyType = 'bigint';
-    public $incrementing = true;
+    protected $fillable = [
+        'user_id', 
+        'komponen_id', 
+        'nama_warga',
+        'komponen',
+        'asrama',
+        'kegiatan',
+        'waktu',
+        'tempat',
+        'keterangan',
+        'file',
+        'nama_penilai',
+        'nilai'
+    ];
+    
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

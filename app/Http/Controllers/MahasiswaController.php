@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Akademik;
-use App\Asrama;
+use App\Models\Akademik;
+use App\Models\Asrama;
 use App\Attendance;
-use App\Ipk;
-use App\Karakter;
-use App\Kegiatan;
-use App\Komponen;
-use App\Kreatif;
-use App\Leadership;
-use App\User;
+use App\Models\Ipk;
+use App\Models\Karakter;
+use App\Models\Kegiatan;
+use App\Models\Komponen;
+use App\Models\Kreatif;
+use App\Models\Leadership;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

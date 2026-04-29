@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Alumni;
-use App\Asrama;
+use App\Models\Alumni;
+use App\Models\Asrama;
 use App\AsramaOrganisasi;
 use App\AsramaPekerjaan;
 use App\AsramaPendidikan;
 use App\AsramaPrestasi;
-use App\Kegiatan;
-use App\AlumniOrganisasi;
-use App\AlumniPekerjaan;
-use App\AlumniPendidikan;
-use App\AlumniPrestasi;
-use App\User;
+use App\Models\Kegiatan;
+use App\Models\AlumniOrganisasi;
+use App\Models\AlumniPekerjaan;
+use App\Models\AlumniPendidikan;
+use App\Models\AlumniPrestasi;
+use App\Models\User;
 use Carbon\Carbon;
-use App\Province;
-use App\Regency;
+use App\Models\Province;
+use App\Models\Regency;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Intervention\Image\Facades\Image;

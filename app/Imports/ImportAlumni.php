@@ -2,7 +2,7 @@
 
 namespace App\Imports;
 
-use App\Alumni;
+use App\Models\Alumni;
 use Maatwebsite\Excel\Concerns\ToModel;
 
 class ImportAlumni implements ToModel

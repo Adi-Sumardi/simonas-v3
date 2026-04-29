@@ -1,14 +1,14 @@
 <?php
 
-use App\Http\Controllers\API\LoginController;
+use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\AlumniController;
 use App\Http\Controllers\Api\KegiatanController;
 use App\Http\Controllers\Api\TemanSeangkatanController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AlumniPostController;
 use App\Http\Controllers\Api\AlumniCommentController;
-use App\Http\Controllers\Api\AlumniCategoryController;
-use App\Http\Controllers\Api\AlumniJobApplicationController;
+// use App\Http\Controllers\Api\AlumniCategoryController; // TODO: controller belum ada
+// use App\Http\Controllers\Api\AlumniJobApplicationController; // TODO: controller belum ada
 use App\Http\Controllers\Api\V2\ReportController;
 use App\Http\Controllers\Api\AlumniBusinessController;
 use Illuminate\Support\Facades\Route;
@@ -58,10 +58,10 @@ Route::middleware('auth:sanctum')->prefix('alumni-posts')->group(function () {
     Route::delete('/comments/{id}', [AlumniCommentController::class, 'destroy']);
     
     // Categories
-    Route::get('/categories', [AlumniCategoryController::class, 'index']);
-    
+    // Route::get('/categories', [AlumniCategoryController::class, 'index']); // TODO: controller belum ada
+
     // Job Applications (untuk lowongan)
-    Route::post('/{id}/apply', [AlumniJobApplicationController::class, 'store']);
+    // Route::post('/{id}/apply', [AlumniJobApplicationController::class, 'store']); // TODO: controller belum ada
     Route::post('/upload-thumbnail', [AlumniPostController::class, 'uploadThumbnail']);
 });
 
@@ -107,11 +107,10 @@ Route::prefix('v2')->group(function () {
         Route::post('/profile/avatar', [App\Http\Controllers\Api\V2\AuthController::class, 'updateAvatar']);
         Route::post('/logout', [App\Http\Controllers\Api\V2\AuthController::class, 'logout']);
         
-        // Mahasiswa routes
-        Route::get('/mahasiswa', [App\Http\Controllers\Api\V2\MahasiswaController::class, 'index']);
-        Route::get('/mahasiswa/detail/{id}', [App\Http\Controllers\Api\V2\MahasiswaController::class, 'show']);
-        Route::get('/mahasiswa/search', [App\Http\Controllers\Api\V2\MahasiswaController::class, 'search']);
-        // ... routes mahasiswa lainnya ...
+        // Mahasiswa routes — TODO: V2/MahasiswaController belum ada
+        // Route::get('/mahasiswa', [App\Http\Controllers\Api\V2\MahasiswaController::class, 'index']);
+        // Route::get('/mahasiswa/detail/{id}', [App\Http\Controllers\Api\V2\MahasiswaController::class, 'show']);
+        // Route::get('/mahasiswa/search', [App\Http\Controllers\Api\V2\MahasiswaController::class, 'search']);
         
         // Kegiatan routes
         Route::get('/kegiatan', [App\Http\Controllers\Api\V2\KegiatanAsramaController::class, 'index']);

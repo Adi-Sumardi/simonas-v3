@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Komponen;
+use App\Models\Komponen;
 use Illuminate\Http\Request;
 
 class KomponenController extends Controller

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\User;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -106,7 +106,7 @@ class UserController extends Controller
         // Cek apakah password saat ini sesuai
         if (Hash::check($request->current_password, Auth::user()->password)) {
             // Password saat ini sesuai, perbarui password baru
-            /** @var \App\User $user **/
+            /** @var \App\Models\User $user **/
             $user = Auth::user();
             $user->password = Hash::make($request->new_password);
             $user->save();

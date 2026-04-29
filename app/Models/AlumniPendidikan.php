@@ -1,22 +1,32 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class AlumniPekerjaan extends Model
+class AlumniPendidikan extends Model
 {
-    protected $table = 'alumni_job_history';
+    protected $table = 'alumni_academic';
 	protected $primaryKey = 'id';
 
     protected $fillable = [
         'id_alumni',
-        'tempat_pekerjaan',
-        'tahun_kerjaan',
-        'bidang_pekerjaan',
+        'gelar',
+        'nama_kampus',
+        'fakultas_jurusan',
+        'tahun_ajaran'
+    ];
+    protected $attributes = [
+        'id_alumni' => 0,
+        'gelar'=> '',
+        'nama_kampus'=> '',
+        'fakultas_jurusan'=> '',
+        'tahun_ajaran' => ''
     ];
 
+
     protected $hidden = ['created_at'];
+
 
     protected static function boot()
     {

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Karakter;
-use App\Komponen;
-use App\Kreatif;
+use App\Models\Karakter;
+use App\Models\Komponen;
+use App\Models\Kreatif;
 use Illuminate\Http\Request;
 
 class KreatifController extends Controller

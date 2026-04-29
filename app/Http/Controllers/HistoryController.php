@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Akademik;
-use App\Karakter;
-use App\Kreatif;
-use App\Leadership;
-use App\User;
+use App\Models\Akademik;
+use App\Models\Karakter;
+use App\Models\Kreatif;
+use App\Models\Leadership;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class HistoryController extends Controller

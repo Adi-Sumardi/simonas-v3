@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Asrama;
+use App\Models\Asrama;
 use Illuminate\Http\Request;
 
 class AsramaController extends Controller

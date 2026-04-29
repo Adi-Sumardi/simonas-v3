@@ -6,19 +6,68 @@ use Illuminate\Database\Eloquent\Model;
 
 class Alumni extends Model
 {
-    protected $table = 'users';
-    
+    protected $table = 'alumnis';
+	protected $primaryKey = 'id';
+
     protected $fillable = [
-        'name', 'email', 'avatar', 'asrama', 'no_induk',
-        'tgl_masuk', 'tgl_keluar', 'alamat_sekarang', 'pekerjaan',
-        'universitas', 'fakultas', 'prodi', 'angkatan',
-        'tgl_seminar', 'tgl_skripsi', 'tgl_wisuda',
-        'nik', 'alamat', 'provinsi', 'kota', 'kecamatan',
-        'kode_pos', 'no_telp', 'asal_sekolah', 'tgl_lahir',
-        'prestasi', 'organisasi', 'nama_ayah', 'nama_ibu'
+        'id_province',
+        'id_regency',
+        'id_home_province',
+        'id_asrama',
+        'nama',
+        'nia',
+        'email',
+        'provinsi_asal',
+        'tanggal_lahir',
+        'alamat_domisili',
+        'kode_pos',
+        'no_whatsapp',
+        'asal_asrama',
+        'tahun_masuk_asrama',
+        'tahun_keluar_asrama',
+        'jabatan_asrama',
+        'foto',
+        'teman_angkatan',
     ];
 
-    protected $hidden = [
-        'password', 'remember_token', 'captcha', 'email_verified_at'
-    ];
-} 
+    protected $hidden = ['created_at', 'updated_at'];
+
+    public function pendidikan() {
+        return $this->hasMany(AlumniPendidikan::class, 'id_alumni');
+    }
+    public function organisasi() {
+        return $this->hasMany(AlumniOrganisasi::class, 'id_alumni');
+    }
+    public function pekerjaan() {
+        return $this->hasMany(AlumniPekerjaan::class, 'id_alumni');
+    }
+    public function prestasi() {
+        return $this->hasMany(AlumniPrestasi::class, 'id_alumni');
+    }
+    public function asrama()
+    {
+        return $this->belongsTo(Asrama::class, 'id_asrama', 'id');
+    }
+    public function province()
+    {
+        return $this->belongsTo(Province::class, 'id_province', 'id');
+    }
+    public function materJob()
+    {
+        return $this->belongsTo(MasterJob::class, 'materjob_id');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            $model->created_at = Date("Y-m-d H:i:s");
+            return true;
+        });
+        static::updating(function ($model) {
+            $model->updated_at = Date("Y-m-d H:i:s");
+            return true;
+        });
+
+    }
+}

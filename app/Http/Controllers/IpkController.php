@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Ipk;
-use App\User;
+use App\Models\Ipk;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class IpkController extends Controller

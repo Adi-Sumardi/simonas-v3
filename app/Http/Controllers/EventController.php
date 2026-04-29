@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Event;
-use App\Kegiatan;
+use App\Models\Event;
+use App\Models\Kegiatan;
 use App\Http\Requests\EventRequest;
 use Illuminate\Http\Request;
 

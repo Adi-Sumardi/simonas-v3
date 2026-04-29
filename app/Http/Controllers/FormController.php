@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\FormAkses;
+use App\Models\FormAkses;
 use Illuminate\Http\Request;
 
 class FormController extends Controller

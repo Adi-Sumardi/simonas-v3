@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Akademik;
-use App\Komponen;
+use App\Models\Akademik;
+use App\Models\Komponen;
 use Illuminate\Http\Request;
 
 class AkademikController extends Controller

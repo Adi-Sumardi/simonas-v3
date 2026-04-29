@@ -1,17 +1,20 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class AlumniPrestasi extends Model
+class AlumniOrganisasi extends Model
 {
-    protected $table = 'alumni_achievement';
+    protected $table = 'alumni_organization';
 	protected $primaryKey = 'id';
 
     protected $fillable = [
         'id_alumni',
-        'nama_penghargaan'
+        'tipe',
+        'nama',
+        'organisasi_jabatan',
+        'tahun_organisasi'
     ];
 
     protected $hidden = ['created_at'];
