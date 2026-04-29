@@ -1,0 +1,1 @@
+ini dashboard admin<?php /**PATH /Users/yapi/Adi/appdev/simonas-app/resources/views/admin/pages/index.blade.php ENDPATH**/ ?>
