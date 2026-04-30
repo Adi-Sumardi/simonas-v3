@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;family=Manrope:wght@300;400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#dae2fd",
+                    "surface-container-low": "#f3f3f4",
+                    "surface-variant": "#e2e2e2",
+                    "outline-variant": "#c3c6d7",
+                    "inverse-primary": "#b4c5ff",
+                    "secondary-container": "#dbe4ea",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-secondary-container": "#5d666b",
+                    "background": "#f9f9f9",
+                    "on-secondary": "#ffffff",
+                    "surface-dim": "#dadada",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "inverse-on-surface": "#f0f1f1",
+                    "tertiary-container": "#656d84",
+                    "on-secondary-fixed-variant": "#3f484d",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#4d556b",
+                    "error": "#ba1a1a",
+                    "primary": "#004ac6",
+                    "surface-bright": "#f9f9f9",
+                    "secondary-fixed": "#dbe4ea",
+                    "surface-container-high": "#e8e8e8",
+                    "tertiary-fixed-dim": "#bec6e0",
+                    "primary-container": "#2563eb",
+                    "surface": "#f9f9f9",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface": "#1a1c1c",
+                    "primary-fixed": "#dbe1ff",
+                    "on-background": "#1a1c1c",
+                    "surface-tint": "#0053db",
+                    "on-primary-container": "#eeefff",
+                    "surface-container": "#eeeeee",
+                    "on-tertiary-container": "#eef0ff",
+                    "secondary": "#576065",
+                    "outline": "#737686",
+                    "on-surface-variant": "#434655",
+                    "on-error-container": "#93000a",
+                    "error-container": "#ffdad6",
+                    "inverse-surface": "#2f3131",
+                    "on-error": "#ffffff",
+                    "secondary-fixed-dim": "#bfc8ce",
+                    "on-primary-fixed": "#00174b",
+                    "on-secondary-fixed": "#141d21",
+                    "on-tertiary-fixed": "#131b2e",
+                    "on-tertiary-fixed-variant": "#3f465c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sm": "12px",
+                    "xs": "4px",
+                    "gutter": "24px",
+                    "xl": "64px",
+                    "margin": "32px",
+                    "base": "8px",
+                    "md": "24px",
+                    "lg": "40px"
+            },
+            "fontFamily": {
+                    "title-sm": ["Manrope"],
+                    "label-caps": ["Manrope"],
+                    "display-lg": ["Lexend"],
+                    "body-md": ["Manrope"],
+                    "headline-md": ["Lexend"]
+            },
+            "fontSize": {
+                    "title-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 30px 60px -12px rgba(37, 99, 235, 0.08);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-serenity-gradient {
+            background: linear-gradient(135deg, #f9f9f9 0%, #eef2ff 100%);
+        }
+    </style>
+</head>
+<body class="bg-serenity-gradient min-h-screen font-body-md text-on-background pb-24 lg:pb-0">
+<!-- TopAppBar Shell -->
+<header class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md fixed top-0 w-full z-50 border-b border-white/40 flex justify-between items-center px-6 py-4 w-full shadow-lg shadow-blue-500/5 font-lexend antialiased">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-blue-600 text-2xl">auto_stories</span>
+<h1 class="text-xl font-bold tracking-tight text-blue-600">DormSerenity</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex bg-white/40 px-4 py-2 rounded-full border border-white/20 items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-sm">search</span>
+<input class="bg-transparent border-none text-sm focus:ring-0 w-48" placeholder="Search progress..." type="text"/>
+</div>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-blue-50/50 transition-colors rounded-full active:scale-95 duration-200">
+<span class="material-symbols-outlined text-slate-500">notifications</span>
+</button>
+<button class="p-2 hover:bg-blue-50/50 transition-colors rounded-full active:scale-95 duration-200">
+<span class="material-symbols-outlined text-slate-500">settings</span>
+</button>
+<div class="h-10 w-10 rounded-full border-2 border-blue-100 overflow-hidden ml-2 shadow-sm">
+<img alt="Mentor Profile" class="h-full w-full object-cover" data-alt="close-up portrait of a serene young male mentor in a clean white modest attire, soft natural window light, bokeh background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDS3nKXGlEettT9rZFbrca7O7v_qoHI8or-GZPskYAPSvy4uZD0YdtHrcHDOxUlXCrd7JQ_kECCjLwlkwfzMj2rKnp58a5gaJXerBs0MYSxEg39M7tGKt_rFk-dJYqBeY-rjDR4EmUT6ReRZPwB98hNz0aphoUCk8VdNW90qsZYuZ_biw0ivkGPzwx386i7YFUVeO8Tid-WkY3Wk2RZcjs17Vkx4BnRPav48t27dYdkH5MzzT1b1b2lncIvdeFHZcIsIS4VlMgudg"/>
+</div>
+</div>
+</div>
+</header>
+<div class="flex pt-20">
+<!-- SideNavBar Shell -->
+<aside class="hidden lg:flex flex-col p-4 space-y-2 h-screen w-64 border-r border-white/30 bg-white/60 backdrop-blur-2xl shadow-[20px_0_30px_rgba(37,99,235,0.05)] sticky top-20 font-lexend text-sm font-medium">
+<div class="mb-8 px-2">
+<div class="flex items-center gap-3 py-4">
+<div class="bg-blue-600 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
+<span class="material-symbols-outlined text-white">diversity_3</span>
+</div>
+<div>
+<h2 class="text-lg font-black text-blue-600 leading-tight">Dormitory Hub</h2>
+<p class="text-[10px] text-slate-400 uppercase tracking-widest">Academic Sanctuary</p>
+</div>
+</div>
+<button class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md shadow-blue-500/20 hover:translate-y-[-2px] transition-transform active:scale-95">
+                    Log Activity
+                </button>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-white/40 cursor-pointer transition-all hover:translate-x-1">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-white/40 cursor-pointer transition-all hover:translate-x-1">
+<span class="material-symbols-outlined">event_available</span>
+<span>Activities</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-lg shadow-md shadow-blue-500/20 cursor-pointer transition-all">
+<span class="material-symbols-outlined">menu_book</span>
+<span>Quran</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-white/40 cursor-pointer transition-all hover:translate-x-1">
+<span class="material-symbols-outlined">military_tech</span>
+<span>Leaderboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-white/40 cursor-pointer transition-all hover:translate-x-1">
+<span class="material-symbols-outlined">diversity_3</span>
+<span>Mentorship</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 p-6 lg:p-10 max-w-7xl mx-auto">
+<!-- Header Section -->
+<div class="mb-10">
+<h2 class="font-display-lg text-display-lg text-primary mb-2">Hafalan Qur'an</h2>
+<p class="font-body-md text-body-md text-secondary">Track your spiritual journey and Quranic memorization progress.</p>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+<!-- Main Progress Card -->
+<div class="md:col-span-8 glass-card rounded-3xl p-8 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-8 opacity-10">
+<span class="material-symbols-outlined text-[120px]" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+</div>
+<div class="relative z-10">
+<div class="flex justify-between items-start mb-8">
+<div>
+<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-label-caps font-label-caps mb-3 inline-block">Active Journey</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Target: 30 Juz</h3>
+</div>
+<div class="text-right">
+<p class="text-4xl font-black text-blue-600">12.5 <span class="text-lg font-normal text-slate-400">Juz</span></p>
+<p class="text-xs text-slate-400 font-bold tracking-widest uppercase mt-1">42% Completed</p>
+</div>
+</div>
+<!-- Main Progress Bar -->
+<div class="w-full bg-slate-100 h-4 rounded-full overflow-hidden mb-12 flex">
+<div class="bg-primary h-full rounded-full" style="width: 42%"></div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+<div class="bg-white/40 p-4 rounded-2xl border border-white/60">
+<p class="text-xs text-slate-500 font-bold uppercase mb-1">Current Juz</p>
+<p class="text-xl font-bold text-on-surface">Juz 13</p>
+<p class="text-sm text-blue-600 mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span> Ar-Ra'd
+                                </p>
+</div>
+<div class="bg-white/40 p-4 rounded-2xl border border-white/60">
+<p class="text-xs text-slate-500 font-bold uppercase mb-1">Total Ayah</p>
+<p class="text-xl font-bold text-on-surface">2,415</p>
+<p class="text-sm text-slate-400 mt-2">Hafalan Mutqin</p>
+</div>
+<div class="bg-white/40 p-4 rounded-2xl border border-white/60">
+<p class="text-xs text-slate-500 font-bold uppercase mb-1">Streak</p>
+<p class="text-xl font-bold text-on-surface">14 Days</p>
+<p class="text-sm text-error mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">local_fire_department</span> Keep going!
+                                </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Circular Progress / Achievement Widget -->
+<div class="md:col-span-4 glass-card rounded-3xl p-8 flex flex-col items-center justify-center text-center">
+<div class="relative w-40 h-40 mb-6 flex items-center justify-center">
+<svg class="w-full h-full -rotate-90">
+<circle class="text-slate-100" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" stroke-width="12"></circle>
+<circle class="text-primary" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" stroke-dasharray="440" stroke-dashoffset="132" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-3xl font-black text-on-surface">70%</span>
+<span class="text-[10px] text-slate-400 font-bold uppercase">Weekly Target</span>
+</div>
+</div>
+<h4 class="font-title-sm text-title-sm mb-2">Weekly Tasmi Goal</h4>
+<p class="text-sm text-slate-500 mb-6">You've completed 7 out of 10 pages this week. Almost there!</p>
+<button class="text-primary font-bold text-sm flex items-center gap-2 hover:underline">
+                        Set New Target <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<!-- Tasmi Log Table Section -->
+<div class="md:col-span-12 glass-card rounded-3xl overflow-hidden">
+<div class="p-8 border-b border-white/40 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Recent Tasmi Log</h3>
+<p class="text-sm text-slate-500">Record of your recent memorization deposits</p>
+</div>
+<div class="flex gap-2">
+<button class="bg-white/80 border border-slate-200 px-4 py-2 rounded-xl text-sm font-bold text-slate-600 hover:bg-white transition-colors">
+                                Export PDF
+                            </button>
+<button class="bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-transform">
+                                New Session
+                            </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-blue-50/30">
+<tr>
+<th class="px-8 py-4 text-label-caps text-slate-500">Date</th>
+<th class="px-8 py-4 text-label-caps text-slate-500">Surah / Ayah</th>
+<th class="px-8 py-4 text-label-caps text-slate-500">Mentor</th>
+<th class="px-8 py-4 text-label-caps text-slate-500">Grade</th>
+<th class="px-8 py-4 text-label-caps text-slate-500">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/20">
+<tr class="hover:bg-white/40 transition-colors">
+<td class="px-8 py-6">
+<p class="font-bold text-on-surface">Oct 24, 2023</p>
+<p class="text-xs text-slate-400">08:15 AM</p>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+<span class="text-blue-600 font-bold">١٣</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Ar-Ra'd</p>
+<p class="text-xs text-slate-500">Ayah 1 - 25</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full overflow-hidden">
+<img alt="Mentor 1" class="w-full h-full object-cover" data-alt="portrait of a bearded scholar in traditional clerical dress, warm kind expression, studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiSzqszvtyFJOi2SS1oVMd3llOlUhYLSsNaa7w4UuI3hpeEoikt8Om4VnNtWxv9FvQknMxMwGP449xBQB1k9es1wUes5w-eXeaC8mi4QFXP0wXAnDQatIPlF8FDyT2_5HBeS0xGkes3UEcy4Bw30BVdQntvBghwu9wSyz7AmRdwnYcNo-jZv2ZQVx99MpWxw50LU5KU73gD1zVYhZU4DIGD-9MB2wH5zjDu7jPE3nR3gb-jZZFzwjGyM3wgCkAH4fk-kbLw2znAA"/>
+</div>
+<span class="text-sm font-medium">Ust. Ahmad Ridwan</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold uppercase tracking-wider">Mumtaz</span>
+</td>
+<td class="px-8 py-6">
+<span class="material-symbols-outlined text-blue-600" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</td>
+</tr>
+<tr class="hover:bg-white/40 transition-colors">
+<td class="px-8 py-6">
+<p class="font-bold text-on-surface">Oct 22, 2023</p>
+<p class="text-xs text-slate-400">04:30 PM</p>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+<span class="text-blue-600 font-bold">١٢</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Yusuf</p>
+<p class="text-xs text-slate-500">Ayah 80 - 111</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full overflow-hidden">
+<img alt="Mentor 2" class="w-full h-full object-cover" data-alt="professional portrait of an educator, friendly gaze, Islamic attire, clean background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZVovg8XU_lh1mrdmYUWLWT834muWMUCSK_PIRvbhsKHATW8EGyBLKJ_9UO_tTiw_Fef4vlXcZeN4eCOmUogsVho2Eb_pVlEfL8NcY4fjmViZXIifbho1cAq7D-5KshQb1F1_sYxIfzD3P5g35W7lr8H-hXxbP7LdbThuS-dbAMhDhh2nuJvtvF35l4-0UUmKwDhpoimjk8WrDsVmv3i32WkDrf-aQnzTJsoq7b0np6s9woNKmfCbdvpMOTHKsX_7ZwsleiThP8Q"/>
+</div>
+<span class="text-sm font-medium">Ust. Zaid Abdullah</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold uppercase tracking-wider">Jayyid Jiddan</span>
+</td>
+<td class="px-8 py-6">
+<span class="material-symbols-outlined text-blue-600" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</td>
+</tr>
+<tr class="hover:bg-white/40 transition-colors">
+<td class="px-8 py-6">
+<p class="font-bold text-on-surface">Oct 20, 2023</p>
+<p class="text-xs text-slate-400">07:00 AM</p>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+<span class="text-blue-600 font-bold">١٢</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Yusuf</p>
+<p class="text-xs text-slate-500">Ayah 40 - 79</p>
+</div>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full overflow-hidden">
+<img alt="Mentor 1" class="w-full h-full object-cover" data-alt="portrait of a bearded scholar in traditional clerical dress, warm kind expression, studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYEytsr9sYsACYvBXWOw4HgebaV47Fs5x4_hkhTK-MwocDtlIR8ML9KfmTsSqJbRQTtVMWuxLl7U0qxqzZyJn-_DtujAk5TpitrTnfxrI-LiTycnP19S6BWx1uyQWzcTyL5m9KnRRTIyxPafnY-d1r5ez5gg6oaJnI-YqZL_8Wt7YexepOobD-XLYanLbH-kYs9nsC0Q4ojXJZGk9OIQHLib8Yp8_WTZMznujBlxbhS4i-1qbLMH-nCRJAdDGFPHwrtmQ8coB4tg"/>
+</div>
+<span class="text-sm font-medium">Ust. Ahmad Ridwan</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold uppercase tracking-wider">Mumtaz</span>
+</td>
+<td class="px-8 py-6">
+<span class="material-symbols-outlined text-blue-600" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Academic Widgets: Behavior Logs & Attendance -->
+<div class="md:col-span-6 glass-card rounded-3xl p-8">
+<div class="flex items-center gap-4 mb-6">
+<div class="w-12 h-12 rounded-2xl bg-tertiary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary">assignment_turned_in</span>
+</div>
+<div>
+<h4 class="font-title-sm text-title-sm">Memorization Quality</h4>
+<p class="text-xs text-slate-500">Stability and revision strength</p>
+</div>
+</div>
+<div class="space-y-4">
+<div>
+<div class="flex justify-between text-xs font-bold uppercase tracking-wider mb-1 text-slate-400">
+<span>Mutqin (Strong)</span>
+<span>85%</span>
+</div>
+<div class="h-2 bg-slate-100 rounded-full">
+<div class="bg-green-500 h-full rounded-full" style="width: 85%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-xs font-bold uppercase tracking-wider mb-1 text-slate-400">
+<span>Murajaah Needed</span>
+<span>15%</span>
+</div>
+<div class="h-2 bg-slate-100 rounded-full">
+<div class="bg-yellow-500 h-full rounded-full" style="width: 15%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="md:col-span-6 glass-card rounded-3xl p-8 flex items-center gap-6 relative overflow-hidden">
+<div class="flex-1">
+<h4 class="font-title-sm text-title-sm mb-1">Murojaah Plan</h4>
+<p class="text-sm text-slate-500 mb-4">Focus on Surah Ibrahim today to maintain strength.</p>
+<button class="bg-secondary-container text-on-secondary-container px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-200 transition-colors">
+                            Start Review
+                        </button>
+</div>
+<div class="w-24 h-24 rounded-full border-4 border-blue-50 flex items-center justify-center p-2">
+<img alt="Quran Book" class="w-full h-full object-cover rounded-full" data-alt="high quality close up of an open ornate Quran with beautiful calligraphy on high quality paper, soft morning light, peaceful atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC696V0lGPKJwdnV06X6h2sv4KDwVoIsUpGQOTU9-V6yslQ6VhlASvT09XRGJBwOFbkUAclBHssQxPs0CgkgsCWAwcuYLTNgIdzU-3RPk-XOu16BKNgpJVBX2vQ0TfgQFjvG_yokzi4Vz26A-iGY-I6XVIcewJlHT43MH3SzuDQYR3W3WbT95QaFew6zkhamilWLibmG_Wow2jcg_-nwd1sfABFG3-L9ijHZuzzPWdkqAuMjUyvEVFxGTCs9gGy_Lshux-Wu2OI_A"/>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- BottomNavBar Shell (Mobile Only) -->
+<nav class="lg:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-lg border-t border-white/40 shadow-[0_-10px_25px_rgba(0,0,0,0.05)] font-lexend text-[10px] uppercase tracking-wider">
+<div class="flex flex-col items-center justify-center text-slate-400 opacity-80 tap-highlight-transparent">
+<span class="material-symbols-outlined">home</span>
+<span>Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 opacity-80 tap-highlight-transparent">
+<span class="material-symbols-outlined">edit_note</span>
+<span>Track</span>
+</div>
+<div class="flex flex-col items-center justify-center text-blue-600 scale-110 tap-highlight-transparent">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+<span>Quran</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 opacity-80 tap-highlight-transparent">
+<span class="material-symbols-outlined">leaderboard</span>
+<span>Rank</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 opacity-80 tap-highlight-transparent">
+<span class="material-symbols-outlined">group</span>
+<span>Mentee</span>
+</div>
+</nav>
+<!-- Floating Action Button (Only on Home/Relevant screens) -->
+<div class="fixed bottom-24 right-6 lg:bottom-10 lg:right-10 z-50">
+<button class="bg-primary text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center active:scale-95 transition-transform hover:shadow-blue-500/40">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+</body></html>

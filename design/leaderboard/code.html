@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Leaderboard - DormSerenity</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700;800&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#dae2fd",
+                        "surface-container-low": "#f3f3f4",
+                        "surface-variant": "#e2e2e2",
+                        "outline-variant": "#c3c6d7",
+                        "inverse-primary": "#b4c5ff",
+                        "secondary-container": "#dbe4ea",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-container": "#5d666b",
+                        "background": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#dadada",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "inverse-on-surface": "#f0f1f1",
+                        "tertiary-container": "#656d84",
+                        "on-secondary-fixed-variant": "#3f484d",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#4d556b",
+                        "error": "#ba1a1a",
+                        "primary": "#004ac6",
+                        "surface-bright": "#f9f9f9",
+                        "secondary-fixed": "#dbe4ea",
+                        "surface-container-high": "#e8e8e8",
+                        "tertiary-fixed-dim": "#bec6e0",
+                        "primary-container": "#2563eb",
+                        "surface": "#f9f9f9",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "primary-fixed": "#dbe1ff",
+                        "on-background": "#1a1c1c",
+                        "surface-tint": "#0053db",
+                        "on-primary-container": "#eeefff",
+                        "surface-container": "#eeeeee",
+                        "on-tertiary-container": "#eef0ff",
+                        "secondary": "#576065",
+                        "outline": "#737686",
+                        "on-surface-variant": "#434655",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#2f3131",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#bfc8ce",
+                        "on-primary-fixed": "#00174b",
+                        "on-secondary-fixed": "#141d21",
+                        "on-tertiary-fixed": "#131b2e",
+                        "on-tertiary-fixed-variant": "#3f465c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "12px",
+                        "xs": "4px",
+                        "gutter": "24px",
+                        "xl": "64px",
+                        "margin": "32px",
+                        "base": "8px",
+                        "md": "24px",
+                        "lg": "40px"
+                    },
+                    "fontFamily": {
+                        "title-sm": ["Manrope"],
+                        "label-caps": ["Manrope"],
+                        "display-lg": ["Lexend"],
+                        "body-md": ["Manrope"],
+                        "headline-md": ["Lexend"]
+                    },
+                    "fontSize": {
+                        "title-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 30px 60px -12px rgba(37, 99, 235, 0.05);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background: radial-gradient(circle at top left, #ffffff, #f0f7ff);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-white/40 dark:border-slate-700/40 shadow-lg shadow-blue-500/5 flex justify-between items-center px-6 py-4 w-full">
+<div class="flex items-center gap-3">
+<span class="text-xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-display-lg">DormSerenity</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="pl-10 pr-4 py-2 bg-white/40 border border-white/60 rounded-full text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all w-64" placeholder="Search students..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-blue-50/50 rounded-full transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-blue-50/50 rounded-full transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-100">
+<img alt="Mentor Profile" class="w-full h-full object-cover" data-alt="professional headshot of a friendly male academic mentor with a warm smile and clean professional attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxppxpICO9AZSryzYbkvXTZPEiTt3h5EhTntj9FMAXzbdmf8QVvRmEEqMuAMbpnh8bGDdXKsVBmClRmvkkn2GUuf7hw0GK0SlOh9mLxaG1W03erHAS7R3pmDVCNDqL7_pyd7vRtlDzhu7arMCzcOY9wDwn0ptXxHz7X45GxSZkuoydfpClwFCawg8hxxJPxVGf7LI8LQlqR0Udy2sYmyIJQY2IKgWLm4fi2bXivm_NmKwf0XCHkpxaPJJN8B8rTGEL72CIFI1dfA"/>
+</div>
+</div>
+</div>
+</header>
+<div class="flex pt-20 pb-24 lg:pb-0 min-h-screen">
+<!-- SideNavBar -->
+<aside class="hidden lg:flex flex-col p-4 space-y-2 h-screen w-64 bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border-r border-white/30 dark:border-slate-800/30 shadow-[20px_0_30px_rgba(37,99,235,0.05)] sticky top-20">
+<div class="px-4 py-6 mb-4">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-sm">school</span>
+</div>
+<span class="text-lg font-black text-blue-600 font-display-lg">Dormitory Hub</span>
+</div>
+<p class="text-xs text-slate-400 font-medium">Academic Sanctuary</p>
+</div>
+<nav class="space-y-1 flex-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-white/40 hover:translate-x-1 transition-all cursor-pointer rounded-lg font-lexend text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-white/40 hover:translate-x-1 transition-all cursor-pointer rounded-lg font-lexend text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+                    Activities
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-white/40 hover:translate-x-1 transition-all cursor-pointer rounded-lg font-lexend text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+                    Quran
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-lg shadow-md shadow-blue-500/20 hover:translate-x-1 transition-all cursor-pointer font-lexend text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="military_tech">military_tech</span>
+                    Leaderboard
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-white/40 hover:translate-x-1 transition-all cursor-pointer rounded-lg font-lexend text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="diversity_3">diversity_3</span>
+                    Mentorship
+                </a>
+</nav>
+<button class="mt-auto mx-2 bg-blue-600 text-white py-3 px-4 rounded-xl font-bold shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">add_circle</span>
+                Log Activity
+            </button>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 px-4 lg:px-12 py-8 overflow-y-auto">
+<header class="mb-10">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h1 class="text-display-lg font-display-lg text-primary mb-2">Leaderboard</h1>
+<p class="text-slate-500 text-body-md max-w-xl">Celebrating excellence and dedication within our sanctuary. Recognition for top academic and spiritual performers.</p>
+</div>
+<!-- Filters -->
+<div class="flex flex-col gap-3">
+<span class="text-xs font-bold uppercase tracking-widest text-slate-400 px-2">Filter Dormitory</span>
+<div class="flex flex-wrap gap-2 p-1.5 glass-panel rounded-full w-fit">
+<button class="px-5 py-2 rounded-full text-sm font-semibold bg-primary text-white shadow-md shadow-blue-500/20 transition-all">Asrama A</button>
+<button class="px-5 py-2 rounded-full text-sm font-semibold text-slate-600 hover:bg-white/50 transition-all">Asrama B</button>
+<button class="px-5 py-2 rounded-full text-sm font-semibold text-slate-600 hover:bg-white/50 transition-all">Asrama C</button>
+<button class="px-5 py-2 rounded-full text-sm font-semibold text-slate-600 hover:bg-white/50 transition-all">Asrama D</button>
+</div>
+</div>
+</div>
+</header>
+<!-- Top 3 Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+<!-- 2nd Place -->
+<div class="order-2 md:order-1 flex flex-col justify-end">
+<div class="glass-panel p-8 rounded-[2rem] text-center transform transition-transform hover:-translate-y-2">
+<div class="relative w-24 h-24 mx-auto mb-4">
+<div class="absolute -top-2 -right-2 w-8 h-8 bg-slate-300 rounded-full border-4 border-white flex items-center justify-center font-bold text-slate-600">2</div>
+<img class="w-full h-full object-cover rounded-3xl border-2 border-white/50" data-alt="portrait of a focused young student with glasses in a library setting with soft natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCli18qSVUDLz1Mu3lc02Olzftvi2t6cKW9f5JAQk0JpmWO7hWxjOTK-XUm32ijsSPqc8arjE2GDPvMhPjrPAjicKXPWJqVS0wmeOXhZaokfI5cqqiI66eEkmcpWw6fAZ3XtnLTzTSPFn6DeA7CADS0MiTYf-bXQddVjoMyQ-WYD6rZWJ-Qg7BPWLUpjc115BY6qNMpg_0960l6QMlBagoWcTEVUzhEoJCjShC4knpMnEbnX7BqP4zK8Yd0NgnmKvDkQdlIoUWpQQ"/>
+</div>
+<h3 class="font-headline-md text-slate-800">Ahmad Farhan</h3>
+<p class="text-primary font-bold text-lg mb-2">2,840 pts</p>
+<span class="inline-block px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">Asrama A</span>
+</div>
+</div>
+<!-- 1st Place -->
+<div class="order-1 md:order-2">
+<div class="glass-panel p-10 rounded-[2.5rem] text-center bg-blue-50/40 border-primary/20 transform transition-transform hover:-translate-y-2">
+<div class="relative w-32 h-32 mx-auto mb-6">
+<div class="absolute -top-3 -right-3 w-10 h-10 bg-yellow-400 rounded-full border-4 border-white flex items-center justify-center font-black text-white shadow-lg shadow-yellow-500/30">1</div>
+<img class="w-full h-full object-cover rounded-[2rem] border-4 border-primary/20" data-alt="high quality portrait of a smiling confident student leader in front of a modern campus building" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKkE0i_eHNtj_sq-urOxlrx8TOJMp2nZ4GprSB21cQ9BK2g7Koa2N9RMpr6YJHAiSRphOiaPL4kH2xP7hbo6W9OfZ3iMk0MyL48MKXG_egg2M9x1O-6PxoGwS-ID0sDJeM-PYLgJtBnidD-nsLJA6tDyjxy4Seg9g82al2F31ddgSEAL7F6lpqjBHKjlTf_qA2HySHY4U7T9-NfUrBBCeeUdl4mb_4lf6MGgJaPhtI5gaAX1Wy7k2Q0CpkF6_kWyvcXISD37_o0Q"/>
+</div>
+<h3 class="text-3xl font-display-lg text-primary mb-1">Zaid Al-Amin</h3>
+<p class="text-primary-container font-black text-2xl mb-4">3,120 pts</p>
+<div class="flex justify-center gap-2">
+<span class="inline-block px-4 py-1.5 bg-primary text-white rounded-full text-xs font-bold">MVP Asrama A</span>
+</div>
+</div>
+</div>
+<!-- 3rd Place -->
+<div class="order-3 flex flex-col justify-end">
+<div class="glass-panel p-8 rounded-[2rem] text-center transform transition-transform hover:-translate-y-2">
+<div class="relative w-24 h-24 mx-auto mb-4">
+<div class="absolute -top-2 -right-2 w-8 h-8 bg-orange-300 rounded-full border-4 border-white flex items-center justify-center font-bold text-orange-800">3</div>
+<img class="w-full h-full object-cover rounded-3xl border-2 border-white/50" data-alt="candid portrait of a young male student in contemplative mood soft morning light warm tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFe66uLkvjKioUoXBKupxAxmOiahh8OOWv-XGJkGBcwnzfohjQEj95_WvO8pSsyS14qAzULLOgUe4NWvpXoTjkIC6PC6f_4Nr07uOmct7F639ee5W0uSHlwZ-QvyLzyX3lSFz3JOEMYjoRB_WSaQjQHyU4UySOSWaqGh4PzDpBSzOI0aYfSyrAigrv6DhUlxOkmZHWY2Bq_a_8fXxbL8JSKQ4Y8qLMBF9dVgYTsEkVlfS7qVipzsifDul8dAfuLD-h5UW0Lx2MWg"/>
+</div>
+<h3 class="font-headline-md text-slate-800">Hassan Rizwan</h3>
+<p class="text-primary font-bold text-lg mb-2">2,615 pts</p>
+<span class="inline-block px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">Asrama A</span>
+</div>
+</div>
+</section>
+<!-- Leaderboard Table -->
+<div class="glass-panel rounded-[2rem] overflow-hidden mb-12">
+<table class="w-full border-collapse">
+<thead>
+<tr class="bg-blue-50/30 border-b border-white/40">
+<th class="px-8 py-5 text-left text-xs font-bold text-slate-400 uppercase tracking-widest">Rank</th>
+<th class="px-8 py-5 text-left text-xs font-bold text-slate-400 uppercase tracking-widest">Student Name</th>
+<th class="px-8 py-5 text-left text-xs font-bold text-slate-400 uppercase tracking-widest">Dormitory</th>
+<th class="px-8 py-5 text-right text-xs font-bold text-slate-400 uppercase tracking-widest">Total Points</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/20">
+<tr class="hover:bg-white/40 transition-colors">
+<td class="px-8 py-6 font-bold text-slate-700">#4</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<img class="w-10 h-10 rounded-full object-cover border border-white" data-alt="Close up portrait of a young woman smiling brightly with professional lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5QrKyTMuPJxECiXbcNudtq_hRZ1OeO0m7KW2p7mIykklj8jUZO5luW86dEFtiirZ3phDCysQZ2YHgO94tdlt3Hz7gyjdcXwnN5jn37gSqaqOfmagbmcaeKafBy_1HjqM3C_syNR1DvlI5ktkCFFigUwG6dddn7rZeW7H6N6S0uH5kySXRrnforL6HnVgYVpQIE8ziE8BNtuoIhKYeSbDouOH-ShoFzzsfp1Ijkoq4L6J-WjVHiTewHUWN75wcAwu0DiBwRrnz9g"/>
+<span class="font-semibold text-slate-800">Siti Nurhaliza</span>
+</div>
+</td>
+<td class="px-8 py-6 text-slate-600">Asrama A</td>
+<td class="px-8 py-6 text-right font-black text-primary">2,450 pts</td>
+</tr>
+<tr class="hover:bg-white/40 transition-colors">
+<td class="px-8 py-6 font-bold text-slate-700">#5</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<img class="w-10 h-10 rounded-full object-cover border border-white" data-alt="professional profile photo of a young man with a neat appearance in business casual" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOh-nn-AWuY12cnow9830xi2-Cg7yysoK6Ps3DIOH5AuJWkvgRuFqJwxrA1rLwyYOUAjHWseqrgDmOGqveB4_zIhQjz3dULyANRPoHA6E1VPGY4Rzw1UOLMJzRsMCU9k8s232cK5FsMIaGoqYXmyQk8k3w3pOLomjLBBOle5I6bQ7C4i_DiIX8jFEr-z31l3yb5qWk10FSuE64FjoIG5cRcX7F6EOTIVEuCasny88WgaAouScbqqZcZkOZ_KWYmp6kY1jJtMthWw"/>
+<span class="font-semibold text-slate-800">Umar Khalid</span>
+</div>
+</td>
+<td class="px-8 py-6 text-slate-600">Asrama A</td>
+<td class="px-8 py-6 text-right font-black text-primary">2,320 pts</td>
+</tr>
+<tr class="hover:bg-white/40 transition-colors">
+<td class="px-8 py-6 font-bold text-slate-700">#6</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<img class="w-10 h-10 rounded-full object-cover border border-white" data-alt="clear headshot of a student looking at the camera with a friendly expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDybxzagsmY9m-3hMjQbtVjiJxpuSoGFxS1iEHnmBbxcqM_NptZUlgqb4v4ZpZHf_sDXZUPu34rzfCs_ZNRz-ZFGzS6zHf8WePafO3qm_ikP7mBl82Tk9bjD1cvlkNwRMgcNEKsb8DsTLrif5jECqJ1mOR9p9ZSyYk76TNg98Uu8M2m_7XA4TfxslRWRjKoK7uOPmSxDO2DxSyRjjkNWwbQr6zLjWR22uPke3izdA2r9X9X0nJP9xrusTddcVvWTqtTFN31E4oT-g"/>
+<span class="font-semibold text-slate-800">Ibrahim Yusuf</span>
+</div>
+</td>
+<td class="px-8 py-6 text-slate-600">Asrama A</td>
+<td class="px-8 py-6 text-right font-black text-primary">2,180 pts</td>
+</tr>
+<tr class="hover:bg-white/40 transition-colors">
+<td class="px-8 py-6 font-bold text-slate-700">#7</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<img class="w-10 h-10 rounded-full object-cover border border-white" data-alt="lifestyle portrait of a student outdoors in soft daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUOf0z76c_0KW4lwbBneium4oHN-vUk8yge4YxUnvNN-wdKJFUAeBI5GgIs57KnGHsXOzRtygXmocARp2nhIpDDqTXFG4xuRNp-Wq9BkyHTpulVidjr27GsOF4JYzhWYm_dDT1c3NMt3FSzUfekzjyDdT2VJ4AHNOPdeM_3Adg6w268zNsZ31xQWv3KCgWTstvlmJqU-EjO26GyTkZBX8awGFxG6QUld2NpELKPhFhFXVlSvAhQcIIn1eql07Xv8LWblhbls-4YA"/>
+<span class="font-semibold text-slate-800">Aisha Malik</span>
+</div>
+</td>
+<td class="px-8 py-6 text-slate-600">Asrama A</td>
+<td class="px-8 py-6 text-right font-black text-primary">2,105 pts</td>
+</tr>
+<tr class="hover:bg-white/40 transition-colors">
+<td class="px-8 py-6 font-bold text-slate-700">#8</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600">YS</div>
+<span class="font-semibold text-slate-800">Yahya Sulaiman</span>
+</div>
+</td>
+<td class="px-8 py-6 text-slate-600">Asrama A</td>
+<td class="px-8 py-6 text-right font-black text-primary">1,990 pts</td>
+</tr>
+</tbody>
+</table>
+<div class="p-8 border-t border-white/40 flex justify-center">
+<button class="flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all">
+                        View More Rankings
+                        <span class="material-symbols-outlined">expand_more</span>
+</button>
+</div>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="lg:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-t border-white/40 shadow-[0_-10px_25px_rgba(0,0,0,0.05)]">
+<a class="flex flex-col items-center justify-center text-slate-400 opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-lexend text-[10px] uppercase tracking-wider mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="edit_note">edit_note</span>
+<span class="font-lexend text-[10px] uppercase tracking-wider mt-1">Track</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="auto_stories">auto_stories</span>
+<span class="font-lexend text-[10px] uppercase tracking-wider mt-1">Quran</span>
+</a>
+<a class="flex flex-col items-center justify-center text-blue-600 dark:text-blue-400 scale-110" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+<span class="font-lexend text-[10px] uppercase tracking-wider mt-1">Rank</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-lexend text-[10px] uppercase tracking-wider mt-1">Mentee</span>
+</a>
+</nav>
+</body></html>

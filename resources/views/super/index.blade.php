@@ -58,7 +58,7 @@
                                             <div class="modal-body">
                                                 <div class="table-responsive">
                                                     @php
-                                                        $wargaPercobaanASGJ = \App\User::where([
+                                                        $wargaPercobaanASGJ = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Sunan Gunung Jati'],
                                                             ['status_warga', 'Warga Percobaan']
@@ -135,7 +135,7 @@
                                             <div class="modal-body">
                                                 <div class="table-responsive">
                                                     @php
-                                                        $pengurusASGJ = \App\User::where([
+                                                        $pengurusASGJ = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Sunan Gunung Jati'],
                                                             ['status_warga', 'Pengurus Asrama']
@@ -212,7 +212,7 @@
                                             <div class="modal-body">
                                                 <div class="table-responsive">
                                                     @php
-                                                        $wartapASGJ = \App\User::where([
+                                                        $wartapASGJ = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Sunan Gunung Jati'],
                                                             ['status_warga', 'Warga Tetap']
@@ -277,7 +277,7 @@
                             <div class="row align-content-center">
                                 <div class="col-12">
                                     @php
-                                        $jumlah_warga_asgj = \App\User::where([
+                                        $jumlah_warga_asgj = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Sunan Gunung Jati'],
                                                         ])->count();
@@ -342,7 +342,7 @@
                                             <div class="modal-body">
                                                 <div class="table-responsive">
                                                     @php
-                                                        $wargaPercobaanASG = \App\User::where([
+                                                        $wargaPercobaanASG = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Sunan Giri'],
                                                             ['status_warga', 'Warga Percobaan']
@@ -419,7 +419,7 @@
                                             <div class="modal-body">
                                                 <div class="table-responsive">
                                                     @php
-                                                        $pengurusASG = \App\User::where([
+                                                        $pengurusASG = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Sunan Giri'],
                                                             ['status_warga', 'Pengurus Asrama']
@@ -496,7 +496,7 @@
                                             <div class="modal-body">
                                                 <div class="table-responsive">
                                                     @php
-                                                        $wartapASG = \App\User::where([
+                                                        $wartapASG = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Sunan Giri'],
                                                             ['status_warga', 'Warga Tetap']
@@ -561,7 +561,7 @@
                             <div class="row align-content-center">
                                 <div class="col-12">
                                     @php
-                                        $jumlah_warga_asg = \App\User::where([
+                                        $jumlah_warga_asg = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Sunan Giri'],
                                                         ])->count();
@@ -626,7 +626,7 @@
                                             <div class="modal-body">
                                                 <div class="table-responsive">
                                                     @php
-                                                        $wargaPercobaanAWS = \App\User::where([
+                                                        $wargaPercobaanAWS = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Wali Songo'],
                                                             ['status_warga', 'Warga Percobaan']
@@ -703,7 +703,7 @@
                                             <div class="modal-body">
                                                 <div class="table-responsive">
                                                     @php
-                                                        $pengurusAWS = \App\User::where([
+                                                        $pengurusAWS = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Wali Songo'],
                                                             ['status_warga', 'Pengurus Asrama']
@@ -781,7 +781,7 @@
                                             <div class="modal-body">
                                                 <div class="table-responsive">
                                                     @php
-                                                        $wartapAWS = \App\User::where([
+                                                        $wartapAWS = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Wali Songo'],
                                                             ['status_warga', 'Warga Tetap']
@@ -847,7 +847,7 @@
                             <div class="row align-content-center">
                                 <div class="col-12">
                                     @php
-                                        $jumlah_warga_aws = \App\User::where([
+                                        $jumlah_warga_aws = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Wali Songo'],
                                                         ])->count();
@@ -912,7 +912,7 @@
                                             <div class="modal-body">
                                                 <div class="table-responsive">
                                                     @php
-                                                        $wargaPercobaanASPURI = \App\User::where([
+                                                        $wargaPercobaanASPURI = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Putri'],
                                                             ['status_warga', 'Warga Percobaan']
@@ -991,7 +991,7 @@
                                             <div class="modal-body">
                                                 <div class="table-responsive">
                                                     @php
-                                                        $pengurusASPURI = \App\User::where([
+                                                        $pengurusASPURI = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Putri'],
                                                             ['status_warga', 'Pengurus Asrama']
@@ -1070,7 +1070,7 @@
                                             <div class="modal-body">
                                                 <div class="table-responsive">
                                                     @php
-                                                        $wartapASPURI = \App\User::where([
+                                                        $wartapASPURI = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Putri'],
                                                             ['status_warga', 'Warga Tetap']
@@ -1137,7 +1137,7 @@
                             <div class="row align-content-center">
                                 <div class="col-12">
                                     @php
-                                        $jumlah_warga_aspuri = \App\User::where([
+                                        $jumlah_warga_aspuri = \App\Models\User::where([
                                                             ['role', 'mahasiswa'],
                                                             ['asrama', 'Asrama Putri'],
                                                         ])->count();
