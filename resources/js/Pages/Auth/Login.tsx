@@ -12,7 +12,7 @@ interface Props {
     googleEnabled?: boolean;
 }
 
-export default function Login({ canRegister = true, canResetPassword = true, googleEnabled = false }: Props) {
+export default function Login({ canRegister = true, canResetPassword = true, googleEnabled = true }: Props) {
     const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors } = useForm({
         email: '',
@@ -120,7 +120,7 @@ export default function Login({ canRegister = true, canResetPassword = true, goo
                             <div className="flex-1 h-px bg-outline-variant/50" />
                         </div>
                         <a
-                            href="/auth/google"
+                            href="/auth/google/redirect"
                             className="btn-secondary w-full inline-flex items-center justify-center gap-3 py-2.5"
                         >
                             <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden>

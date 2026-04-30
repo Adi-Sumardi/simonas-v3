@@ -15,9 +15,9 @@ class LoginController extends Controller
     public function showLoginForm(): InertiaResponse
     {
         return Inertia::render('Auth/Login', [
-            'canRegister' => true,
+            'canRegister'      => true,
             'canResetPassword' => true,
-            'googleEnabled' => filled(config('services.google.client_id')),
+            'googleEnabled'    => true,
         ]);
     }
 
@@ -42,25 +42,7 @@ class LoginController extends Controller
     // protected $redirectTo = RouteServiceProvider::HOME;
     public function redirectTo()
     {
-        $role = Auth::user()->role;
-
-        switch($role) {
-            case 'super':
-                return '/super';
-            break;
-            case 'admin':
-                return '/admin';
-            break;
-            case 'mentor':
-                return '/mentor';
-            break;
-            case 'mahasiswa':
-                return '/mahasiswa';
-            break;
-            case 'alumni':
-                return '/alumni';
-            break;
-        }
+        return '/dashboard';
     }
 
     /**

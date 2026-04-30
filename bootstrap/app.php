@@ -1,5 +1,10 @@
 <?php
 
+// Suppress E_DEPRECATED from vendor (e.g. PDO::MYSQL_ATTR_SSL_CA on PHP 8.5)
+// Remove this line once laravel/framework is upgraded to a version that uses Pdo\Mysql::ATTR_SSL_CA
+error_reporting(E_ALL & ~E_DEPRECATED);
+
+
 /*
 |--------------------------------------------------------------------------
 | Create The Application
