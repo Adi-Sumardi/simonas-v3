@@ -3,10 +3,38 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 class Handler extends ExceptionHandler
 {
+    public function render($request, Throwable $exception): Response
+    {
+        $response = parent::render($request, $exception);
+
+        if (
+            ! app()->environment('local')
+            && in_array($response->getStatusCode(), [404, 500, 503, 403, 419])
+            && ! $request->expectsJson()
+            && ! str_starts_with($request->path(), 'api/')
+        ) {
+            $component = match ($response->getStatusCode()) {
+                404 => 'Errors/Error404',
+                503 => 'Maintenance',
+                default => 'Errors/Error404',
+            };
+
+            return Inertia::render($component, [
+                'status' => $response->getStatusCode(),
+            ])
+                ->toResponse($request)
+                ->setStatusCode($response->getStatusCode());
+        }
+
+        return $response;
+    }
+
     /**
      * A list of the exception types that are not reported.
      *
@@ -39,17 +67,4 @@ class Handler extends ExceptionHandler
         parent::report($exception);
     }
 
-    /**
-     * Render an exception into an HTTP response.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Throwable  $exception
-     * @return \Symfony\Component\HttpFoundation\Response
-     *
-     * @throws \Throwable
-     */
-    public function render($request, Throwable $exception)
-    {
-        return parent::render($request, $exception);
-    }
 }

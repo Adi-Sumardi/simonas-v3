@@ -892,6 +892,7 @@ Setelah semua ✓, mulai Fase 1 (upgrade L10 → L12).
 | `design/hafalan_qur_an/` | `/mahasiswa/hafalan` | 4 (fitur baru) |
 | `design/leaderboard/` | `/mahasiswa/leaderboard` | 4 (fitur baru) |
 | `design/dashboard_mentor/` | `/mentor` | 4 |
+| `design/alumni_hub/` | `/alumni` (community feed + job board) | 5 |
 | `design/serene_academic_glassmorphism/DESIGN.md` | Design system source-of-truth | 2 |
 
 Tiap mockup punya `code.html` (referensi Tailwind class) + `screen.png` (visual). Saat build component, **buka HTML pakai browser** dan inspect element untuk dapatkan class/struktur exact, lalu translate ke React + Tailwind config kustom kita.

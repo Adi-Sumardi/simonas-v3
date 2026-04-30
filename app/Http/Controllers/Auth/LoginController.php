@@ -7,9 +7,19 @@ use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 class LoginController extends Controller
 {
+    public function showLoginForm(): InertiaResponse
+    {
+        return Inertia::render('Auth/Login', [
+            'canRegister' => true,
+            'canResetPassword' => true,
+        ]);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Login Controller

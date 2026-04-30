@@ -9,9 +9,23 @@ use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 class RegisterController extends Controller
 {
+    public function showRegistrationForm(): InertiaResponse
+    {
+        return Inertia::render('Auth/Register', [
+            'asramas' => [
+                ['value' => 'ASGJ', 'label' => 'Asrama Sukma Gemilang Jakarta'],
+                ['value' => 'ASG', 'label' => 'Asrama Sukma Gemilang'],
+                ['value' => 'AWS', 'label' => 'Asrama Wanita Sukma'],
+                ['value' => 'ASPURI', 'label' => 'Asrama Sukma Putri'],
+            ],
+        ]);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Register Controller
@@ -86,13 +100,10 @@ class RegisterController extends Controller
     {
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
+            'no_induk' => ['required', 'string', 'max:50'],
+            'asrama' => ['required', 'string'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'asrama' => ['required'],
-            'tgl_masuk' => ['required'],
-            'no_telp' => ['required'],
-            'role' => ['required'],
-            'captcha' => ['required', 'captcha'],
+            'password' => ['required', 'string', 'min:8'],
         ]);
     }
 
@@ -106,13 +117,11 @@ class RegisterController extends Controller
     {
         return User::create([
             'name' => $data['name'],
-            'email' => $data['email'],
-            'no_telp' => $data['no_telp'],
+            'no_induk' => $data['no_induk'],
             'asrama' => $data['asrama'],
-            'tgl_masuk' => $data['tgl_masuk'],
+            'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'role' => $data['role'],
-            'captcha' => $data['captcha'],
+            'role' => 'mahasiswa',
         ]);
     }
 }

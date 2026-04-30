@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DormSerenity Alumni Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f9f9f9",
+                        "surface-dim": "#dadada",
+                        "on-tertiary-fixed": "#131b2e",
+                        "on-surface-variant": "#434655",
+                        "tertiary-fixed": "#dae2fd",
+                        "secondary": "#576065",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#5d666b",
+                        "secondary-fixed": "#dbe4ea",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-low": "#f3f3f4",
+                        "primary": "#004ac6",
+                        "outline-variant": "#c3c6d7",
+                        "outline": "#737686",
+                        "inverse-on-surface": "#f0f1f1",
+                        "surface-container-highest": "#e2e2e2",
+                        "surface-bright": "#f9f9f9",
+                        "secondary-container": "#dbe4ea",
+                        "surface-container-high": "#e8e8e8",
+                        "secondary-fixed-dim": "#bfc8ce",
+                        "on-primary-fixed": "#00174b",
+                        "surface-tint": "#0053db",
+                        "tertiary": "#4d556b",
+                        "on-tertiary-container": "#eef0ff",
+                        "on-secondary": "#ffffff",
+                        "background": "#f9f9f9",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "primary-container": "#2563eb",
+                        "on-surface": "#1a1c1c",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#2f3131",
+                        "surface-container": "#eeeeee",
+                        "on-secondary-fixed": "#141d21",
+                        "on-primary": "#ffffff",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary-fixed-variant": "#3f484d",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#656d84",
+                        "on-tertiary-fixed-variant": "#3f465c",
+                        "on-primary-container": "#eeefff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "inverse-primary": "#b4c5ff",
+                        "tertiary-fixed-dim": "#bec6e0",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "12px",
+                        "xs": "4px",
+                        "margin": "32px",
+                        "lg": "40px",
+                        "gutter": "24px",
+                        "xl": "64px",
+                        "md": "24px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Lexend"],
+                        "label-caps": ["Manrope"],
+                        "headline-md": ["Lexend"],
+                        "body-md": ["Manrope"],
+                        "title-sm": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "title-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #f9f9f9;
+            background-image: radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0px, transparent 50%),
+                              radial-gradient(at 100% 0%, rgba(37, 99, 235, 0.02) 0px, transparent 50%);
+            min-height: 100vh;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(37, 99, 235, 0.05);
+        }
+        .inner-glow {
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<!-- Top AppBar -->
+<header class="bg-white/70 backdrop-blur-md font-lexend antialiased fixed top-0 w-full z-50 border-b border-white/40 shadow-lg shadow-blue-500/5 flex justify-between items-center px-6 py-4 w-full">
+<div class="flex items-center gap-4">
+<span class="text-xl font-bold tracking-tight text-blue-600">DormSerenity</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex relative items-center">
+<input class="bg-white/40 border border-white/60 rounded-full px-4 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none w-64 transition-all" placeholder="Search Alumni..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 text-slate-400 text-sm">search</span>
+</div>
+<div class="flex gap-2">
+<button class="p-2 rounded-full hover:bg-blue-50/50 transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-slate-500">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-blue-50/50 transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-slate-500">settings</span>
+</button>
+</div>
+<img alt="Mentor Profile" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" data-alt="A professional headshot of a dormitory mentor, featuring a friendly middle-aged man with a neat appearance. The background is a softly blurred office with warm wood tones and a bookshelf, illuminated by gentle natural light that emphasizes a calm and trustworthy demeanor." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCWuVTrxTOmhCu3QpELn4UztEERT1KvuoCY5Y5RwwWW7vyS-mjlryy1QO_wJtfdAk2EDan8bMauDys14m6YQ1lO1r-7KrqbnHaFcUanTk3EGJM9OeQuRK06KdMeCveqrd45DwdHVnfX5kODsExkAL1cdYqwc82d1UZ_dhVZi3YhIJU0JbEAiU5IcQvlfsmNwblo1fyMUs4hCGh2EcahgH0C8uijb0phKWhtjt1arwEsADGn0AzWbp9lj-JqgrayuxMnAzYmGC-ug"/>
+</div>
+</header>
+<div class="flex pt-20 h-screen overflow-hidden">
+<!-- Side Navigation -->
+<nav class="h-screen w-64 border-r border-white/30 bg-white/60 backdrop-blur-2xl hidden lg:flex flex-col p-4 space-y-2 shadow-[20px_0_30px_rgba(37,99,235,0.05)]">
+<div class="mb-8 px-2">
+<h2 class="text-lg font-black text-blue-600">Dormitory Hub</h2>
+<p class="text-xs text-slate-500 font-medium uppercase tracking-wider">Academic Sanctuary</p>
+</div>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-white/40 font-lexend text-sm font-medium hover:translate-x-1 transition-transform cursor-pointer" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-white/40 font-lexend text-sm font-medium hover:translate-x-1 transition-transform cursor-pointer" href="#">
+<span class="material-symbols-outlined">event_available</span> Activities
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-white/40 font-lexend text-sm font-medium hover:translate-x-1 transition-transform cursor-pointer" href="#">
+<span class="material-symbols-outlined">menu_book</span> Quran
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-white/40 font-lexend text-sm font-medium hover:translate-x-1 transition-transform cursor-pointer" href="#">
+<span class="material-symbols-outlined">military_tech</span> Leaderboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-white/40 font-lexend text-sm font-medium hover:translate-x-1 transition-transform cursor-pointer" href="#">
+<span class="material-symbols-outlined">diversity_3</span> Mentorship
+            </a>
+<a class="bg-blue-600 text-white rounded-lg shadow-md shadow-blue-500/20 flex items-center gap-3 px-4 py-3 font-lexend text-sm font-medium hover:translate-x-1 transition-transform cursor-pointer" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">school</span> Alumni Hub
+            </a>
+<div class="mt-auto pt-4">
+<button class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-blue-500/30 hover:bg-blue-700 active:scale-95 transition-all">
+                    Log Activity
+                </button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto px-margin py-8">
+<div class="max-w-6xl mx-auto">
+<!-- Hero Section -->
+<section class="mb-12">
+<h1 class="font-display-lg text-display-lg text-primary mb-2">Alumni Hub</h1>
+<p class="font-body-md text-secondary text-lg max-w-2xl">Connect with former residents, share your post-dormitory success stories, and explore career opportunities within our exclusive network.</p>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- LEFT COLUMN: Feed & Database (8 Cols) -->
+<div class="col-span-12 lg:col-span-8 space-y-gutter">
+<!-- Create Post -->
+<div class="glass-card rounded-2xl p-6 inner-glow">
+<div class="flex items-center gap-4 mb-4">
+<img alt="User Profile" class="w-12 h-12 rounded-full border-2 border-white shadow-sm" data-alt="Close up profile photo of a young professional alumnus with a warm smile, wearing a casual business shirt. The background is a brightly lit, modern co-working space with clean white walls and soft blue accents, embodying a fresh and professional light-mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGBe7fXd4fxna3bhL7mzQLUExcErbgmwhUfBdMTpc8EOJGZQESn86IGiJzsyDHP-9mHj9N4QdvgD448cVQgh1sv4p63FY5Jcl6NSNvw_vQ_ZDXSLQaF1892NUcNX0B8TDPfRxie7RUoTCoW8c4MIDwydttKfVKHGT34cLqfjUF1c5wWCd2L0wdnjYDT_Q_KvXStNanu471tPXKcLwjBY_OeW31ISFNdfMlmPQKzgLyEzZ8NlJPrMGXeyJO2FwUnhp63aeWfi1BDA"/>
+<button class="flex-1 text-left px-6 py-3 bg-surface-container-low hover:bg-surface-container rounded-full text-slate-500 text-sm transition-colors">
+                                    Share your story with the alumni community...
+                                </button>
+</div>
+<div class="flex justify-between items-center pt-2 border-t border-white/20">
+<div class="flex gap-4">
+<button class="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">
+<span class="material-symbols-outlined text-blue-500">image</span> Photo
+                                    </button>
+<button class="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">
+<span class="material-symbols-outlined text-blue-500">link</span> Link
+                                    </button>
+</div>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-full font-semibold text-sm shadow-md hover:bg-blue-700 transition-all">Post</button>
+</div>
+</div>
+<!-- Social Feed -->
+<div class="space-y-6">
+<!-- Feed Card 1 -->
+<div class="glass-card rounded-2xl p-6 inner-glow">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-4">
+<img alt="Alumni Name" class="w-10 h-10 rounded-full border border-white" data-alt="A portrait of a successful female alumni working in a tech office. She is smiling confidently at the camera. The background shows a bright, airy office with lush indoor plants and minimalist white furniture, illuminated by soft morning sunlight that creates a serene academic vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp-ehEjUWAsi4VH3UIGWKVNbpaSCHto2CzNWZLigSc1TfmKbiEl8rrYn_y6K-smC3jESu4VQY127Xq75R0GZEAFgMfQBkgixkzNVNg3muuvoQu46CGbshYk_wAk9tWfEEdjfcD9cXths9XegWOjwlDnFjmUrtbr4u-QVbrsrVNAJgQLcXybyJdlQn9NkXaxgohB9k9iZVDFg4giRmMZhAkbCEIVA3MJ8SkxH_46mlDem868Gene8en_ufWHIsg-rBPHSl2dvwuvQ"/>
+<div>
+<h4 class="font-bold text-slate-800">Sarah Al-Farsi</h4>
+<p class="text-xs text-slate-500">3 hours ago • Class of 2021</p>
+</div>
+</div>
+<button class="text-slate-400 hover:text-slate-600"><span class="material-symbols-outlined">more_horiz</span></button>
+</div>
+<p class="text-slate-700 mb-6 font-body-md leading-relaxed">
+                                    Just wanted to share that I've officially started my residency program! The discipline I learned during my 4 years at DormSerenity, especially the early morning routines, really prepared me for this journey. Wishing everyone current and former the best!
+                                </p>
+<div class="flex gap-6 pt-4 border-t border-white/20">
+<button class="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-blue-600">
+<span class="material-symbols-outlined">favorite</span> 24 Likes
+                                    </button>
+<button class="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-blue-600">
+<span class="material-symbols-outlined">chat_bubble</span> 8 Comments
+                                    </button>
+</div>
+</div>
+<!-- Feed Card 2 -->
+<div class="glass-card rounded-2xl p-6 inner-glow">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-4">
+<img alt="Alumni Name" class="w-10 h-10 rounded-full border border-white" data-alt="A high-quality studio portrait of a young man with glasses, looking professional and calm. The aesthetic is clean and high-key, with a soft grey and white background that reflects the 'Digital Serenity' brand personality. The lighting is diffused and flattering, creating a premium feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA945pVdrvwumln63AaAfIGarzl9Ty-7PDBWLVfzXY_Z-JBmo1BcVXXnkvr2lXhj_DFwfhtpgjFnclRi65H9f0KnDq0Ht3j3e1M8VuGeQVrORKJCJxD1LlBChz-EUIjCaqi1hrjIJiv6LXsRv1HBruyFKPFZaQcuNwLP3l4TVbjPahMR4KffTBIl1vb2_KnTvfKVujk2TK7sqYj04_aQxFEeoNjGU9CEkcy_V5s9lr1FQ-uL1hiGZaQ2Y2rv_F0QIxB-FBcChjJag"/>
+<div>
+<h4 class="font-bold text-slate-800">Omar Khalid</h4>
+<p class="text-xs text-slate-500">Yesterday • Class of 2019</p>
+</div>
+</div>
+<button class="text-slate-400 hover:text-slate-600"><span class="material-symbols-outlined">more_horiz</span></button>
+</div>
+<p class="text-slate-700 mb-6 font-body-md leading-relaxed">
+                                    We are looking for a Junior Developer at my current firm. If any graduating seniors are interested, please reach out! Happy to provide a referral for a fellow DormSerenity resident.
+                                </p>
+<div class="flex gap-6 pt-4 border-t border-white/20">
+<button class="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-blue-600">
+<span class="material-symbols-outlined">favorite</span> 56 Likes
+                                    </button>
+<button class="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-blue-600">
+<span class="material-symbols-outlined">chat_bubble</span> 15 Comments
+                                    </button>
+</div>
+</div>
+</div>
+<!-- Alumni Database / Directory -->
+<div class="glass-card rounded-3xl p-8 inner-glow">
+<div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+<div>
+<h3 class="font-headline-md text-headline-md text-slate-800">Alumni Directory</h3>
+<p class="text-sm text-slate-500">Connect with 1,200+ members of our community.</p>
+</div>
+<div class="relative w-full md:w-auto">
+<input class="w-full md:w-80 bg-white/50 border-white/60 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Search by name, year, or profession..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-slate-400">search</span>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="flex flex-wrap gap-2 mb-8">
+<span class="px-4 py-1.5 rounded-full bg-primary text-white text-xs font-bold shadow-md cursor-pointer">All Years</span>
+<span class="px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 text-xs font-bold hover:bg-blue-100 transition-colors cursor-pointer">Tech</span>
+<span class="px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 text-xs font-bold hover:bg-blue-100 transition-colors cursor-pointer">Medicine</span>
+<span class="px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 text-xs font-bold hover:bg-blue-100 transition-colors cursor-pointer">Engineering</span>
+<span class="px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 text-xs font-bold hover:bg-blue-100 transition-colors cursor-pointer">2023 Grads</span>
+</div>
+<!-- Database List -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex items-center justify-between p-4 bg-white/40 rounded-2xl hover:bg-white/60 transition-colors border border-white/20">
+<div class="flex items-center gap-3">
+<img alt="Alumni" class="w-12 h-12 rounded-full border border-white shadow-sm" data-alt="A portrait of a young professional woman with a bright and open expression, wearing a stylish hijab and a clean white blazer. The background is a minimalist academic hall with soft morning light, creating a professional yet welcoming atmosphere that aligns with the serenity brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPX_ClcRFfeTNuqvBw1bAmm6KGaF7oG8oXD-20H7Ciy7b-5DzDsOTvOF_uJjfklpgrtAv1tuFlvV0IVeeAZ827SmcMpsPeSTsCoxPlCz4uOIafCsb6GIx94l46mihxod7TYPITk-z_Z55byKuIhp4bwFZ5zntP9kQMQ9PS4z8ZjrK-b6JiwvnCBARYaZ8lS6qeAbFT02e2m8CZOv4TFlE37uAUCNQLb-f_exYEVoYv7-7Ro4HZJLDp3xcC0haThlm1-pqc9XyD5A"/>
+<div>
+<p class="font-bold text-slate-800 text-sm">Zainab Al-Said</p>
+<p class="text-xs text-slate-500">Software Engineer • 2022</p>
+</div>
+</div>
+<button class="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100 transition-all">Connect</button>
+</div>
+<div class="flex items-center justify-between p-4 bg-white/40 rounded-2xl hover:bg-white/60 transition-colors border border-white/20">
+<div class="flex items-center gap-3">
+<img alt="Alumni" class="w-12 h-12 rounded-full border border-white shadow-sm" data-alt="Portrait of a young male architect in a modern studio environment. He is wearing a professional button-down shirt and looks thoughtful. The lighting is crisp and clear, highlighting a sophisticated and disciplined aesthetic, with architectural models softly blurred in the background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFeJoGDlMGnr1XR4rpPgEuRC58EMyFhqmmZKjExECWtlvDk_E0JQIRygkajz_P7mGhT7G9RAGMQtHhcWtgiy0Rz-4TbiYR3j-nNLJ1D9w6Sx8Qq0-E_rCTxgVknZoiD3chW9sZ9wXdwxiQYZkuuKNDZM0bc8E7mW6ks0D9pZAVzaPd8fCsBjj5ZPIxiVQGqQDP948OsfXYsxjJSgbNi2-ds8VHZsU-XjrBWxQW5nUvIauIPx2i6o1ReimT_Lzji1YMycOEuxVQWg"/>
+<div>
+<p class="font-bold text-slate-800 text-sm">Ahmed Mansour</p>
+<p class="text-xs text-slate-500">Architect • 2020</p>
+</div>
+</div>
+<button class="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100 transition-all">Connect</button>
+</div>
+<div class="flex items-center justify-between p-4 bg-white/40 rounded-2xl hover:bg-white/60 transition-colors border border-white/20">
+<div class="flex items-center gap-3">
+<img alt="Alumni" class="w-12 h-12 rounded-full border border-white shadow-sm" data-alt="Close-up headshot of a young professional man with a friendly and intelligent look. The setting is a bright library with high ceilings and bookshelves, conveying a sense of academic success and continuous learning. The lighting is soft and airy, matching the light-mode UI design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAerbzmeLSXv4QGzlESZt79BZwMt94CV8eIXHC7B70kxaGPVgJa-iboZqvwB2HSXreOTQ8Ixx27jgt506rEIEekR_hNyJ1GLYvHLoa_qAJ5PBdY7XcmA1V8HGpD5gvGKQc0hF0MVGCynA4k4IWTxKQkWsr8-ZaoHxVo6k9Hf1LcDleDaQtl0uKd0cncyByAFusZtYJ47JayI_DgvfoWea49zKlLZ4GbNzdGG_piYGhReS77TQDPbV89VMBSHe9wxTfAidMGYclkyA"/>
+<div>
+<p class="font-bold text-slate-800 text-sm">Hassan Jameel</p>
+<p class="text-xs text-slate-500">Data Scientist • 2021</p>
+</div>
+</div>
+<button class="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100 transition-all">Connect</button>
+</div>
+<div class="flex items-center justify-between p-4 bg-white/40 rounded-2xl hover:bg-white/60 transition-colors border border-white/20">
+<div class="flex items-center gap-3">
+<img alt="Alumni" class="w-12 h-12 rounded-full border border-white shadow-sm" data-alt="A portrait of a young female educator in a classroom setting, holding a tablet and smiling warmly. The room is filled with soft, diffused sunlight, creating a bright and hopeful mood. The background features educational posters and clean, modern classroom furniture in white and light wood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsdaTSfZWYZaA7xQxskyzTYXN5x51-7k9_Rn_5gcsGzmAuFN37hEkjJqWaES4Q4bDju4wd0ANcZtxd2bmNQzV1BYXmjdELob4Qs4heS4p9ovUxqvOxAxrjy8oFe9Ni9ACY3zt6YIZp6GeE8GCc3n2V3SxbeRDHB9WG6MFyF6D36Tys2hYTgL8R4rH2VfQgC0OAPjPqawRw7RgvejSu331IdFrH1wq6JWmRuB2hOgCsEHVVezWFId4oVmoyv7ey32Y7VsvG4bJcXg"/>
+<div>
+<p class="font-bold text-slate-800 text-sm">Layla Noor</p>
+<p class="text-xs text-slate-500">Educator • 2018</p>
+</div>
+</div>
+<button class="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100 transition-all">Connect</button>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Career Board & Quick Actions (4 Cols) -->
+<div class="col-span-12 lg:col-span-4 space-y-gutter">
+<!-- Career Board -->
+<div class="glass-card rounded-3xl p-6 inner-glow">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-title-sm text-title-sm text-slate-800">Job Board</h3>
+<button class="text-blue-600 text-xs font-bold uppercase tracking-wider hover:underline">View All</button>
+</div>
+<div class="space-y-4">
+<!-- Job Card 1 -->
+<div class="p-4 rounded-2xl bg-white/40 border border-white/60 hover:bg-white/80 transition-all group">
+<div class="flex justify-between items-start mb-2">
+<span class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Full-Time</span>
+<span class="text-[10px] text-slate-400">2d ago</span>
+</div>
+<h4 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Senior UI Designer</h4>
+<p class="text-xs text-slate-500 mb-4">TechVision • Dubai, UAE</p>
+<div class="flex gap-2">
+<button class="flex-1 bg-primary text-white py-2 rounded-lg text-xs font-bold shadow-md hover:bg-blue-700 transition-all">Apply</button>
+<button class="px-3 py-2 rounded-lg border border-blue-100 text-blue-600 hover:bg-blue-50 transition-colors">
+<span class="material-symbols-outlined text-sm">bookmark</span>
+</button>
+</div>
+</div>
+<!-- Job Card 2 -->
+<div class="p-4 rounded-2xl bg-white/40 border border-white/60 hover:bg-white/80 transition-all group">
+<div class="flex justify-between items-start mb-2">
+<span class="bg-green-50 text-green-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Remote</span>
+<span class="text-[10px] text-slate-400">5d ago</span>
+</div>
+<h4 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Financial Analyst</h4>
+<p class="text-xs text-slate-500 mb-4">Al-Baraka Group • Manama</p>
+<div class="flex gap-2">
+<button class="flex-1 bg-blue-50 text-blue-600 border border-blue-100 py-2 rounded-lg text-xs font-bold hover:bg-blue-100 transition-all">Refer Friend</button>
+<button class="flex-1 bg-primary text-white py-2 rounded-lg text-xs font-bold shadow-md hover:bg-blue-700 transition-all">Apply Now</button>
+</div>
+</div>
+<!-- Job Card 3 -->
+<div class="p-4 rounded-2xl bg-white/40 border border-white/60 hover:bg-white/80 transition-all group">
+<div class="flex justify-between items-start mb-2">
+<span class="bg-orange-50 text-orange-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Internship</span>
+<span class="text-[10px] text-slate-400">1w ago</span>
+</div>
+<h4 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Content Strategist</h4>
+<p class="text-xs text-slate-500 mb-4">Serene Media • Riyadh</p>
+<div class="flex gap-2">
+<button class="flex-1 bg-primary text-white py-2 rounded-lg text-xs font-bold shadow-md hover:bg-blue-700 transition-all">Apply</button>
+<button class="px-3 py-2 rounded-lg border border-blue-100 text-blue-600 hover:bg-blue-50 transition-colors">
+<span class="material-symbols-outlined text-sm">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Mentorship Widget -->
+<div class="glass-card rounded-3xl p-6 inner-glow bg-gradient-to-br from-blue-600/5 to-white shadow-xl shadow-blue-500/5">
+<div class="flex items-center gap-3 mb-4">
+<div class="p-2 bg-blue-600 rounded-xl text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">diversity_3</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-slate-800">Mentorship</h3>
+</div>
+<p class="text-xs text-slate-600 mb-6 leading-relaxed">Give back to the community by mentoring current students. Share your industry insights and help them navigate their academic journey.</p>
+<button class="w-full bg-white border-2 border-blue-600 text-blue-600 py-3 rounded-xl font-bold text-sm hover:bg-blue-50 transition-all active:scale-95">
+                                Become a Mentor
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="lg:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-lg border-t border-white/40 shadow-[0_-10px_25px_rgba(0,0,0,0.05)]">
+<a class="flex flex-col items-center justify-center text-slate-400" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-lexend text-[10px] uppercase tracking-wider">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400" href="#">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="font-lexend text-[10px] uppercase tracking-wider">Track</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-lexend text-[10px] uppercase tracking-wider">Quran</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="font-lexend text-[10px] uppercase tracking-wider">Rank</span>
+</a>
+<a class="flex flex-col items-center justify-center text-blue-600 scale-110" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">school</span>
+<span class="font-lexend text-[10px] uppercase tracking-wider">Alumni</span>
+</a>
+</nav>
+</body></html>
