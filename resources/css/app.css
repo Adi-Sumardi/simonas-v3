@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        font-family: theme('fontFamily.body');
+        color: theme('colors.on-surface');
+    }
+    body {
+        background: theme('backgroundImage.serene-gradient');
+        min-height: 100vh;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        font-family: theme('fontFamily.display');
+    }
+}
+
+@layer components {
+    .glass-card {
+        @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-glass rounded-xl;
+    }
+    .glass-panel {
+        @apply bg-white/60 backdrop-blur-2xl border border-white/30 shadow-glass-lg rounded-2xl;
+    }
+    .glass-input {
+        @apply bg-white/40 backdrop-blur-md border border-outline-variant/50 rounded-lg shadow-inner-soft px-3 py-2 outline-none transition-colors;
+    }
+    .glass-input:focus {
+        @apply border-primary-container ring-2 ring-primary-container/30;
+    }
+    .btn-primary {
+        @apply bg-primary-container text-on-primary hover:shadow-glow rounded-lg px-4 py-2 font-medium transition-shadow;
+    }
+    .btn-secondary {
+        @apply bg-white/60 backdrop-blur border-2 border-primary-container text-primary-container rounded-lg px-4 py-2 font-medium hover:bg-white/80 transition-colors;
+    }
+    .status-pill {
+        @apply inline-flex items-center px-3 py-1 rounded-full text-label-caps uppercase tracking-wider;
+    }
+    .status-pill-success { @apply status-pill bg-success/15 text-success; }
+    .status-pill-warning { @apply status-pill bg-warning/15 text-warning; }
+    .status-pill-danger  { @apply status-pill bg-error/15 text-error; }
+    .status-pill-info    { @apply status-pill bg-primary-container/15 text-primary-container; }
+    .status-pill-neutral { @apply status-pill bg-on-surface-variant/10 text-on-surface-variant; }
+}

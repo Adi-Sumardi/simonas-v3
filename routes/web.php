@@ -80,8 +80,11 @@ Route::get('/password-success', function () {
 })->name('auth.success');
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    return Inertia\Inertia::render('Welcome', [
+        'appName' => config('app.name'),
+        'version' => app()->version(),
+    ]);
+})->name('home');
 
 Route::post('/change-password', 'UserController@changePassword')->name('user.changePassword');
 
