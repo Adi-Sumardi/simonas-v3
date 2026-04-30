@@ -93,6 +93,14 @@ Route::get('/reload-captcha-login', 'CaptchaController@reloadCaptchaLogin');
 
 Auth::routes();
 
+// Google OAuth (hybrid login)
+Route::get('/auth/{provider}', [\App\Http\Controllers\Auth\SocialiteController::class, 'redirect'])
+    ->where('provider', 'google')
+    ->name('socialite.redirect');
+Route::get('/auth/{provider}/callback', [\App\Http\Controllers\Auth\SocialiteController::class, 'callback'])
+    ->where('provider', 'google')
+    ->name('socialite.callback');
+
 Route::middleware(['auth', 'super'])->group(function () {
     Route::get('/super', 'SuperController@index');
     Route::get('/super-dashboard', 'SuperController@dashboard');

@@ -17,6 +17,7 @@ class User extends Authenticatable
         'avatar',
         'name',
         'email',
+        'google_id',
         'password',
         'role',
         'asrama',

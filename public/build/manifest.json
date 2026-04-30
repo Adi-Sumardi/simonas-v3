@@ -1,104 +1,104 @@
 {
-  "_Button-Ap9Jnx7C.js": {
-    "file": "assets/Button-Ap9Jnx7C.js",
+  "_Button-DerMJFt8.js": {
+    "file": "assets/Button-DerMJFt8.js",
     "name": "Button",
     "imports": [
       "resources/js/app.tsx"
     ]
   },
-  "_Label-BIm2btxR.js": {
-    "file": "assets/Label-BIm2btxR.js",
+  "_Label-DuqX7yWT.js": {
+    "file": "assets/Label-DuqX7yWT.js",
     "name": "Label",
     "imports": [
       "resources/js/app.tsx",
-      "_Button-Ap9Jnx7C.js"
+      "_Button-DerMJFt8.js"
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-CnXpzoSr.css",
+    "file": "assets/app-irvcrCMV.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
-  "resources/js/app.tsx": {
-    "file": "assets/app-Bo2SV106.js",
-    "name": "app",
-    "src": "resources/js/app.tsx",
-    "isEntry": true,
-    "dynamicImports": [
-      "resources/js/pages/Auth/Login.tsx",
-      "resources/js/pages/Auth/Register.tsx",
-      "resources/js/pages/Errors/Error404.tsx",
-      "resources/js/pages/Maintenance.tsx",
-      "resources/js/pages/Welcome.tsx"
-    ],
-    "css": [
-      "assets/app-CnXpzoSr.css"
-    ]
-  },
-  "resources/js/pages/Auth/Login.tsx": {
-    "file": "assets/Login-DfLyhUdH.js",
+  "resources/js/Pages/Auth/Login.tsx": {
+    "file": "assets/Login-DpF9eAbe.js",
     "name": "Login",
-    "src": "resources/js/pages/Auth/Login.tsx",
+    "src": "resources/js/Pages/Auth/Login.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_Label-BIm2btxR.js",
-      "_Button-Ap9Jnx7C.js"
+      "_Label-DuqX7yWT.js",
+      "_Button-DerMJFt8.js"
     ],
     "css": [
-      "assets/app-CnXpzoSr.css"
+      "assets/app-irvcrCMV.css"
     ]
   },
-  "resources/js/pages/Auth/Register.tsx": {
-    "file": "assets/Register-40RYgHnu.js",
+  "resources/js/Pages/Auth/Register.tsx": {
+    "file": "assets/Register-BZzvZWNw.js",
     "name": "Register",
-    "src": "resources/js/pages/Auth/Register.tsx",
+    "src": "resources/js/Pages/Auth/Register.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_Label-BIm2btxR.js",
-      "_Button-Ap9Jnx7C.js"
+      "_Label-DuqX7yWT.js",
+      "_Button-DerMJFt8.js"
     ],
     "css": [
-      "assets/app-CnXpzoSr.css"
+      "assets/app-irvcrCMV.css"
     ]
   },
-  "resources/js/pages/Errors/Error404.tsx": {
-    "file": "assets/Error404-WLwHodnQ.js",
+  "resources/js/Pages/Errors/Error404.tsx": {
+    "file": "assets/Error404-CnCOdn7R.js",
     "name": "Error404",
-    "src": "resources/js/pages/Errors/Error404.tsx",
+    "src": "resources/js/Pages/Errors/Error404.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_Button-Ap9Jnx7C.js"
+      "_Button-DerMJFt8.js"
     ],
     "css": [
-      "assets/app-CnXpzoSr.css"
+      "assets/app-irvcrCMV.css"
     ]
   },
-  "resources/js/pages/Maintenance.tsx": {
-    "file": "assets/Maintenance-B1fMgAhG.js",
+  "resources/js/Pages/Maintenance.tsx": {
+    "file": "assets/Maintenance-4LBgii44.js",
     "name": "Maintenance",
-    "src": "resources/js/pages/Maintenance.tsx",
+    "src": "resources/js/Pages/Maintenance.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_Button-Ap9Jnx7C.js"
+      "_Button-DerMJFt8.js"
     ],
     "css": [
-      "assets/app-CnXpzoSr.css"
+      "assets/app-irvcrCMV.css"
     ]
   },
-  "resources/js/pages/Welcome.tsx": {
-    "file": "assets/Welcome-n-exbvTW.js",
+  "resources/js/Pages/Welcome.tsx": {
+    "file": "assets/Welcome-3m1e0hRl.js",
     "name": "Welcome",
-    "src": "resources/js/pages/Welcome.tsx",
+    "src": "resources/js/Pages/Welcome.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx"
     ],
     "css": [
-      "assets/app-CnXpzoSr.css"
+      "assets/app-irvcrCMV.css"
+    ]
+  },
+  "resources/js/app.tsx": {
+    "file": "assets/app-B1dvQCoU.js",
+    "name": "app",
+    "src": "resources/js/app.tsx",
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/Pages/Auth/Login.tsx",
+      "resources/js/Pages/Auth/Register.tsx",
+      "resources/js/Pages/Errors/Error404.tsx",
+      "resources/js/Pages/Maintenance.tsx",
+      "resources/js/Pages/Welcome.tsx"
+    ],
+    "css": [
+      "assets/app-irvcrCMV.css"
     ]
   }
 }

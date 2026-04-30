@@ -17,6 +17,7 @@ class LoginController extends Controller
         return Inertia::render('Auth/Login', [
             'canRegister' => true,
             'canResetPassword' => true,
+            'googleEnabled' => filled(config('services.google.client_id')),
         ]);
     }
 
