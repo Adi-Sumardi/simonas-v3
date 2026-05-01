@@ -26,8 +26,8 @@ export function AyatCard({
     // Determine card style based on state
     let cardClass = 'border border-white/30 bg-white/40';
     if (isMarked)    cardClass = 'border-2 border-emerald-400 bg-emerald-100/60 ring-2 ring-emerald-300/30';
+    else if (isPlaying) cardClass = 'border-2 border-blue-400 bg-blue-50/80 ring-4 ring-blue-300/30 shadow-lg shadow-blue-100';
     else if (isPassed)  cardClass = 'border border-emerald-200 bg-emerald-50/60';
-    else if (isPlaying) cardClass = 'border border-blue-200 bg-blue-50/60';
     else if (isSelected) cardClass = 'border-2 border-amber-300 bg-amber-50/60';
 
     return (
@@ -39,14 +39,21 @@ export function AyatCard({
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     {/* Nomor ayat badge */}
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black border ${
-                        isMarked  ? 'bg-emerald-500 text-white border-emerald-600'
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black border transition-all ${
+                        isPlaying ? 'bg-blue-500 text-white border-blue-600 scale-110 shadow-md shadow-blue-200'
+                        : isMarked  ? 'bg-emerald-500 text-white border-emerald-600'
                         : isPassed  ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
                         : 'bg-surface-container text-on-surface-variant border-white/30'
                     }`}>
                         {ayat.nomorAyat}
                     </div>
-                    {isMarked && (
+                    {isPlaying && (
+                        <span className="text-[10px] font-black text-blue-700 bg-blue-100 border border-blue-300 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
+                            <Icon name="graphic_eq" className="text-xs" filled />
+                            Sedang diputar
+                        </span>
+                    )}
+                    {!isPlaying && isMarked && (
                         <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1">
                             <Icon name="bookmark" className="text-xs" filled />
                             Posisi Terakhir

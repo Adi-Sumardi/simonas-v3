@@ -71,7 +71,7 @@ export function QuranReader({
     const { list: surahList, loading: listLoading } = useSurahList();
     const { detail, loading: detailLoading, error } = useSurahDetail(activeSurah);
 
-    // Scroll to marked ayat when surah matches
+    // Scroll to marked ayat when surah first loads
     const containerRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
         if (!detail || activeSurah !== markedSurah) return;
@@ -80,6 +80,17 @@ export function QuranReader({
             el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 300);
     }, [detail, activeSurah, markedSurah, markedAyat]);
+
+    // Auto-scroll to currently playing ayat
+    useEffect(() => {
+        if (playingAyat === null) return;
+        // Small delay so the highlight renders first
+        const timer = setTimeout(() => {
+            const el = document.getElementById(`ayat-${playingAyat}`);
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [playingAyat]);
 
     // ── Handlers ──────────────────────────────────────────────────
 
