@@ -1,256 +1,376 @@
-import { Head, Link } from '@inertiajs/react';
-
+import { Head, router } from '@inertiajs/react';
+import { useState } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
-import { ProgressDonut } from '@/Components/ui/ProgressDonut';
-import { ProgressBar } from '@/Components/ui/ProgressBar';
-import { StatusPill, hafalanScoreVariant, hafalanScoreLabel } from '@/Components/ui/StatusPill';
 import { Icon } from '@/Components/ui/Icon';
-import { EmptyState } from '@/Components/ui/EmptyState';
-import { PageProps, HafalanData, HafalanLog } from '@/types';
+import { PageProps } from '@/types';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+type Score = 'memtas' | 'layak_ulang' | 'perlu_perbaikan' | 'pending';
+
+interface HafalanLog {
+    id: number; surah: string; ayat_start: number; ayat_end: number;
+    score: Score; notes?: string; mentor_notes?: string;
+    tested_at?: string; reviewed_at?: string;
+    mentor?: { name: string; avatar?: string };
+}
+
+interface HafalanData {
+    current_juz: number; current_ayah: number; target_juz: number;
+    streak_days: number; total_ayah: number;
+}
 
 interface HafalanPageProps extends PageProps {
     hafalan: HafalanData;
-    weekly: {
-        completed_pages: number;
-        target_pages: number;
-        percent: number;
-    };
     logs: HafalanLog[];
-    quality: {
-        mutqin_percent: number;
-        murajaah_percent: number;
-    };
-    murojaah_plan?: {
-        surah: string;
-        advice: string;
-    };
+    weekly: { completed_pages: number; target_pages: number; percent: number };
+    quality: { mutqin_percent: number; murajaah_percent: number };
 }
 
-export default function Hafalan({
-    hafalan,
-    weekly,
-    logs,
-    quality,
-    murojaah_plan,
-}: HafalanPageProps) {
-    const completedJuz = hafalan.current_juz + (hafalan.current_ayah > 0 ? 0.5 : 0);
+// ─── Score config ─────────────────────────────────────────────────────────────
+const SCORE_META: Record<Score, { label: string; color: string; bg: string; icon: string }> = {
+    memtas:          { label: 'Memtaskan',       color: 'text-emerald-700', bg: 'bg-emerald-100', icon: 'check_circle' },
+    layak_ulang:     { label: 'Layak Ulang',     color: 'text-blue-700',    bg: 'bg-blue-100',    icon: 'replay' },
+    perlu_perbaikan: { label: 'Perlu Perbaikan', color: 'text-amber-700',   bg: 'bg-amber-100',   icon: 'warning' },
+    pending:         { label: 'Menunggu Mentor', color: 'text-slate-600',   bg: 'bg-slate-100',   icon: 'schedule' },
+};
+
+// Common surah list (abridged)
+const SURAHS = [
+    'Al-Fatihah','Al-Baqarah','Ali Imran','An-Nisa','Al-Maidah','Al-Anam','Al-Araf','Al-Anfal',
+    'At-Taubah','Yunus','Hud','Yusuf','Ar-Ra\'d','Ibrahim','Al-Hijr','An-Nahl','Al-Isra',
+    'Al-Kahf','Maryam','Ta Ha','Al-Anbiya','Al-Hajj','Al-Mu\'minun','An-Nur','Al-Furqan',
+    'Ash-Shu\'ara','An-Naml','Al-Qasas','Al-Ankabut','Ar-Rum','Luqman','As-Sajdah',
+    'Al-Ahzab','Saba','Fatir','Ya-Sin','As-Saffat','Sad','Az-Zumar','Ghafir','Fussilat',
+    'Ash-Shura','Az-Zukhruf','Ad-Dukhan','Al-Jathiyah','Al-Ahqaf','Muhammad','Al-Fath',
+    'Al-Hujurat','Qaf','Adh-Dhariyat','At-Tur','An-Najm','Al-Qamar','Ar-Rahman','Al-Waqia',
+    'Al-Hadid','Al-Mujadila','Al-Hashr','Al-Mumtahanah','As-Saf','Al-Jumuah','Al-Munafiqun',
+    'At-Taghabun','At-Talaq','At-Tahrim','Al-Mulk','Al-Qalam','Al-Haqqah','Al-Maarij',
+    'Nuh','Al-Jinn','Al-Muzzammil','Al-Muddaththir','Al-Qiyamah','Al-Insan','Al-Mursalat',
+    'An-Naba','An-Naziat','Abasa','At-Takwir','Al-Infitar','Al-Mutaffifin','Al-Inshiqaq',
+    'Al-Buruj','At-Tariq','Al-Ala','Al-Ghashiyah','Al-Fajr','Al-Balad','Ash-Shams',
+    'Al-Layl','Ad-Duhaa','Ash-Sharh','At-Tin','Al-Alaq','Al-Qadr','Al-Bayyinah',
+    'Az-Zalzalah','Al-Adiyat','Al-Qariah','At-Takathur','Al-Asr','Al-Humazah','Al-Fil',
+    'Quraish','Al-Maun','Al-Kawthar','Al-Kafirun','An-Nasr','Al-Masad','Al-Ikhlas',
+    'Al-Falaq','An-Nas',
+];
+
+// ─── Log Form Modal ───────────────────────────────────────────────────────────
+function LogModal({ editItem, onClose }: { editItem: HafalanLog | null; onClose: () => void }) {
+    const [form, setForm] = useState({
+        surah:      editItem?.surah      ?? '',
+        ayat_start: editItem?.ayat_start ?? 1,
+        ayat_end:   editItem?.ayat_end   ?? 1,
+        notes:      editItem?.notes      ?? '',
+        tested_at:  editItem?.tested_at  ?? new Date().toISOString().slice(0, 10),
+    });
+    const [saving, setSaving] = useState(false);
+
+    function set(f: string, v: string | number) { setForm(p => ({ ...p, [f]: v })); }
+
+    function submit(e: React.FormEvent) {
+        e.preventDefault();
+        setSaving(true);
+        const url  = editItem ? `/mahasiswa/hafalan/log/${editItem.id}` : '/mahasiswa/hafalan/log';
+        const method = editItem ? router.put : router.post;
+        method(url, form, {
+            preserveState: true, preserveScroll: true,
+            onSuccess: () => onClose(),
+            onFinish: () => setSaving(false),
+        });
+    }
 
     return (
-        <AppLayout searchPlaceholder="Cari progress hafalan...">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-md">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-white/40">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                            <Icon name="auto_stories" className="text-emerald-600 text-xl" filled />
+                        </div>
+                        <h3 className="font-bold text-on-surface">
+                            {editItem ? 'Edit Setoran' : 'Setoran Hafalan'}
+                        </h3>
+                    </div>
+                    <button onClick={onClose} className="w-8 h-8 rounded-lg bg-surface-container hover:bg-white/80 flex items-center justify-center">
+                        <Icon name="close" className="text-on-surface-variant" />
+                    </button>
+                </div>
+
+                <form onSubmit={submit} className="px-6 py-5 space-y-4">
+                    {/* Surah */}
+                    <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Surah *</label>
+                        <select value={form.surah} onChange={e => set('surah', e.target.value)}
+                            className="glass-input w-full text-sm" required>
+                            <option value="">— Pilih Surah —</option>
+                            {SURAHS.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                    </div>
+
+                    {/* Ayat range */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Ayat Mulai *</label>
+                            <input type="number" min={1} value={form.ayat_start}
+                                onChange={e => set('ayat_start', parseInt(e.target.value))}
+                                className="glass-input w-full text-sm" required />
+                        </div>
+                        <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Ayat Selesai *</label>
+                            <input type="number" min={form.ayat_start} value={form.ayat_end}
+                                onChange={e => set('ayat_end', parseInt(e.target.value))}
+                                className="glass-input w-full text-sm" required />
+                        </div>
+                    </div>
+
+                    {/* Tanggal setoran */}
+                    <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Tanggal Setoran</label>
+                        <input type="date" value={form.tested_at}
+                            onChange={e => set('tested_at', e.target.value)}
+                            className="glass-input w-full text-sm" />
+                    </div>
+
+                    {/* Catatan */}
+                    <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Catatan untuk Mentor</label>
+                        <textarea value={form.notes} onChange={e => set('notes', e.target.value)}
+                            rows={3} className="glass-input w-full text-sm resize-none"
+                            placeholder="Ada bagian yang terasa sulit? Ceritakan di sini..." />
+                    </div>
+
+                    <p className="text-xs text-on-surface-variant bg-amber-50 px-3 py-2 rounded-xl flex items-start gap-2">
+                        <Icon name="info" className="text-amber-600 text-sm flex-shrink-0 mt-0.5" />
+                        Setoran akan dikirim ke mentor kamu untuk dinilai. Status awal: <strong>Menunggu Mentor</strong>.
+                    </p>
+
+                    <div className="flex gap-3 pt-1">
+                        <button type="button" onClick={onClose}
+                            className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-white/60 transition-colors">
+                            Batal
+                        </button>
+                        <button type="submit" disabled={saving}
+                            className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-emerald-500 text-white hover:bg-emerald-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                            <Icon name="send" className="text-base" />
+                            {saving ? 'Mengirim...' : editItem ? 'Simpan' : 'Kirim ke Mentor'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+// ─── Log Card ─────────────────────────────────────────────────────────────────
+function LogCard({ log, onEdit, onDelete }: { log: HafalanLog; onEdit: () => void; onDelete: () => void }) {
+    const meta = SCORE_META[log.score];
+    const canEdit = log.score === 'pending';
+
+    return (
+        <div className="glass-card rounded-2xl p-4 space-y-3">
+            <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                        <Icon name="auto_stories" className="text-emerald-600 text-lg" filled />
+                    </div>
+                    <div>
+                        <p className="font-bold text-on-surface text-sm">{log.surah}</p>
+                        <p className="text-xs text-on-surface-variant">Ayat {log.ayat_start}–{log.ayat_end} · {log.tested_at}</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-black flex items-center gap-1 ${meta.bg} ${meta.color}`}>
+                        <Icon name={meta.icon} className="text-xs" />
+                        {meta.label}
+                    </span>
+                    {canEdit && (
+                        <div className="flex gap-1">
+                            <button onClick={onEdit} className="w-7 h-7 rounded-lg bg-surface-container hover:bg-blue-100 hover:text-blue-600 text-on-surface-variant flex items-center justify-center transition-colors">
+                                <Icon name="edit" className="text-xs" />
+                            </button>
+                            <button onClick={onDelete} className="w-7 h-7 rounded-lg bg-surface-container hover:bg-rose-100 hover:text-rose-600 text-on-surface-variant flex items-center justify-center transition-colors">
+                                <Icon name="delete" className="text-xs" />
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {log.notes && (
+                <p className="text-xs text-on-surface-variant bg-surface-container/50 px-3 py-2 rounded-xl">
+                    <span className="font-bold">Catatan kamu:</span> {log.notes}
+                </p>
+            )}
+
+            {log.mentor_notes && (
+                <div className="flex items-start gap-2 bg-blue-50 px-3 py-2 rounded-xl">
+                    {log.mentor?.avatar
+                        ? <img src={log.mentor.avatar} alt="" className="w-5 h-5 rounded-full flex-shrink-0 mt-0.5" />
+                        : <Icon name="supervisor_account" className="text-blue-600 text-base flex-shrink-0 mt-0.5" filled />
+                    }
+                    <div>
+                        <p className="text-[10px] font-black text-blue-700">{log.mentor?.name ?? 'Mentor'} · {log.reviewed_at}</p>
+                        <p className="text-xs text-blue-800 mt-0.5">{log.mentor_notes}</p>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+export default function Hafalan({ hafalan, logs, weekly, quality }: HafalanPageProps) {
+    const [showModal, setShowModal] = useState(false);
+    const [editItem, setEditItem] = useState<HafalanLog | null>(null);
+    const [activeFilter, setFilter] = useState<Score | 'all'>('all');
+
+    function openAdd() { setEditItem(null); setShowModal(true); }
+    function openEdit(log: HafalanLog) { setEditItem(log); setShowModal(true); }
+    function closeModal() { setShowModal(false); setEditItem(null); }
+
+    function deleteLog(log: HafalanLog) {
+        if (!confirm(`Hapus setoran ${log.surah} ayat ${log.ayat_start}–${log.ayat_end}?`)) return;
+        router.delete(`/mahasiswa/hafalan/log/${log.id}`, { preserveState: true, preserveScroll: true });
+    }
+
+    const percent = Math.round(((hafalan.current_juz * 20 + hafalan.current_ayah) / 6236) * 100);
+    const filtered = activeFilter === 'all' ? logs : logs.filter(l => l.score === activeFilter);
+
+    return (
+        <AppLayout searchPlaceholder="Cari hafalan...">
             <Head title="Hafalan Qur'an" />
 
             <PageHeader
                 title="Hafalan Qur'an"
-                subtitle="Track your spiritual journey and Quranic memorization progress."
+                subtitle="Setoran & progress hafalan yang terkoneksi ke mentor."
+                breadcrumbs={[{ label: 'Beranda', href: '/mahasiswa' }, { label: 'Hafalan' }]}
+                actions={
+                    <button onClick={openAdd}
+                        className="btn-primary flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl font-bold">
+                        <Icon name="add" className="text-xl" />
+                        Setoran Baru
+                    </button>
+                }
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                {/* Main Progress Card */}
-                <div className="md:col-span-8 glass-card rounded-3xl p-8 relative overflow-hidden">
-                    {/* Background watermark icon */}
-                    <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none" aria-hidden>
-                        <Icon name="auto_stories" className="text-[120px] text-primary-container" filled />
-                    </div>
+                {/* ── Left: Stats ── */}
+                <div className="space-y-4">
 
-                    <div className="relative z-10">
-                        <div className="flex justify-between items-start mb-8">
-                            <div>
-                                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-label-caps mb-3 inline-block">
-                                    Active Journey
-                                </span>
-                                <h3 className="font-display text-headline-md text-on-surface">
-                                    Target: {hafalan.target_juz} Juz
-                                </h3>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-4xl font-black text-primary-container">
-                                    {completedJuz}{' '}
-                                    <span className="text-lg font-normal text-outline">Juz</span>
-                                </p>
-                                <p className="text-label-caps text-outline mt-1">
-                                    {hafalan.progress_percent}% Completed
-                                </p>
-                            </div>
+                    {/* Progress donut */}
+                    <div className="glass-card rounded-3xl p-6 text-center relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-6 opacity-5">
+                            <Icon name="auto_stories" className="text-[100px] text-emerald-600" filled />
                         </div>
-
-                        {/* Main progress bar */}
-                        <div className="w-full bg-surface-container h-4 rounded-full overflow-hidden mb-12">
-                            <div
-                                className="bg-primary-container h-full rounded-full transition-all duration-700"
-                                style={{ width: `${hafalan.progress_percent}%` }}
-                            />
-                        </div>
-
-                        {/* Stats 3-col */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                            <div className="bg-white/40 p-4 rounded-2xl border border-white/60">
-                                <p className="text-label-caps text-outline mb-1">Current Juz</p>
-                                <p className="text-xl font-bold text-on-surface">Juz {hafalan.current_juz}</p>
-                                <p className="text-sm text-primary-container mt-2 flex items-center gap-1">
-                                    <Icon name="trending_up" className="text-sm" /> Ar-Ra'd
-                                </p>
+                        <div className="relative">
+                            <div className="relative inline-flex items-center justify-center w-32 h-32 mx-auto">
+                                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#e2e8f0" strokeWidth="8"/>
+                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#10b981" strokeWidth="8"
+                                        strokeLinecap="round"
+                                        strokeDasharray={`${2.64 * percent} ${264 - 2.64 * percent}`}
+                                        className="transition-all duration-1000"/>
+                                </svg>
+                                <div className="absolute text-center">
+                                    <p className="text-2xl font-bold text-on-surface">{hafalan.current_juz}</p>
+                                    <p className="text-xs text-on-surface-variant">Juz</p>
+                                </div>
                             </div>
-                            <div className="bg-white/40 p-4 rounded-2xl border border-white/60">
-                                <p className="text-label-caps text-outline mb-1">Total Ayah</p>
-                                <p className="text-xl font-bold text-on-surface">
-                                    {hafalan.total_ayah.toLocaleString('id-ID')}
-                                </p>
-                                <p className="text-sm text-on-surface-variant mt-2">Hafalan Mutqin</p>
-                            </div>
-                            <div className="bg-white/40 p-4 rounded-2xl border border-white/60">
-                                <p className="text-label-caps text-outline mb-1">Streak</p>
-                                <p className="text-xl font-bold text-on-surface">{hafalan.streak_days} Days</p>
-                                <p className="text-sm text-error mt-2 flex items-center gap-1">
-                                    <Icon name="local_fire_department" className="text-sm" /> Keep going!
-                                </p>
-                            </div>
+                            <p className="font-bold text-on-surface mt-2">Progress Hafalan</p>
+                            <p className="text-xs text-on-surface-variant">{percent}% dari 30 Juz</p>
                         </div>
                     </div>
-                </div>
 
-                {/* Weekly Tasmi Goal */}
-                <div className="md:col-span-4 glass-card rounded-3xl p-8 flex flex-col items-center justify-center text-center">
-                    <ProgressDonut
-                        value={weekly.percent}
-                        size={160}
-                        label="Weekly Target"
-                        className="mb-6"
-                    />
-                    <h4 className="font-body text-title-sm font-semibold mb-2">Weekly Tasmi Goal</h4>
-                    <p className="text-sm text-on-surface-variant mb-6">
-                        You've completed {weekly.completed_pages} out of {weekly.target_pages} pages this week. Almost there!
-                    </p>
-                    <button className="text-primary-container font-bold text-sm flex items-center gap-2 hover:underline">
-                        Set New Target <Icon name="arrow_forward" className="text-sm" />
-                    </button>
-                </div>
+                    {/* Weekly target */}
+                    <div className="glass-card rounded-2xl p-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="font-bold text-on-surface text-sm">Target Minggu Ini</h3>
+                            <span className="text-xs font-black text-emerald-600">{weekly.percent}%</span>
+                        </div>
+                        <div className="h-2.5 bg-surface-container rounded-full overflow-hidden">
+                            <div className="h-full bg-emerald-500 rounded-full transition-all duration-700"
+                                style={{ width: `${weekly.percent}%` }} />
+                        </div>
+                        <p className="text-xs text-on-surface-variant mt-2">
+                            {weekly.completed_pages} / {weekly.target_pages} ayat
+                        </p>
+                    </div>
 
-                {/* Tasmi Log Table */}
-                <div className="md:col-span-12 glass-card rounded-3xl overflow-hidden">
-                    <div className="p-8 border-b border-white/40 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    {/* Quality stats */}
+                    <div className="glass-card rounded-2xl p-5 space-y-3">
+                        <h3 className="font-bold text-on-surface text-sm">Kualitas Setoran</h3>
+                        {[
+                            { label: 'Memtaskan', val: quality.mutqin_percent, color: 'bg-emerald-500' },
+                            { label: 'Layak Ulang', val: quality.murajaah_percent, color: 'bg-blue-500' },
+                        ].map(q => (
+                            <div key={q.label}>
+                                <div className="flex justify-between text-xs mb-1">
+                                    <span className="text-on-surface-variant">{q.label}</span>
+                                    <span className="font-bold text-on-surface">{q.val}%</span>
+                                </div>
+                                <div className="h-2 bg-surface-container rounded-full overflow-hidden">
+                                    <div className={`h-full ${q.color} rounded-full transition-all duration-700`}
+                                        style={{ width: `${q.val}%` }} />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Streak */}
+                    <div className="glass-card rounded-2xl p-4 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+                            <Icon name="local_fire_department" className="text-orange-600 text-xl" filled />
+                        </div>
                         <div>
-                            <h3 className="font-display text-headline-md text-on-surface">Recent Tasmi Log</h3>
-                            <p className="text-sm text-on-surface-variant">Record of your recent memorization deposits</p>
-                        </div>
-                        <div className="flex gap-2">
-                            <button className="bg-white/80 border border-outline-variant px-4 py-2 rounded-xl text-sm font-bold text-on-surface-variant hover:bg-white transition-colors">
-                                Export PDF
-                            </button>
-                            <Link
-                                href="/mahasiswa/hafalan/log/create"
-                                className="bg-primary-container text-on-primary px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-transform inline-flex items-center gap-2"
-                            >
-                                <Icon name="add" className="text-base" /> New Session
-                            </Link>
+                            <p className="text-[10px] font-black uppercase text-on-surface-variant">Streak</p>
+                            <p className="font-bold text-on-surface">{hafalan.streak_days} hari berturut-turut</p>
                         </div>
                     </div>
+                </div>
 
-                    {logs.length === 0 ? (
-                        <EmptyState
-                            icon="menu_book"
-                            title="Belum ada log tasmi"
-                            description="Tambahkan session tasmi pertamamu untuk mulai tracking hafalan."
-                            className="py-12"
-                        />
+                {/* ── Right: Log list ── */}
+                <div className="lg:col-span-2 space-y-4">
+
+                    {/* Filter tabs */}
+                    <div className="glass-card rounded-2xl p-1.5 flex gap-1 overflow-x-auto">
+                        {(['all', 'pending', 'memtas', 'layak_ulang', 'perlu_perbaikan'] as const).map(f => (
+                            <button key={f} onClick={() => setFilter(f)}
+                                className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                                    activeFilter === f
+                                        ? f === 'all' ? 'bg-on-surface text-white' : `${SCORE_META[f as Score]?.bg} ${SCORE_META[f as Score]?.color}`
+                                        : 'text-on-surface-variant hover:bg-surface-container'
+                                }`}>
+                                {f === 'all' ? `Semua (${logs.length})` : SCORE_META[f as Score].label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Log cards */}
+                    {filtered.length === 0 ? (
+                        <div className="glass-card rounded-3xl p-12 text-center text-on-surface-variant">
+                            <Icon name="auto_stories" className="text-5xl text-emerald-400 opacity-30 mb-3" filled />
+                            <p className="font-bold mb-1">Belum ada setoran</p>
+                            <p className="text-sm mb-4">Mulai kirim setoran hafalan kamu ke mentor sekarang.</p>
+                            <button onClick={openAdd}
+                                className="px-5 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold inline-flex items-center gap-2">
+                                <Icon name="add" className="text-base" /> Setoran Pertama
+                            </button>
+                        </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-blue-50/30">
-                                    <tr>
-                                        {['Date', 'Surah / Ayah', 'Mentor', 'Score', 'Status'].map((h) => (
-                                            <th key={h} className="px-8 py-4 text-label-caps text-on-surface-variant">{h}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/20">
-                                    {logs.map((log) => {
-                                        const variant = hafalanScoreVariant[log.score] ?? 'neutral';
-                                        const label = hafalanScoreLabel[log.score] ?? log.score.toUpperCase();
-                                        return (
-                                            <tr key={log.id} className="hover:bg-white/40 transition-colors">
-                                                <td className="px-8 py-6">
-                                                    <p className="font-bold text-on-surface">{log.tested_at}</p>
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="h-10 w-10 bg-primary-fixed rounded-lg flex items-center justify-center">
-                                                            <span className="text-primary-container font-bold text-sm">{log.surah.slice(0, 2)}</span>
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-bold text-on-surface">{log.surah}</p>
-                                                            <p className="text-xs text-on-surface-variant">
-                                                                Ayah {log.ayat_start} - {log.ayat_end}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <span className="text-sm font-medium text-on-surface">{log.mentor_name}</span>
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <StatusPill variant={variant}>{label}</StatusPill>
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <Icon
-                                                        name="check_circle"
-                                                        className="text-primary-container text-xl"
-                                                        filled
-                                                    />
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                        <div className="space-y-3">
+                            {filtered.map(log => (
+                                <LogCard key={log.id} log={log}
+                                    onEdit={() => openEdit(log)}
+                                    onDelete={() => deleteLog(log)} />
+                            ))}
                         </div>
                     )}
                 </div>
-
-                {/* Memorization Quality */}
-                <div className="md:col-span-6 glass-card rounded-3xl p-8">
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-12 h-12 rounded-2xl bg-[#dae2fd] flex items-center justify-center">
-                            <Icon name="assignment_turned_in" className="text-xl text-tertiary" />
-                        </div>
-                        <div>
-                            <h4 className="font-body text-title-sm font-semibold">Memorization Quality</h4>
-                            <p className="text-xs text-on-surface-variant">Stability and revision strength</p>
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                        <ProgressBar
-                            value={quality.mutqin_percent}
-                            label="Mutqin (Strong)"
-                            showValue
-                            color="success"
-                        />
-                        <ProgressBar
-                            value={quality.murajaah_percent}
-                            label="Murajaah Needed"
-                            showValue
-                            color="warning"
-                        />
-                    </div>
-                </div>
-
-                {/* Murojaah Plan */}
-                <div className="md:col-span-6 glass-card rounded-3xl p-8 flex items-center gap-6">
-                    <div className="flex-1">
-                        <h4 className="font-body text-title-sm font-semibold mb-1">Murojaah Plan</h4>
-                        <p className="text-sm text-on-surface-variant mb-4">
-                            {murojaah_plan?.advice ?? 'Focus on recent surahs to maintain strength.'}
-                        </p>
-                        <button className="bg-secondary-container text-on-secondary-container px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-secondary-container/70 transition-colors">
-                            Start Review
-                        </button>
-                    </div>
-                    <div className="w-24 h-24 rounded-full border-4 border-primary-fixed flex items-center justify-center flex-shrink-0 bg-primary-fixed/50">
-                        <Icon name="auto_stories" className="text-4xl text-primary-container" filled />
-                    </div>
-                </div>
             </div>
+
+            {showModal && <LogModal editItem={editItem} onClose={closeModal} />}
         </AppLayout>
     );
 }

@@ -1,329 +1,414 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { Icon } from '@/Components/ui/Icon';
 import { PageProps } from '@/types';
-import {
-    RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-    ResponsiveContainer, Tooltip,
-} from 'recharts';
 
-interface ProfileStats {
-    shalat_today: number;
-    shalat_streak: number;
-    hafalan_juz: number;
-    hafalan_percent: number;
-    study_hours: number;
-    points: number;
-    rank: number;
-    badges: string[];
-    completion: number;
+// ─── Types ────────────────────────────────────────────────────────────────────
+type Tipe = 'pendidikan' | 'organisasi' | 'pekerjaan' | 'penghargaan' | 'sertifikasi';
+
+interface Riwayat {
+    id: number; tipe: Tipe; judul: string; posisi?: string;
+    mulai?: string; selesai?: string; masih_berlangsung: boolean;
+    deskripsi?: string; lokasi?: string;
 }
 
-interface Activity {
-    date: string;
-    type: string;
-    desc: string;
-    points: number;
-}
+interface MentorInfo { id: number; name: string; email: string; avatar?: string; }
 
-interface RadarEntry { subject: string; value: number; fullMark: number }
-
-interface ProfileUser {
-    id: number; name: string; email: string; role: string;
-    avatar?: string; asrama?: string; nim?: string; angkatan?: string;
+interface UserInfo {
+    id: number; name: string; email: string; avatar?: string;
+    nim?: string; asrama?: string; angkatan?: string; bio?: string; no_hp?: string;
 }
 
 interface ProfileProps extends PageProps {
-    user: ProfileUser;
-    stats: ProfileStats;
-    activities: Activity[];
-    radar: RadarEntry[];
+    user: UserInfo;
+    mentor: MentorInfo | null;
+    riwayats: Record<Tipe, Riwayat[]>;
 }
 
-const ACTIVITY_ICONS: Record<string, { icon: string; color: string; bg: string }> = {
-    shalat:      { icon: 'mosque',       color: 'text-blue-600',    bg: 'bg-blue-100' },
-    hafalan:     { icon: 'auto_stories', color: 'text-emerald-600', bg: 'bg-emerald-100' },
-    akademik:    { icon: 'school',       color: 'text-amber-600',   bg: 'bg-amber-100' },
-    leadership:  { icon: 'groups',       color: 'text-rose-600',    bg: 'bg-rose-100' },
-    kreativitas: { icon: 'palette',      color: 'text-purple-600',  bg: 'bg-purple-100' },
+// ─── Constants ────────────────────────────────────────────────────────────────
+const TIPE_META: Record<Tipe, { label: string; icon: string; color: string; bg: string }> = {
+    pendidikan:  { label: 'Pendidikan',   icon: 'school',            color: 'text-blue-600',    bg: 'bg-blue-100' },
+    organisasi:  { label: 'Organisasi',   icon: 'groups',            color: 'text-purple-600',  bg: 'bg-purple-100' },
+    pekerjaan:   { label: 'Pekerjaan',    icon: 'work',              color: 'text-emerald-600', bg: 'bg-emerald-100' },
+    penghargaan: { label: 'Penghargaan',  icon: 'military_tech',     color: 'text-amber-600',   bg: 'bg-amber-100' },
+    sertifikasi: { label: 'Sertifikasi',  icon: 'verified',          color: 'text-rose-600',    bg: 'bg-rose-100' },
 };
 
-const BADGE_COLORS = [
-    'bg-gradient-to-r from-amber-400 to-orange-400 text-white',
-    'bg-gradient-to-r from-blue-500 to-indigo-500 text-white',
-    'bg-gradient-to-r from-emerald-500 to-teal-500 text-white',
-    'bg-gradient-to-r from-purple-500 to-pink-500 text-white',
-];
+const TIPES = Object.keys(TIPE_META) as Tipe[];
 
-export default function Profile({ user, stats, activities, radar }: ProfileProps) {
-    const [editing, setEditing] = useState(false);
+// ─── Empty entry factory ───────────────────────────────────────────────────────
+function newEntry(tipe: Tipe): Omit<Riwayat, 'id'> {
+    return { tipe, judul: '', posisi: '', mulai: '', selesai: '', masih_berlangsung: false, deskripsi: '', lokasi: '' };
+}
 
-    const { data, setData, put, processing, errors } = useForm({
-        name: user.name,
-        email: user.email,
-        asrama: user.asrama ?? '',
-        angkatan: user.angkatan ?? '',
-        nim: user.nim ?? '',
-    });
+// ─── Single entry form row ─────────────────────────────────────────────────────
+function EntryRow({
+    entry, idx, tipe, onChange, onRemove, showRemove,
+}: {
+    entry: Omit<Riwayat, 'id'>; idx: number; tipe: Tipe;
+    onChange: (idx: number, field: string, val: unknown) => void;
+    onRemove: (idx: number) => void; showRemove: boolean;
+}) {
+    return (
+        <div className="glass-card rounded-2xl p-5 space-y-4 relative">
+            {showRemove && (
+                <button type="button" onClick={() => onRemove(idx)}
+                    className="absolute top-3 right-3 w-7 h-7 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center hover:bg-rose-200 transition-colors">
+                    <Icon name="close" className="text-sm" />
+                </button>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">
+                        {tipe === 'pendidikan' ? 'Nama Institusi' : tipe === 'pekerjaan' ? 'Nama Perusahaan' : 'Nama Organisasi / Penghargaan'} *
+                    </label>
+                    <input value={entry.judul} onChange={e => onChange(idx, 'judul', e.target.value)}
+                        className="glass-input w-full text-sm" placeholder="Contoh: Universitas Indonesia" required />
+                </div>
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">
+                        {tipe === 'pendidikan' ? 'Program Studi / Gelar' : tipe === 'pekerjaan' ? 'Jabatan' : 'Posisi / Peran'}
+                    </label>
+                    <input value={entry.posisi ?? ''} onChange={e => onChange(idx, 'posisi', e.target.value)}
+                        className="glass-input w-full text-sm" placeholder="Contoh: S1 Teknik Informatika" />
+                </div>
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Mulai</label>
+                    <input type="month" value={entry.mulai ?? ''} onChange={e => onChange(idx, 'mulai', e.target.value)}
+                        className="glass-input w-full text-sm" />
+                </div>
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Selesai</label>
+                    <input type="month" value={entry.selesai ?? ''} onChange={e => onChange(idx, 'selesai', e.target.value)}
+                        disabled={entry.masih_berlangsung} className="glass-input w-full text-sm disabled:opacity-40" />
+                    <label className="flex items-center gap-2 mt-2 cursor-pointer text-xs text-on-surface-variant">
+                        <input type="checkbox" checked={entry.masih_berlangsung}
+                            onChange={e => onChange(idx, 'masih_berlangsung', e.target.checked)}
+                            className="rounded" />
+                        Masih berlangsung
+                    </label>
+                </div>
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Lokasi</label>
+                    <input value={entry.lokasi ?? ''} onChange={e => onChange(idx, 'lokasi', e.target.value)}
+                        className="glass-input w-full text-sm" placeholder="Kota, Negara" />
+                </div>
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Deskripsi</label>
+                    <textarea value={entry.deskripsi ?? ''} onChange={e => onChange(idx, 'deskripsi', e.target.value)}
+                        rows={2} className="glass-input w-full text-sm resize-none" placeholder="Catatan singkat..." />
+                </div>
+            </div>
+        </div>
+    );
+}
 
-    function initials(name: string) {
-        return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+// ─── Add/Edit Modal ────────────────────────────────────────────────────────────
+function RiwayatModal({
+    tipe, editItem, onClose,
+}: { tipe: Tipe; editItem: Riwayat | null; onClose: () => void }) {
+    const [entries, setEntries] = useState<Omit<Riwayat, 'id'>[]>(
+        editItem ? [{ ...editItem }] : [newEntry(tipe)]
+    );
+    const [saving, setSaving] = useState(false);
+
+    function change(idx: number, field: string, val: unknown) {
+        setEntries(prev => prev.map((e, i) => i === idx ? { ...e, [field]: val } : e));
+    }
+    function addRow() { setEntries(prev => [...prev, newEntry(tipe)]); }
+    function removeRow(idx: number) { setEntries(prev => prev.filter((_, i) => i !== idx)); }
+
+    function submit(e: React.FormEvent) {
+        e.preventDefault();
+        setSaving(true);
+        if (editItem) {
+            router.put(`/mahasiswa/profil/riwayat/${editItem.id}`, entries[0], {
+                preserveState: true, preserveScroll: true,
+                onFinish: () => { setSaving(false); onClose(); },
+            });
+        } else {
+            router.post('/mahasiswa/profil/riwayat', { entries }, {
+                preserveState: true, preserveScroll: true,
+                onFinish: () => { setSaving(false); onClose(); },
+            });
+        }
     }
 
-    function handleSave() {
-        put('/mahasiswa/profil', { onSuccess: () => setEditing(false) });
-    }
+    const meta = TIPE_META[tipe];
 
     return (
-        <AppLayout searchPlaceholder="Cari aktivitas...">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-5 border-b border-white/40">
+                    <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${meta.bg}`}>
+                            <Icon name={meta.icon} className={`text-xl ${meta.color}`} filled />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-on-surface">
+                                {editItem ? 'Edit' : 'Tambah'} {meta.label}
+                            </h3>
+                            {!editItem && (
+                                <p className="text-xs text-on-surface-variant">Bisa tambahkan lebih dari satu sekaligus</p>
+                            )}
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="w-8 h-8 rounded-lg bg-surface-container hover:bg-white/80 flex items-center justify-center">
+                        <Icon name="close" className="text-on-surface-variant" />
+                    </button>
+                </div>
+
+                {/* Body */}
+                <form onSubmit={submit} className="px-6 py-5 space-y-4">
+                    {entries.map((entry, idx) => (
+                        <EntryRow key={idx} entry={entry} idx={idx} tipe={tipe}
+                            onChange={change} onRemove={removeRow} showRemove={entries.length > 1} />
+                    ))}
+
+                    {/* Add more button (only for new entries) */}
+                    {!editItem && (
+                        <button type="button" onClick={addRow}
+                            className="w-full py-3 rounded-2xl border-2 border-dashed border-outline-variant text-on-surface-variant text-sm font-bold flex items-center justify-center gap-2 hover:border-primary-container hover:text-primary-container transition-colors">
+                            <Icon name="add_circle" className="text-xl" />
+                            Tambah {meta.label} Lagi
+                        </button>
+                    )}
+
+                    <div className="flex gap-3 pt-2">
+                        <button type="button" onClick={onClose}
+                            className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-white/60 transition-colors">
+                            Batal
+                        </button>
+                        <button type="submit" disabled={saving}
+                            className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-primary-container text-white hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2">
+                            <Icon name="save" className="text-base" />
+                            {saving ? 'Menyimpan...' : editItem ? 'Simpan Perubahan' : `Simpan ${entries.length > 1 ? `(${entries.length})` : ''}`}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+// ─── Riwayat Card ──────────────────────────────────────────────────────────────
+function RiwayatCard({ item, onEdit, onDelete }: { item: Riwayat; onEdit: () => void; onDelete: () => void }) {
+    const meta = TIPE_META[item.tipe];
+    return (
+        <div className="glass-card rounded-2xl p-4 flex gap-4 items-start hover:shadow-md transition-shadow">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${meta.bg}`}>
+                <Icon name={meta.icon} className={`text-lg ${meta.color}`} filled />
+            </div>
+            <div className="flex-1 min-w-0">
+                <p className="font-bold text-on-surface text-sm">{item.judul}</p>
+                {item.posisi && <p className="text-xs text-on-surface-variant">{item.posisi}</p>}
+                <p className="text-[11px] text-outline mt-0.5">
+                    {item.mulai ?? '?'} → {item.masih_berlangsung ? 'Sekarang' : (item.selesai ?? '?')}
+                    {item.lokasi && ` · ${item.lokasi}`}
+                </p>
+                {item.deskripsi && <p className="text-xs text-on-surface-variant mt-1 line-clamp-2">{item.deskripsi}</p>}
+            </div>
+            <div className="flex gap-1 flex-shrink-0">
+                <button onClick={onEdit} className="w-8 h-8 rounded-lg bg-surface-container hover:bg-blue-100 hover:text-blue-600 text-on-surface-variant flex items-center justify-center transition-colors">
+                    <Icon name="edit" className="text-sm" />
+                </button>
+                <button onClick={onDelete} className="w-8 h-8 rounded-lg bg-surface-container hover:bg-rose-100 hover:text-rose-600 text-on-surface-variant flex items-center justify-center transition-colors">
+                    <Icon name="delete" className="text-sm" />
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// ─── Main Component ────────────────────────────────────────────────────────────
+export default function Profile({ user, mentor, riwayats }: ProfileProps) {
+    const [activeTab, setActiveTab] = useState<Tipe>('pendidikan');
+    const [modalTipe, setModalTipe] = useState<Tipe | null>(null);
+    const [editItem, setEditItem] = useState<Riwayat | null>(null);
+    const [editBio, setEditBio] = useState(false);
+    const [bioVal, setBioVal] = useState(user.bio ?? '');
+
+    function openAdd(tipe: Tipe) { setModalTipe(tipe); setEditItem(null); }
+    function openEdit(item: Riwayat) { setModalTipe(item.tipe); setEditItem(item); }
+    function closeModal() { setModalTipe(null); setEditItem(null); }
+
+    function deleteRiwayat(id: number) {
+        if (!confirm('Hapus riwayat ini?')) return;
+        router.delete(`/mahasiswa/profil/riwayat/${id}`, { preserveState: true, preserveScroll: true });
+    }
+
+    function saveBio() {
+        router.put('/mahasiswa/profil', { name: user.name, bio: bioVal, no_hp: user.no_hp, angkatan: user.angkatan }, {
+            preserveState: true, preserveScroll: true,
+            onSuccess: () => setEditBio(false),
+        });
+    }
+
+    const currentItems: Riwayat[] = riwayats[activeTab] ?? [];
+
+    return (
+        <AppLayout searchPlaceholder="Cari profil...">
             <Head title="Profil Saya" />
 
             <PageHeader
                 title="Profil Saya"
-                subtitle="Lihat dan kelola informasi pribadi, pencapaian, dan perkembangan kamu"
-                breadcrumbs={[
-                    { label: 'Dashboard', href: '/dashboard' },
-                    { label: 'Profil' },
-                ]}
+                subtitle="Kelola informasi pribadi dan riwayat kamu."
+                breadcrumbs={[{ label: 'Beranda', href: '/mahasiswa' }, { label: 'Profil' }]}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                {/* ── Left Column: Avatar + Info ── */}
+                {/* ── Left: Profile card + Mentor ── */}
                 <div className="space-y-5">
 
-                    {/* Profile Card */}
-                    <div className="glass-card rounded-2xl overflow-hidden">
-                        {/* Cover gradient */}
-                        <div className="h-24 bg-gradient-to-br from-primary-container via-blue-500 to-indigo-600 relative">
-                            <div className="absolute inset-0 opacity-20"
-                                style={{ backgroundImage: 'radial-gradient(circle at 30% 50%, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+                    {/* Avatar + Info */}
+                    <div className="glass-card rounded-3xl p-6 text-center space-y-4">
+                        <div className="relative inline-block">
+                            <div className="w-24 h-24 rounded-full overflow-hidden bg-primary-fixed mx-auto ring-4 ring-white/60">
+                                {user.avatar
+                                    ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                    : <div className="w-full h-full flex items-center justify-center">
+                                        <Icon name="person" className="text-4xl text-primary-container" filled />
+                                      </div>
+                                }
+                            </div>
+                        </div>
+                        <div>
+                            <h2 className="font-display font-bold text-xl text-on-surface">{user.name}</h2>
+                            <p className="text-sm text-on-surface-variant">{user.email}</p>
+                            {user.nim && <p className="text-xs font-bold text-primary-container mt-1">NIM: {user.nim}</p>}
                         </div>
 
-                        <div className="px-6 pb-6">
-                            {/* Avatar */}
-                            <div className="relative -mt-10 mb-4 w-fit">
-                                <div className="w-20 h-20 rounded-2xl border-4 border-white shadow-lg overflow-hidden bg-primary-container flex items-center justify-center">
-                                    {user.avatar ? (
-                                        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <span className="text-2xl font-black text-white">{initials(user.name)}</span>
-                                    )}
-                                </div>
-                                <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary-container rounded-full flex items-center justify-center cursor-pointer shadow-md hover:scale-110 transition-transform">
-                                    <Icon name="photo_camera" className="text-sm text-white" />
-                                    <input type="file" accept="image/*" className="hidden"
-                                        onChange={e => {
-                                            if (e.target.files?.[0]) {
-                                                const fd = new FormData();
-                                                fd.append('avatar', e.target.files[0]);
-                                                fetch('/mahasiswa/profil/avatar', { method: 'POST', body: fd, headers: { 'X-CSRF-TOKEN': document.querySelector<HTMLMetaElement>('meta[name=csrf-token]')!.content } })
-                                                    .then(() => window.location.reload());
-                                            }
-                                        }}
-                                    />
-                                </label>
-                            </div>
+                        {/* Stats pills */}
+                        <div className="flex flex-wrap gap-2 justify-center text-xs">
+                            {user.asrama && (
+                                <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center gap-1">
+                                    <Icon name="home" className="text-sm" /> {user.asrama}
+                                </span>
+                            )}
+                            {user.angkatan && (
+                                <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-700 font-bold flex items-center gap-1">
+                                    <Icon name="calendar_today" className="text-sm" /> {user.angkatan}
+                                </span>
+                            )}
+                        </div>
 
-                            {/* Name + Role */}
-                            <h2 className="font-display text-xl font-bold text-on-surface">{user.name}</h2>
-                            <p className="text-xs text-on-surface-variant mt-0.5 capitalize">{user.role} · {user.asrama ?? 'Asrama -'}</p>
-
-                            {/* Profile completion */}
-                            <div className="mt-4">
-                                <div className="flex justify-between text-xs mb-1.5">
-                                    <span className="font-semibold text-on-surface-variant">Kelengkapan Profil</span>
-                                    <span className="font-black text-primary-container">{stats.completion}%</span>
+                        {/* Bio */}
+                        <div className="text-left">
+                            {editBio ? (
+                                <div className="space-y-2">
+                                    <textarea value={bioVal} onChange={e => setBioVal(e.target.value)}
+                                        rows={3} className="glass-input w-full text-sm resize-none" placeholder="Tulis bio singkat..." />
+                                    <div className="flex gap-2">
+                                        <button onClick={() => setEditBio(false)} className="flex-1 py-1.5 rounded-xl text-xs font-bold bg-surface-container text-on-surface-variant">Batal</button>
+                                        <button onClick={saveBio} className="flex-1 py-1.5 rounded-xl text-xs font-bold bg-primary-container text-white">Simpan</button>
+                                    </div>
                                 </div>
-                                <div className="h-2 bg-surface-container rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-primary-container to-blue-400 rounded-full transition-all duration-700"
-                                        style={{ width: `${stats.completion}%` }}
-                                    />
+                            ) : (
+                                <div className="flex items-start justify-between gap-2">
+                                    <p className="text-sm text-on-surface-variant leading-relaxed flex-1">
+                                        {user.bio || <span className="italic opacity-60">Belum ada bio</span>}
+                                    </p>
+                                    <button onClick={() => setEditBio(true)} className="flex-shrink-0 p-1 rounded-lg hover:bg-surface-container text-on-surface-variant transition-colors">
+                                        <Icon name="edit" className="text-sm" />
+                                    </button>
                                 </div>
-                            </div>
-
-                            {/* Edit button */}
-                            <button
-                                onClick={() => setEditing(!editing)}
-                                className={`w-full mt-4 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                    editing ? 'bg-surface-container text-on-surface-variant' : 'btn-primary'
-                                }`}
-                            >
-                                <Icon name={editing ? 'close' : 'edit'} className="text-base" />
-                                {editing ? 'Batal Edit' : 'Edit Profil'}
-                            </button>
+                            )}
                         </div>
                     </div>
 
-                    {/* Edit Form */}
-                    {editing && (
-                        <div className="glass-card rounded-2xl p-5 space-y-4">
-                            <h3 className="font-bold text-on-surface">Edit Informasi</h3>
-                            {[
-                                { label: 'Nama Lengkap', key: 'name', type: 'text' },
-                                { label: 'Email', key: 'email', type: 'email' },
-                                { label: 'NIM', key: 'nim', type: 'text' },
-                                { label: 'Asrama', key: 'asrama', type: 'text' },
-                                { label: 'Angkatan', key: 'angkatan', type: 'text' },
-                            ].map(f => (
-                                <div key={f.key}>
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1">{f.label}</label>
-                                    <input
-                                        type={f.type}
-                                        value={data[f.key as keyof typeof data]}
-                                        onChange={e => setData(f.key as keyof typeof data, e.target.value)}
-                                        className="glass-input w-full text-sm"
-                                    />
-                                    {errors[f.key as keyof typeof errors] && (
-                                        <p className="text-xs text-error mt-1">{errors[f.key as keyof typeof errors]}</p>
-                                    )}
+                    {/* Mentor Card */}
+                    <div className="glass-card rounded-3xl p-5">
+                        <h3 className="font-bold text-on-surface mb-3 flex items-center gap-2 text-sm">
+                            <Icon name="supervisor_account" className="text-purple-600 text-lg" filled />
+                            Mentor Saya
+                        </h3>
+                        {mentor ? (
+                            <div className="flex items-center gap-3">
+                                <div className="w-11 h-11 rounded-xl overflow-hidden bg-purple-100 flex-shrink-0">
+                                    {mentor.avatar
+                                        ? <img src={mentor.avatar} alt={mentor.name} className="w-full h-full object-cover" />
+                                        : <div className="w-full h-full flex items-center justify-center">
+                                            <Icon name="person" className="text-2xl text-purple-600" filled />
+                                          </div>
+                                    }
                                 </div>
-                            ))}
-                            <button
-                                onClick={handleSave}
-                                disabled={processing}
-                                className="w-full py-2.5 bg-primary-container text-on-primary rounded-xl text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
-                            >
-                                {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
-                            </button>
-                        </div>
-                    )}
-
-                    {/* Info Card */}
-                    <div className="glass-card rounded-2xl p-5 space-y-3">
-                        <h3 className="font-bold text-on-surface text-sm">Informasi Akademik</h3>
-                        {[
-                            { icon: 'badge',       label: 'NIM',      value: user.nim ?? '-' },
-                            { icon: 'apartment',   label: 'Asrama',   value: user.asrama ?? '-' },
-                            { icon: 'school',      label: 'Angkatan', value: user.angkatan ?? '-' },
-                            { icon: 'email',       label: 'Email',    value: user.email },
-                        ].map(item => (
-                            <div key={item.label} className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center flex-shrink-0">
-                                    <Icon name={item.icon} className="text-sm text-on-surface-variant" />
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">{item.label}</p>
-                                    <p className="text-sm font-semibold text-on-surface truncate">{item.value}</p>
+                                <div>
+                                    <p className="font-bold text-on-surface text-sm">{mentor.name}</p>
+                                    <p className="text-xs text-on-surface-variant">{mentor.email}</p>
                                 </div>
                             </div>
-                        ))}
+                        ) : (
+                            <div className="flex items-center gap-3 text-on-surface-variant">
+                                <div className="w-11 h-11 rounded-xl bg-surface-container flex items-center justify-center">
+                                    <Icon name="person_off" className="text-xl" />
+                                </div>
+                                <p className="text-sm">Belum ditugaskan mentor</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* ── Right Column: Stats + Radar + Feed ── */}
-                <div className="lg:col-span-2 space-y-6">
+                {/* ── Right: Riwayat ── */}
+                <div className="lg:col-span-2 space-y-5">
 
-                    {/* Stats row */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        {[
-                            { icon: 'military_tech', label: 'Poin', value: stats.points.toLocaleString(), color: 'bg-amber-100 text-amber-600' },
-                            { icon: 'leaderboard',   label: 'Rank',  value: `#${stats.rank}`,             color: 'bg-blue-100 text-blue-600' },
-                            { icon: 'auto_stories',  label: 'Juz',   value: `${stats.hafalan_juz} Juz`,   color: 'bg-emerald-100 text-emerald-600' },
-                            { icon: 'local_fire_department', label: 'Streak', value: `${stats.shalat_streak}hr`, color: 'bg-rose-100 text-rose-600' },
-                        ].map(s => (
-                            <div key={s.label} className="glass-card rounded-2xl p-4 flex flex-col gap-3 items-start h-full">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.color}`}>
-                                    <Icon name={s.icon} className="text-xl" filled />
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{s.label}</p>
-                                    <p className="font-display text-xl font-bold text-on-surface">{s.value}</p>
-                                </div>
-                            </div>
-                        ))}
+                    {/* Tab nav */}
+                    <div className="glass-card rounded-2xl p-2 flex gap-1 overflow-x-auto">
+                        {TIPES.map(tipe => {
+                            const meta = TIPE_META[tipe];
+                            const count = (riwayats[tipe] ?? []).length;
+                            return (
+                                <button key={tipe} onClick={() => setActiveTab(tipe)}
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex-shrink-0 ${
+                                        activeTab === tipe
+                                            ? `${meta.bg} ${meta.color}`
+                                            : 'text-on-surface-variant hover:bg-surface-container'
+                                    }`}>
+                                    <Icon name={meta.icon} className="text-base" filled={activeTab === tipe} />
+                                    {meta.label}
+                                    {count > 0 && (
+                                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === tipe ? 'bg-white/60' : 'bg-surface-container'}`}>
+                                            {count}
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
 
-                    {/* Badges */}
-                    <div className="glass-card rounded-2xl p-5">
-                        <h3 className="font-bold text-on-surface mb-3 flex items-center gap-2">
-                            <Icon name="workspace_premium" className="text-amber-500 text-xl" filled />
-                            Pencapaian & Badge
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                            {stats.badges.map((b, i) => (
-                                <span key={b} className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${BADGE_COLORS[i % BADGE_COLORS.length]}`}>
-                                    ✦ {b}
-                                </span>
-                            ))}
-                            <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-surface-container text-on-surface-variant border border-dashed border-outline-variant">
-                                + Kumpulkan lebih banyak
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Radar + Activity side by side */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Radar */}
-                        <div className="glass-card rounded-2xl p-5">
-                            <h3 className="font-bold text-on-surface mb-1">Radar Kompetensi</h3>
-                            <p className="text-xs text-on-surface-variant mb-4">Perkembangan 6 dimensi minggu ini</p>
-                            <ResponsiveContainer width="100%" height={220}>
-                                <RadarChart data={radar} margin={{ top: 5, right: 20, bottom: 5, left: 20 }}>
-                                    <PolarGrid stroke="#e2e8f0" />
-                                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fontWeight: 700, fill: '#64748b' }} />
-                                    <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-                                    <Radar dataKey="value" stroke="#2563eb" fill="#2563eb" fillOpacity={0.2} strokeWidth={2.5}
-                                        dot={{ r: 3, fill: '#2563eb', strokeWidth: 0 }} />
-                                    <Tooltip formatter={(v) => [`${v}/100`]} contentStyle={{ borderRadius: 12, fontSize: 11 }} />
-                                </RadarChart>
-                            </ResponsiveContainer>
-                            <div className="grid grid-cols-3 gap-2 mt-3">
-                                {radar.map(r => (
-                                    <div key={r.subject} className="text-center">
-                                        <p className="text-[10px] font-black uppercase text-on-surface-variant">{r.subject.slice(0,4)}</p>
-                                        <p className="text-sm font-bold text-primary-container">{r.value}</p>
-                                    </div>
-                                ))}
+                    {/* Content */}
+                    <div className="space-y-3">
+                        {currentItems.length === 0 ? (
+                            <div className="glass-card rounded-2xl p-10 text-center text-on-surface-variant">
+                                <Icon name={TIPE_META[activeTab].icon} className={`text-5xl ${TIPE_META[activeTab].color} mb-3 opacity-40`} filled />
+                                <p className="font-bold mb-1">Belum ada {TIPE_META[activeTab].label}</p>
+                                <p className="text-sm">Tambahkan riwayat {TIPE_META[activeTab].label.toLowerCase()} kamu.</p>
                             </div>
-                        </div>
+                        ) : (
+                            currentItems.map(item => (
+                                <RiwayatCard key={item.id} item={item}
+                                    onEdit={() => openEdit(item)}
+                                    onDelete={() => deleteRiwayat(item.id)} />
+                            ))
+                        )}
 
-                        {/* Activity Feed */}
-                        <div className="glass-card rounded-2xl p-5">
-                            <h3 className="font-bold text-on-surface mb-4">Aktivitas Terbaru</h3>
-                            <div className="space-y-3">
-                                {activities.map((a, i) => {
-                                    const meta = ACTIVITY_ICONS[a.type] ?? { icon: 'event', color: 'text-slate-600', bg: 'bg-slate-100' };
-                                    return (
-                                        <div key={i} className="flex items-center gap-3">
-                                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${meta.bg}`}>
-                                                <Icon name={meta.icon} className={`text-base ${meta.color}`} filled />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-semibold text-on-surface line-clamp-1">{a.desc}</p>
-                                                <p className="text-[10px] text-on-surface-variant">{a.date}</p>
-                                            </div>
-                                            <span className="text-xs font-black text-emerald-600 flex-shrink-0">+{a.points}</span>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Hafalan Progress Bar */}
-                    <div className="glass-card rounded-2xl p-5">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold text-on-surface">Progress Hafalan Al-Qur'an</h3>
-                            <span className="text-sm font-black text-primary-container">{stats.hafalan_percent}% · Juz {stats.hafalan_juz}</span>
-                        </div>
-                        <div className="relative h-6 bg-surface-container rounded-full overflow-hidden">
-                            <div
-                                className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 transition-all duration-1000 flex items-center justify-end pr-3"
-                                style={{ width: `${stats.hafalan_percent}%` }}
-                            >
-                                <span className="text-[10px] font-black text-white">{stats.hafalan_percent}%</span>
-                            </div>
-                        </div>
-                        <div className="flex justify-between mt-2 text-[10px] text-on-surface-variant font-bold">
-                            <span>Juz 1</span><span>Juz {stats.hafalan_juz} (Saat ini)</span><span>Juz 30</span>
-                        </div>
+                        {/* Add button */}
+                        <button onClick={() => openAdd(activeTab)}
+                            className={`w-full py-3 rounded-2xl border-2 border-dashed text-sm font-bold flex items-center justify-center gap-2 transition-colors border-outline-variant text-on-surface-variant hover:border-primary-container hover:text-primary-container`}>
+                            <Icon name="add_circle" className="text-xl" />
+                            Tambah {TIPE_META[activeTab].label}
+                        </button>
                     </div>
                 </div>
             </div>
+
+            {/* Modal */}
+            {modalTipe && (
+                <RiwayatModal tipe={modalTipe} editItem={editItem} onClose={closeModal} />
+            )}
         </AppLayout>
     );
 }

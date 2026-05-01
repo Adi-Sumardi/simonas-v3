@@ -38,21 +38,35 @@ Route::middleware('auth')->group(function () {
 
     // ── Mahasiswa (permission-gated) ──────────────────────────
     Route::middleware('can:access-mahasiswa')->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
-        Route::get('/aktivitas',          [AktivitasController::class,  'index'])->name('aktivitas.index');
-        Route::get('/aktivitas/create',   [AktivitasController::class,  'create'])->name('aktivitas.create');
-        Route::post('/aktivitas',         [AktivitasController::class,  'store'])->name('aktivitas.store');
 
-        Route::get('/hafalan',            [MahasiswaHafalan::class,     'index'])->name('hafalan.index');
-        Route::get('/hafalan/log/create', [MahasiswaHafalan::class,     'createLog'])->name('hafalan.log.create');
-        Route::post('/hafalan/log',       [MahasiswaHafalan::class,     'storeLog'])->name('hafalan.log.store');
+        // ── Aktivitas CRUD ──────────────────────────────────────
+        Route::get('/aktivitas',                [AktivitasController::class,  'index']) ->name('aktivitas.index');
+        Route::post('/aktivitas',               [AktivitasController::class,  'store']) ->name('aktivitas.store');
+        Route::put('/aktivitas/{id}',           [AktivitasController::class,  'update'])->name('aktivitas.update');
+        Route::delete('/aktivitas/{id}',        [AktivitasController::class,  'destroy'])->name('aktivitas.destroy');
 
-        Route::get('/leaderboard',        [LeaderboardController::class,'index'])->name('leaderboard.index');
+        // ── Hafalan CRUD ─────────────────────────────────────────
+        Route::get('/hafalan',                  [MahasiswaHafalan::class, 'index'])     ->name('hafalan.index');
+        Route::post('/hafalan/log',             [MahasiswaHafalan::class, 'storeLog'])  ->name('hafalan.log.store');
+        Route::put('/hafalan/log/{log}',        [MahasiswaHafalan::class, 'updateLog']) ->name('hafalan.log.update');
+        Route::delete('/hafalan/log/{log}',     [MahasiswaHafalan::class, 'destroyLog'])->name('hafalan.log.destroy');
 
-        // Profile & Calendar
-        Route::get('/profil',             [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'index'])->name('profil.index');
-        Route::put('/profil',             [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'update'])->name('profil.update');
-        Route::post('/profil/avatar',     [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'updateAvatar'])->name('profil.avatar');
-        Route::get('/kalender',           [\App\Http\Controllers\Web\Mahasiswa\KalenderController::class, 'index'])->name('kalender.index');
+        // ── Leaderboard ──────────────────────────────────────────
+        Route::get('/leaderboard',              [LeaderboardController::class, 'index'])->name('leaderboard.index');
+
+        // ── Profil + Riwayat CRUD ────────────────────────────────
+        Route::get('/profil',                   [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'index'])         ->name('profil.index');
+        Route::put('/profil',                   [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'update'])        ->name('profil.update');
+        Route::post('/profil/avatar',           [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'updateAvatar'])  ->name('profil.avatar');
+        Route::post('/profil/riwayat',          [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'storeRiwayat']) ->name('profil.riwayat.store');
+        Route::put('/profil/riwayat/{riwayat}', [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'updateRiwayat'])->name('profil.riwayat.update');
+        Route::delete('/profil/riwayat/{riwayat}',[\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'destroyRiwayat'])->name('profil.riwayat.destroy');
+
+        // ── Kalender CRUD ────────────────────────────────────────
+        Route::get('/kalender',                 [\App\Http\Controllers\Web\Mahasiswa\MahasiswaKalenderController::class, 'index']) ->name('kalender.index');
+        Route::post('/kalender',                [\App\Http\Controllers\Web\Mahasiswa\MahasiswaKalenderController::class, 'store']) ->name('kalender.store');
+        Route::put('/kalender/{event}',         [\App\Http\Controllers\Web\Mahasiswa\MahasiswaKalenderController::class, 'update'])->name('kalender.update');
+        Route::delete('/kalender/{event}',      [\App\Http\Controllers\Web\Mahasiswa\MahasiswaKalenderController::class, 'destroy'])->name('kalender.destroy');
     });
 
     // ── Mentor (permission-gated) ─────────────────────────────

@@ -3,75 +3,141 @@
 namespace App\Http\Controllers\Web\Mahasiswa;
 
 use App\Http\Controllers\Controller;
+use App\Models\ProfilRiwayat;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class ProfileController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $user = $request->user();
+        /** @var User $user */
+        $user = Auth::user();
 
-        // Sample hafalan + activity stats — replace with real queries
-        $stats = [
-            'shalat_today'    => 4,
-            'shalat_streak'   => 21,
-            'hafalan_juz'     => 12,
-            'hafalan_percent' => 24,
-            'study_hours'     => 3.5,
-            'points'          => 1420,
-            'rank'            => 7,
-            'badges'          => ['Hafidz Muda', 'Study Warrior', 'Prayer Champion'],
-            'completion'      => 78,  // profile completion %
-        ];
+        $mentor = $user->mentor_id
+            ? User::select('id', 'name', 'email', 'avatar')->find($user->mentor_id)
+            : null;
 
-        $activities = [
-            ['date' => now()->subDays(0)->format('Y-m-d'), 'type' => 'shalat',   'desc' => 'Shalat Isya berjamaah',         'points' => 10],
-            ['date' => now()->subDays(0)->format('Y-m-d'), 'type' => 'hafalan',  'desc' => 'Setoran Surah Al-Mulk',          'points' => 25],
-            ['date' => now()->subDays(1)->format('Y-m-d'), 'type' => 'akademik', 'desc' => 'Belajar Aljabar Linear 3 jam',   'points' => 15],
-            ['date' => now()->subDays(1)->format('Y-m-d'), 'type' => 'leadership','desc' => 'Rapat OSIS — Ketua Seksi',       'points' => 20],
-            ['date' => now()->subDays(2)->format('Y-m-d'), 'type' => 'shalat',   'desc' => 'Shalat Subuh berjamaah',         'points' => 10],
-            ['date' => now()->subDays(3)->format('Y-m-d'), 'type' => 'kreativitas','desc' => 'Seminar Kewirausahaan',         'points' => 30],
-        ];
-
-        // Weekly radar scores
-        $radar = [
-            ['subject' => 'Shalat',       'value' => 88, 'fullMark' => 100],
-            ['subject' => 'Akademik',     'value' => 82, 'fullMark' => 100],
-            ['subject' => 'Hafalan',      'value' => 75, 'fullMark' => 100],
-            ['subject' => 'Kepemimpinan', 'value' => 70, 'fullMark' => 100],
-            ['subject' => 'Karakter',     'value' => 85, 'fullMark' => 100],
-            ['subject' => 'Kreativitas',  'value' => 72, 'fullMark' => 100],
-        ];
+        $riwayats = ProfilRiwayat::where('user_id', $user->id)
+            ->orderBy('mulai', 'desc')
+            ->get()
+            ->groupBy('tipe')
+            ->map(fn($items) => $items->map(fn($r) => [
+                'id'                => $r->id,
+                'tipe'              => $r->tipe,
+                'judul'             => $r->judul,
+                'posisi'            => $r->posisi,
+                'mulai'             => $r->mulai?->format('Y-m'),
+                'selesai'           => $r->selesai?->format('Y-m'),
+                'masih_berlangsung' => $r->masih_berlangsung,
+                'deskripsi'         => $r->deskripsi,
+                'lokasi'            => $r->lokasi,
+            ])->values());
 
         return Inertia::render('Mahasiswa/Profile', [
-            'user'       => $user->only('id', 'name', 'email', 'role', 'avatar', 'asrama', 'nim', 'angkatan'),
-            'stats'      => $stats,
-            'activities' => $activities,
-            'radar'      => $radar,
+            'user'     => [
+                'id'       => $user->id,
+                'name'     => $user->name,
+                'email'    => $user->email,
+                'avatar'   => $user->avatar,
+                'nim'      => $user->nim,
+                'asrama'   => $user->asrama,
+                'angkatan' => $user->angkatan,
+                'bio'      => $user->bio,
+                'no_hp'    => $user->no_hp,
+            ],
+            'mentor'   => $mentor,
+            'riwayats' => $riwayats,
         ]);
     }
 
     public function update(Request $request)
     {
-        $validated = $request->validate([
-            'name'    => 'required|string|max:255',
-            'email'   => 'required|email|unique:users,email,' . $request->user()->id,
-            'asrama'  => 'nullable|string|max:100',
-            'angkatan'=> 'nullable|string|max:10',
-            'nim'     => 'nullable|string|max:30',
+        $data = $request->validate([
+            'name'     => 'required|string|max:255',
+            'bio'      => 'nullable|string|max:500',
+            'no_hp'    => 'nullable|string|max:20',
+            'angkatan' => 'nullable|string|max:10',
         ]);
 
-        $request->user()->update($validated);
+        Auth::user()->update($data);
 
         return back()->with('success', 'Profil berhasil diperbarui.');
     }
 
-    public function updateAvatar(Request $request)
+    // ── Riwayat CRUD ──────────────────────────────────────────────
+
+    public function storeRiwayat(Request $request)
     {
-        $request->validate(['avatar' => 'required|image|max:2048']);
-        $path = $request->file('avatar')->store('avatars', 'public');
-        $request->user()->update(['avatar' => '/storage/' . $path]);
-        return back()->with('success', 'Foto profil diperbarui.');
+        // Support both single entry and array batch
+        $entries = $request->input('entries');
+
+        if ($entries && is_array($entries)) {
+            // Batch insert
+            $rules = [
+                'entries'                      => 'required|array|min:1',
+                'entries.*.tipe'               => 'required|in:pendidikan,organisasi,pekerjaan,penghargaan,sertifikasi',
+                'entries.*.judul'              => 'required|string|max:255',
+                'entries.*.posisi'             => 'nullable|string|max:255',
+                'entries.*.mulai'              => 'nullable|date',
+                'entries.*.selesai'            => 'nullable|date',
+                'entries.*.masih_berlangsung'  => 'boolean',
+                'entries.*.deskripsi'          => 'nullable|string|max:1000',
+                'entries.*.lokasi'             => 'nullable|string|max:255',
+            ];
+            $validated = $request->validate($rules);
+
+            foreach ($validated['entries'] as $entry) {
+                ProfilRiwayat::create(array_merge($entry, ['user_id' => Auth::id()]));
+            }
+
+            return back()->with('success', count($validated['entries']) . ' riwayat berhasil ditambahkan.');
+        }
+
+        // Single entry fallback
+        $data = $request->validate([
+            'tipe'              => 'required|in:pendidikan,organisasi,pekerjaan,penghargaan,sertifikasi',
+            'judul'             => 'required|string|max:255',
+            'posisi'            => 'nullable|string|max:255',
+            'mulai'             => 'nullable|date',
+            'selesai'           => 'nullable|date|after_or_equal:mulai',
+            'masih_berlangsung' => 'boolean',
+            'deskripsi'         => 'nullable|string|max:1000',
+            'lokasi'            => 'nullable|string|max:255',
+        ]);
+
+        ProfilRiwayat::create(array_merge($data, ['user_id' => Auth::id()]));
+
+        return back()->with('success', 'Riwayat berhasil ditambahkan.');
+    }
+
+    public function updateRiwayat(Request $request, ProfilRiwayat $riwayat)
+    {
+        abort_if($riwayat->user_id !== Auth::id(), 403);
+
+        $data = $request->validate([
+            'tipe'              => 'required|in:pendidikan,organisasi,pekerjaan,penghargaan,sertifikasi',
+            'judul'             => 'required|string|max:255',
+            'posisi'            => 'nullable|string|max:255',
+            'mulai'             => 'nullable|date',
+            'selesai'           => 'nullable|date',
+            'masih_berlangsung' => 'boolean',
+            'deskripsi'         => 'nullable|string|max:1000',
+            'lokasi'            => 'nullable|string|max:255',
+        ]);
+
+        $riwayat->update($data);
+
+        return back()->with('success', 'Riwayat berhasil diperbarui.');
+    }
+
+    public function destroyRiwayat(ProfilRiwayat $riwayat)
+    {
+        abort_if($riwayat->user_id !== Auth::id(), 403);
+        $riwayat->delete();
+
+        return back()->with('success', 'Riwayat dihapus.');
     }
 }
