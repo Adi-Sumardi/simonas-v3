@@ -50,6 +50,7 @@ export function QuranReader({
 }: QuranReaderProps) {
     // Navigation state
     const [activeSurah, setActiveSurah] = useState(initialSurahNomor);
+    const [activeJuz,   setActiveJuz]   = useState(initialJuz);  // tracked separately from surah
     const [qari, setQari]               = useState('05'); // Misyari default
 
     // Bookmark state (from DB, then updated locally after save)
@@ -65,9 +66,6 @@ export function QuranReader({
 
     // Selection range for log submission (nomorAyat)
     const [selRange, setSelRange] = useState<{ dari: number; sampai: number } | null>(null);
-
-    // Active juz derived from active surah + marked ayat
-    const activeJuz = getJuzNumber(activeSurah, 1);
 
     // Data hooks
     const { list: surahList, loading: listLoading } = useSurahList();
@@ -85,9 +83,17 @@ export function QuranReader({
 
     // ── Handlers ──────────────────────────────────────────────────
 
+    function handleSurahChange(nomor: number) {
+        setActiveSurah(nomor);
+        setActiveJuz(getJuzNumber(nomor, 1));  // update juz badge when surah changes
+        setPlayingAyat(null);                  // stop audio when surah changes
+    }
+
     function handleJuzChange(juz: number) {
         const { surah } = getJuzFirstSurah(juz);
+        setActiveJuz(juz);      // ← track juz explicitly so badge shows correct value
         setActiveSurah(surah);
+        setPlayingAyat(null);   // stop audio when navigating juz
     }
 
     function handleMark(ayat: number) {
@@ -151,7 +157,7 @@ export function QuranReader({
                     activeSurah={activeSurah}
                     activeJuz={activeJuz}
                     qari={qari}
-                    onSurahChange={setActiveSurah}
+                    onSurahChange={handleSurahChange}
                     onJuzChange={handleJuzChange}
                     onQariChange={setQari}
                 />
@@ -180,7 +186,7 @@ export function QuranReader({
 
                 {detail && !readOnly && (
                     <button
-                        onClick={() => setPlayingAyat(playingAyat === 1 ? null : 1)}
+                        onClick={() => setPlayingAyat(playingAyat !== null ? null : 1)}
                         className={`ml-auto px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all ${
                             playingAyat !== null
                                 ? 'bg-blue-500 text-white'
@@ -313,7 +319,6 @@ export function QuranReader({
                             markedAyat={markedAyat}
                             markedJuz={markedJuz}
                             selectedRange={selRange}
-                            activeSurah={activeSurah}
                             onClearSelection={() => setSelRange(null)}
                             readOnly={readOnly}
                         />

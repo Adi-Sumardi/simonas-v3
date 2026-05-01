@@ -10,7 +10,6 @@ interface ProgressPanelProps {
     markedAyat: number;
     markedJuz: number;
     selectedRange: { dari: number; sampai: number } | null;
-    activeSurah: number;
     onClearSelection: () => void;
     readOnly?: boolean;
 }
