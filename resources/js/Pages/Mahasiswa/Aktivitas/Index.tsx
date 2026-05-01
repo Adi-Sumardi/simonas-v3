@@ -239,7 +239,6 @@ export default function AktivitasIndex({ items, komponens, categories }: Aktivit
         });
     }
 
-    const filtered = items.filter(i => activeKat === 'akademik' ? true : i.kategori === activeKat);
     const filteredByTab = items.filter(i => i.kategori === activeKat);
 
     // Summary counts

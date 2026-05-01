@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Web\Mentor;
 
 use App\Http\Controllers\Controller;
+use App\Models\HafalanLog;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -12,21 +14,41 @@ class PenilaianController extends Controller
     {
         $mentor = $request->user();
 
-        // Sample mentees with their hafalan logs awaiting scoring
-        $submissions = collect([
-            ['id'=>1,'santri_id'=>1,'santri_name'=>'Ahmad Fauzi',   'asrama'=>'Al-Farabi',  'surah'=>'Al-Mulk',    'ayat_dari'=>1, 'ayat_sampai'=>30,'juz'=>29,'tanggal'=>now()->subDays(0)->format('Y-m-d'),'status'=>'pending',  'catatan'=>''],
-            ['id'=>2,'santri_id'=>2,'santri_name'=>'Budi Santoso',  'asrama'=>'Al-Farabi',  'surah'=>'Al-Qalam',   'ayat_dari'=>1, 'ayat_sampai'=>52,'juz'=>29,'tanggal'=>now()->subDays(1)->format('Y-m-d'),'status'=>'pending',  'catatan'=>''],
-            ['id'=>3,'santri_id'=>3,'santri_name'=>'Cahya Ramadhan','asrama'=>'Al-Ghazali', 'surah'=>'Al-Haqqah',  'ayat_dari'=>1, 'ayat_sampai'=>52,'juz'=>29,'tanggal'=>now()->subDays(1)->format('Y-m-d'),'status'=>'pending',  'catatan'=>''],
-            ['id'=>4,'santri_id'=>4,'santri_name'=>'Dani Pratama',  'asrama'=>'Al-Ghazali', 'surah'=>'Al-Baqarah', 'ayat_dari'=>1, 'ayat_sampai'=>20,'juz'=>1, 'tanggal'=>now()->subDays(2)->format('Y-m-d'),'status'=>'graded',   'nilai'=>85,'grade'=>'B','catatan'=>'Tajwid perlu diperbaiki'],
-            ['id'=>5,'santri_id'=>5,'santri_name'=>'Eko Wahyudi',   'asrama'=>'Ibnu Sina',  'surah'=>'Al-Fatiha',  'ayat_dari'=>1, 'ayat_sampai'=>7, 'juz'=>1, 'tanggal'=>now()->subDays(2)->format('Y-m-d'),'status'=>'graded',   'nilai'=>95,'grade'=>'A','catatan'=>'Sangat baik'],
-            ['id'=>6,'santri_id'=>6,'santri_name'=>'Fahri Maulana', 'asrama'=>'Ibnu Sina',  'surah'=>'Yasin',      'ayat_dari'=>1, 'ayat_sampai'=>83,'juz'=>22,'tanggal'=>now()->subDays(3)->format('Y-m-d'),'status'=>'graded',   'nilai'=>78,'grade'=>'B','catatan'=>'Perlu latihan makhorijul huruf'],
-        ]);
+        $menteeIds = User::where('mentor_id', $mentor->id)
+            ->where('role', 'mahasiswa')
+            ->pluck('id');
+
+        $submissions = HafalanLog::whereIn('user_id', $menteeIds)
+            ->with('user')
+            ->orderByRaw("FIELD(score, 'pending') DESC")   // pending first
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn($log) => [
+                'id'          => $log->id,
+                'santri_id'   => $log->user_id,
+                'santri_name' => $log->user->name,
+                'asrama'      => $log->user->asrama ?? '-',
+                'surah'       => $log->surah,
+                'ayat_dari'   => $log->ayat_start,
+                'ayat_sampai' => $log->ayat_end,
+                'juz'         => null,   // not stored in DB, could be computed
+                'tanggal'     => $log->created_at->format('Y-m-d'),
+                'status'      => $log->score === HafalanLog::SCORE_PENDING ? 'pending' : 'graded',
+                'score_raw'   => $log->score,
+                'catatan'     => $log->mentor_notes,
+            ]);
+
+        $graded  = $submissions->where('status', 'graded');
+        $scoreMap = ['memtas' => 100, 'layak_ulang' => 65, 'perlu_perbaikan' => 35];
+        $avgNilai = $graded->count() > 0
+            ? (int) round($graded->avg(fn($s) => $scoreMap[$s['score_raw']] ?? 0))
+            : 0;
 
         $stats = [
-            'pending' => $submissions->where('status', 'pending')->count(),
-            'graded'  => $submissions->where('status', 'graded')->count(),
-            'total'   => $submissions->count(),
-            'avg_nilai'=> round($submissions->where('status','graded')->avg('nilai') ?? 0),
+            'pending'   => $submissions->where('status', 'pending')->count(),
+            'graded'    => $graded->count(),
+            'total'     => $submissions->count(),
+            'avg_nilai' => $avgNilai,
         ];
 
         return Inertia::render('Mentor/Penilaian', [
@@ -37,13 +59,28 @@ class PenilaianController extends Controller
 
     public function store(Request $request, int $id)
     {
-        $validated = $request->validate([
-            'nilai'   => 'required|integer|min:0|max:100',
-            'grade'   => 'required|in:A,B,C,D,E',
-            'catatan' => 'nullable|string|max:500',
+        $mentor = $request->user();
+
+        $request->validate([
+            'score'        => 'required|in:memtas,layak_ulang,perlu_perbaikan',
+            'mentor_notes' => 'nullable|string|max:500',
         ]);
 
-        // TODO: update hafalan log in DB
+        $menteeIds = User::where('mentor_id', $mentor->id)
+            ->where('role', 'mahasiswa')
+            ->pluck('id');
+
+        $log = HafalanLog::whereIn('user_id', $menteeIds)
+            ->where('id', $id)
+            ->firstOrFail();
+
+        $log->update([
+            'score'        => $request->score,
+            'mentor_notes' => $request->mentor_notes,
+            'mentor_id'    => $mentor->id,
+            'reviewed_at'  => now(),
+        ]);
+
         return back()->with('success', 'Penilaian berhasil disimpan.');
     }
 }

@@ -44,6 +44,7 @@ const MENU_GROUPS: MenuGroup[] = [
         section: 'Mentor',
         forRoles: ['mentor'],
         items: [
+            { label: 'Beranda',        icon: 'home',            href: '/mentor' },
             { label: 'Warga Bimbingan', icon: 'people',          href: '/mentor/mentees' },
             { label: 'Hafalan Pending', icon: 'pending_actions', href: '/mentor/hafalan/pending', permission: 'nilai-santri' },
             { label: 'Penilaian',       icon: 'rate_review',     href: '/mentor/penilaian' },
@@ -90,7 +91,7 @@ const MENU_GROUPS: MenuGroup[] = [
 // Mobile bottom nav hrefs per role
 const BOTTOM_NAV: Record<string, string[]> = {
     mahasiswa: ['/dashboard', '/mahasiswa/aktivitas', '/mahasiswa/hafalan', '/mahasiswa/leaderboard', '/mahasiswa/profil'],
-    mentor:    ['/dashboard', '/mentor/mentees', '/mentor/hafalan/pending'],
+    mentor:    ['/mentor', '/mentor/mentees', '/mentor/hafalan/pending', '/mentor/penilaian', '/mentor/kalender'],
     super:     ['/dashboard', '/super/role-permission', '/mahasiswa/profil', '/mentor/mentees'],
     admin:     ['/dashboard', '/super/role-permission'],
     alumni:    ['/dashboard'],
@@ -137,6 +138,8 @@ export function Sidebar({ user }: SidebarProps) {
 
     function isActive(href: string) {
         if (href === '/dashboard') return url === '/dashboard' || url === '/dashboard/';
+        // Exact-match routes that should not prefix-match sub-paths
+        if (href === '/mentor') return url === '/mentor' || url === '/mentor/';
         return url.startsWith(href);
     }
 

@@ -71,18 +71,24 @@ Route::middleware('auth')->group(function () {
 
     // ── Mentor (permission-gated) ─────────────────────────────
     Route::middleware('can:access-mentor')->prefix('mentor')->name('mentor.')->group(function () {
-        Route::get('/mentees',            [MenteesController::class, 'index'])->name('mentees.index');
-        Route::get('/mentees/{id}',       [MenteesController::class, 'show'])->name('mentees.show');
+        // Dashboard
+        Route::get('/',           [MentorDash::class, 'index'])->name('dashboard');
+        Route::post('/eval/{id}', [MentorDash::class, 'submitEval'])->name('eval.submit');
 
-        Route::get('/hafalan/pending',    [MentorHafalan::class,     'pending'])->name('hafalan.pending');
-        Route::patch('/hafalan/log/{id}', [MentorHafalan::class,     'score'])->name('hafalan.score');
+        // Mentees
+        Route::get('/mentees',      [MenteesController::class, 'index'])->name('mentees.index');
+        Route::get('/mentees/{id}', [MenteesController::class, 'show'])->name('mentees.show');
 
-        Route::post('/penilaian/{id}',    [MentorDash::class,        'submitEval'])->name('penilaian.submit');
+        // Hafalan queue
+        Route::get('/hafalan/pending',    [MentorHafalan::class, 'pending'])->name('hafalan.pending');
+        Route::patch('/hafalan/log/{id}', [MentorHafalan::class, 'score'])->name('hafalan.score');
 
-        // Penilaian & Kalender
-        Route::get('/penilaian',          [\App\Http\Controllers\Web\Mentor\PenilaianController::class,      'index'])->name('penilaian.index');
-        Route::post('/penilaian/{id}',    [\App\Http\Controllers\Web\Mentor\PenilaianController::class,      'store'])->name('penilaian.store');
-        Route::get('/kalender',           [\App\Http\Controllers\Web\Mentor\MentorKalenderController::class, 'index'])->name('kalender.index');
+        // Penilaian (hafalan scoring from list view)
+        Route::get('/penilaian',       [\App\Http\Controllers\Web\Mentor\PenilaianController::class,      'index'])->name('penilaian.index');
+        Route::post('/penilaian/{id}', [\App\Http\Controllers\Web\Mentor\PenilaianController::class,      'store'])->name('penilaian.store');
+
+        // Kalender
+        Route::get('/kalender', [\App\Http\Controllers\Web\Mentor\MentorKalenderController::class, 'index'])->name('kalender.index');
     });
 
     // ── Super Admin (permission-gated) ────────────────────────

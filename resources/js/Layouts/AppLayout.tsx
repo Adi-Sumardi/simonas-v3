@@ -14,8 +14,14 @@ export function AppLayout({ children, searchPlaceholder }: AppLayoutProps) {
     const { auth } = usePage<PageProps>().props;
     const user = auth.user;
 
+    const role = user.role ?? 'mahasiswa';
+    const profileHref = role === 'mahasiswa' ? '/mahasiswa/profil'
+        : role === 'mentor'    ? '/mentor'
+        : role === 'super'     ? '/super/role-permission'
+        : '/dashboard';
+
     const dropdownItems = [
-        { label: 'Profil Saya', icon: 'person',   href: `/mahasiswa/profil` },
+        { label: 'Profil Saya', icon: 'person',   href: profileHref },
         { label: 'Keluar',      icon: 'logout',    onClick: () => router.post('/logout'), danger: true },
     ];
 
