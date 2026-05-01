@@ -164,6 +164,7 @@ export function QuranReader({
                 <div className="h-14 glass-card rounded-2xl animate-pulse" />
             ) : (
                 <SurahNavigator
+                    key={activeJuz}
                     surahList={surahList}
                     activeSurah={activeSurah}
                     activeJuz={activeJuz}

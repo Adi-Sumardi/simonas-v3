@@ -64,3 +64,19 @@ export function getJuzNumber(surahNomor: number, ayatNomor: number): number {
 export function getJuzFirstSurah(juz: number): JuzStart {
     return JUZ_START[juz] ?? { surah: 1, ayat: 1 };
 }
+
+/**
+ * Get the range of surah numbers that appear in a given juz.
+ * A surah is "in" a juz if any of its ayat belong to that juz.
+ */
+export function getSurahsInJuz(juz: number): { from: number; to: number } {
+    const start = JUZ_START[juz];
+    const next  = JUZ_START[juz + 1]; // undefined for juz 30
+
+    const from = start?.surah ?? 1;
+    // The juz ends just before the next juz starts.
+    // If the next juz starts mid-surah (ayat > 1), that surah is still partly in this juz.
+    const to = next ? next.surah : 114;
+
+    return { from, to };
+}

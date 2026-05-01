@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Icon } from '@/Components/ui/Icon';
 import type { SurahItem } from './useQuranData';
+import { getSurahsInJuz } from '@/lib/quranJuzMap';
 
 interface SurahNavigatorProps {
     surahList: SurahItem[];
@@ -26,10 +27,11 @@ export function SurahNavigator({
     surahList, activeSurah, activeJuz, qari,
     onSurahChange, onJuzChange, onQariChange,
 }: SurahNavigatorProps) {
-    const [surahSearch, setSurahSearch]   = useState('');
+    const [surahSearch, setSurahSearch]     = useState('');
     const [showSurahDrop, setShowSurahDrop] = useState(false);
     const [showQariDrop,  setShowQariDrop]  = useState(false);
     const [showJuzDrop,   setShowJuzDrop]   = useState(false);
+    const [filterByJuz,   setFilterByJuz]   = useState(true); // default: filter by active juz
 
     // Refs to trigger buttons so we can position dropdowns via fixed
     const juzBtnRef   = useRef<HTMLButtonElement>(null);
@@ -51,6 +53,8 @@ export function SurahNavigator({
         setShowSurahDrop(!showSurahDrop);
         setShowJuzDrop(false);
         setShowQariDrop(false);
+        // Reset search but keep juz filter
+        setSurahSearch('');
     }
     function openQari() {
         setQariRect(qariBtnRef.current?.getBoundingClientRect() ?? null);
@@ -65,7 +69,13 @@ export function SurahNavigator({
     }
 
     const activeSurahData = surahList.find(s => s.nomor === activeSurah);
-    const filteredSurahs  = surahList.filter(s =>
+
+    // Filter surah list by active juz (unless user searches or toggles "semua")
+    const juzRange = getSurahsInJuz(activeJuz);
+    const surahsInJuz = surahList.filter(s => s.nomor >= juzRange.from && s.nomor <= juzRange.to);
+    const baseList = (filterByJuz && !surahSearch) ? surahsInJuz : surahList;
+
+    const filteredSurahs = baseList.filter(s =>
         s.namaLatin.toLowerCase().includes(surahSearch.toLowerCase()) ||
         s.nomor.toString() === surahSearch
     );
@@ -165,14 +175,37 @@ export function SurahNavigator({
                         left: surahRect.left   + window.scrollX,
                         width: Math.max(surahRect.width, 300),
                     }}>
-                    <input
-                        autoFocus
-                        type="text"
-                        placeholder="Cari surah..."
-                        value={surahSearch}
-                        onChange={e => setSurahSearch(e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm mb-2 outline-none focus:border-emerald-300"
-                    />
+
+                    {/* Header: search + juz filter toggle */}
+                    <div className="flex items-center gap-2 mb-2">
+                        <input
+                            autoFocus
+                            type="text"
+                            placeholder={filterByJuz && !surahSearch ? `Surah di Juz ${activeJuz}...` : 'Cari semua surah...'}
+                            value={surahSearch}
+                            onChange={e => setSurahSearch(e.target.value)}
+                            className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-emerald-300"
+                        />
+                        <button
+                            onClick={() => { setFilterByJuz(!filterByJuz); setSurahSearch(''); }}
+                            title={filterByJuz ? 'Tampilkan semua surah' : 'Filter sesuai juz'}
+                            className={`flex-shrink-0 px-2.5 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 ${
+                                filterByJuz
+                                    ? 'bg-emerald-500 text-white'
+                                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                            }`}
+                        >
+                            <Icon name="filter_list" className="text-sm" />
+                            {filterByJuz ? `Juz ${activeJuz}` : 'Semua'}
+                        </button>
+                    </div>
+
+                    {/* Count info */}
+                    <p className="text-[10px] text-gray-400 px-1 mb-1.5">
+                        {filteredSurahs.length} surah
+                        {filterByJuz && !surahSearch && ` dalam Juz ${activeJuz}`}
+                    </p>
+
                     <div className="overflow-y-auto space-y-0.5" style={{ maxHeight: 280 }}>
                         {filteredSurahs.map(s => (
                             <button key={s.nomor}
@@ -195,6 +228,9 @@ export function SurahNavigator({
                                 </span>
                             </button>
                         ))}
+                        {filteredSurahs.length === 0 && (
+                            <p className="text-center text-sm text-gray-400 py-4">Tidak ditemukan</p>
+                        )}
                     </div>
                 </div>
             )}
