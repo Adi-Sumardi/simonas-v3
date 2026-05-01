@@ -130,8 +130,10 @@ class DashboardController extends Controller
     {
         return [
             'stats' => [
-                'total_alumni' => 340,
-                'network_size' => 120,
+                'total_alumni' => \App\Models\Alumni::count(),
+                'network_size' => \App\Models\User::where('role', 'alumni')->count(),
+                'total_posts'  => \App\Models\AlumniPost::count(),
+                'total_jobs'   => \App\Models\AlumniJob::where('is_active', true)->count(),
             ],
         ];
     }

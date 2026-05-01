@@ -18,6 +18,7 @@ export function AppLayout({ children, searchPlaceholder }: AppLayoutProps) {
     const profileHref = role === 'mahasiswa' ? '/mahasiswa/profil'
         : role === 'mentor'    ? '/mentor'
         : role === 'super'     ? '/super/role-permission'
+        : role === 'alumni'    ? '/alumni/profil'
         : '/dashboard';
 
     const dropdownItems = [

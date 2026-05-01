@@ -70,6 +70,28 @@ Route::middleware('auth')->group(function () {
         Route::delete('/kalender/{event}',      [\App\Http\Controllers\Web\Mahasiswa\MahasiswaKalenderController::class, 'destroy'])->name('kalender.destroy');
     });
 
+    // ── Alumni (permission-gated) ─────────────────────────────
+    Route::middleware('can:access-alumni')->prefix('alumni')->name('alumni.')->group(function () {
+        // Hub — social feed
+        Route::get('/hub',                [App\Http\Controllers\Web\Alumni\AlumniHubController::class, 'hub'])         ->name('hub');
+        Route::post('/hub/posts',         [App\Http\Controllers\Web\Alumni\AlumniHubController::class, 'storePost'])   ->name('posts.store');
+        Route::delete('/hub/posts/{post}',[App\Http\Controllers\Web\Alumni\AlumniHubController::class, 'destroyPost']) ->name('posts.destroy');
+        Route::post('/hub/posts/{post}/comments', [App\Http\Controllers\Web\Alumni\AlumniHubController::class, 'storeComment'])->name('comments.store');
+        Route::post('/hub/posts/{post}/like',     [App\Http\Controllers\Web\Alumni\AlumniHubController::class, 'toggleLike'])  ->name('posts.like');
+
+        // Jobs board
+        Route::get('/jobs',        [App\Http\Controllers\Web\Alumni\AlumniHubController::class, 'jobs'])    ->name('jobs.index');
+        Route::post('/jobs',       [App\Http\Controllers\Web\Alumni\AlumniHubController::class, 'storeJob'])->name('jobs.store');
+
+        // Profil
+        Route::get('/profil',  [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'index']) ->name('profil.index');
+        Route::put('/profil',  [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'update'])->name('profil.update');
+
+        // Bisnis directory
+        Route::get('/bisnis',  [App\Http\Controllers\Web\Alumni\AlumniBusinessController::class, 'index']) ->name('bisnis.index');
+        Route::post('/bisnis', [App\Http\Controllers\Web\Alumni\AlumniBusinessController::class, 'store']) ->name('bisnis.store');
+    });
+
     // ── Mentor (permission-gated) ─────────────────────────────
     Route::middleware('can:access-mentor')->prefix('mentor')->name('mentor.')->group(function () {
         // Dashboard

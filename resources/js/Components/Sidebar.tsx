@@ -80,10 +80,10 @@ const MENU_GROUPS: MenuGroup[] = [
         section: 'Alumni',
         forRoles: ['alumni'],
         items: [
-            { label: 'Profil',    icon: 'person',   href: '/alumni/profil',    soon: true },
-            { label: 'Postingan', icon: 'article',  href: '/alumni/postingan', soon: true },
-            { label: 'Bisnis',    icon: 'store',    href: '/alumni/bisnis',    soon: true },
-            { label: 'Lowongan',  icon: 'work',     href: '/alumni/lowongan',  soon: true },
+            { label: 'Profil',          icon: 'person',      href: '/alumni/profil' },
+            { label: 'Postingan',       icon: 'people',      href: '/alumni/hub' },
+            { label: 'Bisnis',          icon: 'storefront',  href: '/alumni/bisnis' },
+            { label: 'Lowongan',        icon: 'work',        href: '/alumni/jobs' },
         ],
     },
 ];
@@ -94,7 +94,7 @@ const BOTTOM_NAV: Record<string, string[]> = {
     mentor:    ['/mentor', '/mentor/mentees', '/mentor/hafalan/pending', '/mentor/penilaian', '/mentor/kalender'],
     super:     ['/dashboard', '/super/role-permission', '/mahasiswa/profil', '/mentor/mentees'],
     admin:     ['/dashboard', '/super/role-permission'],
-    alumni:    ['/dashboard'],
+    alumni:    ['/dashboard', '/alumni/hub', '/alumni/jobs', '/alumni/bisnis', '/alumni/profil'],
 };
 
 const FAB_BY_ROLE: Record<string, { label: string; href: string; icon: string } | null> = {

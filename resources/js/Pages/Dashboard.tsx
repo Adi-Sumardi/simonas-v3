@@ -49,7 +49,7 @@ interface StudentData {
 interface DashboardProps extends PageProps {
     role: string;
     permissions: string[];
-    stats: MahasiswaStats | MentorStats | SuperStats | Record<string, unknown>;
+    stats: MahasiswaStats | MentorStats | SuperStats | AlumniStats | Record<string, unknown>;
     students?: StudentData[];
     asramas?: string[];
 }
@@ -298,14 +298,133 @@ function SuperDashboard({ stats, students = [], asramas = [] }: { stats: SuperSt
     );
 }
 
-function GenericDashboard({ role }: { role: string }) {
+interface AlumniStats {
+    total_alumni: number;
+    network_size: number;
+    total_posts: number;
+    total_jobs: number;
+}
+
+function AlumniDashboard({ stats }: { stats: AlumniStats }) {
+    const quickLinks = [
+        {
+            href: '/alumni/hub',
+            icon: 'people',
+            iconBg: 'bg-emerald-100',
+            iconColor: 'text-emerald-600',
+            title: 'Alumni Hub',
+            desc: 'Bagikan cerita, pencapaian, dan diskusi sesama alumni',
+            badge: `${stats.total_posts} postingan`,
+            badgeColor: 'bg-emerald-100 text-emerald-700',
+        },
+        {
+            href: '/alumni/jobs',
+            icon: 'work',
+            iconBg: 'bg-blue-100',
+            iconColor: 'text-blue-600',
+            title: 'Lowongan & Magang',
+            desc: 'Info kerja, magang, dan peluang karir dari sesama alumni',
+            badge: `${stats.total_jobs} lowongan`,
+            badgeColor: 'bg-blue-100 text-blue-700',
+        },
+        {
+            href: '#',
+            icon: 'person',
+            iconBg: 'bg-purple-100',
+            iconColor: 'text-purple-600',
+            title: 'Profil Alumni',
+            desc: 'Update profil, karir, dan pengalaman profesionalmu',
+            badge: 'Coming Soon',
+            badgeColor: 'bg-surface-container text-on-surface-variant',
+            disabled: true,
+        },
+        {
+            href: '#',
+            icon: 'event',
+            iconBg: 'bg-amber-100',
+            iconColor: 'text-amber-600',
+            title: 'Event Alumni',
+            desc: 'Reuni, seminar, dan gathering komunitas alumni',
+            badge: 'Coming Soon',
+            badgeColor: 'bg-surface-container text-on-surface-variant',
+            disabled: true,
+        },
+    ];
+
     return (
-        <div className="glass-card p-12 rounded-2xl flex flex-col items-center gap-4 text-center">
-            <Icon name="construction" className="text-5xl text-amber-400" />
-            <h2 className="font-display text-headline-md">Dashboard {role} dalam pengembangan</h2>
-            <p className="text-body-sm text-on-surface-variant max-w-sm">
-                Halaman ini akan tersedia pada Fase 5 pengembangan SIMONAS.
-            </p>
+        <div className="space-y-6">
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <StatCard icon="people"            label="TOTAL ALUMNI"    value={stats.total_alumni}  badge="Terdaftar"    badgeColor="emerald" />
+                <StatCard icon="hub"               label="NETWORK"         value={stats.network_size}  badge="Koneksi"      badgeColor="blue" />
+                <StatCard icon="auto_stories"      label="TOTAL POST"      value={stats.total_posts}   badge="Di Hub"       badgeColor="purple" />
+                <StatCard icon="work"              label="LOWONGAN AKTIF"  value={stats.total_jobs}    badge="Available"    badgeColor="amber" />
+            </div>
+
+            {/* Hero banner */}
+            <div className="glass-card rounded-2xl p-8 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-transparent border border-emerald-200/40 relative overflow-hidden">
+                <div className="absolute inset-0 opacity-5 pointer-events-none select-none flex items-center justify-end pr-8">
+                    <span style={{ fontSize: 200 }}>🎓</span>
+                </div>
+                <h2 className="font-display text-2xl font-black text-on-surface mb-2">
+                    Selamat Datang di Portal Alumni 🌟
+                </h2>
+                <p className="text-on-surface-variant text-sm max-w-xl mb-6 leading-relaxed">
+                    Tetap terhubung dengan komunitas alumni, berbagi pengalaman, dan bantu sesama dalam perjalanan karir.
+                </p>
+                <div className="flex gap-3">
+                    <Link href="/alumni/hub"
+                        className="px-5 py-2.5 bg-emerald-500 text-white rounded-xl font-bold text-sm hover:bg-emerald-600 transition-colors shadow-md shadow-emerald-200 flex items-center gap-2">
+                        <Icon name="people" className="text-base" />
+                        Buka Alumni Hub
+                    </Link>
+                    <Link href="/alumni/jobs"
+                        className="px-5 py-2.5 glass-card border border-white/40 text-on-surface rounded-xl font-bold text-sm hover:bg-white/60 transition-colors flex items-center gap-2">
+                        <Icon name="work" className="text-base" />
+                        Lihat Lowongan
+                    </Link>
+                </div>
+            </div>
+
+            {/* Quick links */}
+            <div>
+                <h2 className="font-display text-lg font-bold text-on-surface mb-4">Fitur Alumni</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {quickLinks.map(item => (
+                        item.disabled ? (
+                            <div key={item.title} className="glass-card rounded-2xl p-6 flex items-start gap-4 opacity-60 cursor-not-allowed">
+                                <div className={`w-12 h-12 rounded-xl ${item.iconBg} flex items-center justify-center flex-shrink-0`}>
+                                    <Icon name={item.icon} className={`text-2xl ${item.iconColor}`} filled />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <h3 className="font-bold text-on-surface text-sm">{item.title}</h3>
+                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${item.badgeColor}`}>{item.badge}</span>
+                                    </div>
+                                    <p className="text-xs text-on-surface-variant leading-relaxed">{item.desc}</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <Link key={item.href} href={item.href}
+                                className="glass-card rounded-2xl p-6 flex items-start gap-4 hover:shadow-xl hover:-translate-y-0.5 transition-all group">
+                                <div className={`w-12 h-12 rounded-xl ${item.iconBg} flex items-center justify-center flex-shrink-0`}>
+                                    <Icon name={item.icon} className={`text-2xl ${item.iconColor}`} filled />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <h3 className="font-bold text-on-surface text-sm">{item.title}</h3>
+                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${item.badgeColor}`}>{item.badge}</span>
+                                    </div>
+                                    <p className="text-xs text-on-surface-variant leading-relaxed">{item.desc}</p>
+                                    <span className="text-xs font-bold text-primary-container flex items-center gap-1 mt-2 group-hover:gap-2 transition-all">
+                                        Buka <Icon name="arrow_forward" className="text-sm" />
+                                    </span>
+                                </div>
+                            </Link>
+                        )
+                    ))}
+                </div>
+            </div>
         </div>
     );
 }
@@ -347,10 +466,16 @@ export default function Dashboard({ role, permissions, stats, students = [], asr
                 />
             )}
             {role === 'alumni' && (
-                <GenericDashboard role="Alumni" />
+                <AlumniDashboard stats={stats as unknown as AlumniStats} />
             )}
             {!['mahasiswa', 'mentor', 'super', 'admin', 'alumni'].includes(role) && (
-                <GenericDashboard role={role} />
+                <div className="glass-card p-12 rounded-2xl flex flex-col items-center gap-4 text-center">
+                    <Icon name="construction" className="text-5xl text-amber-400" />
+                    <h2 className="font-display text-headline-md">Dashboard {role} dalam pengembangan</h2>
+                    <p className="text-body-sm text-on-surface-variant max-w-sm">
+                        Halaman ini akan tersedia pada Fase 5 pengembangan SIMONAS.
+                    </p>
+                </div>
             )}
         </AppLayout>
     );
