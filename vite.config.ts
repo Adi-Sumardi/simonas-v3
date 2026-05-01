@@ -8,19 +8,8 @@ export default defineConfig({
     build: {
         // Keep font files as separate assets (not inlined) so SW can cache them
         assetsInlineLimit: 0,
-        rollupOptions: {
-            output: {
-                // Stable chunk names — prevents cache invalidation on unrelated changes
-                manualChunks(id) {
-                    if (id.includes('node_modules')) {
-                        if (id.includes('react')) return 'vendor-react';
-                        if (id.includes('@inertiajs')) return 'vendor-inertia';
-                        if (id.includes('material-symbols') || id.includes('fontsource')) return 'vendor-fonts';
-                        return 'vendor';
-                    }
-                },
-            },
-        },
+        // No manualChunks — Vite default handles React + dependents correctly.
+        // Manual splitting caused "useState/forwardRef undefined" race conditions.
     },
     plugins: [
         laravel({

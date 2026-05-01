@@ -4,6 +4,7 @@ import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { Icon } from '@/Components/ui/Icon';
 import { AlumniSidebar } from '@/Components/Alumni/AlumniSidebar';
+import { StoriesBar, type StoryGroup } from '@/Components/Alumni/StoriesBar';
 import { usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
 
@@ -25,7 +26,7 @@ interface Post {
     created_at: string;
 }
 interface Paginated<T> { data: T[]; current_page: number; last_page: number; next_page_url: string | null }
-interface Props { posts: Paginated<Post> }
+interface Props { posts: Paginated<Post>; stories: StoryGroup[] }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const POST_TYPE_META = {
@@ -268,7 +269,7 @@ function PostCard({ post, currentUser }: { post: Post; currentUser: Author }) {
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-export default function Hub({ posts }: Props) {
+export default function Hub({ posts, stories }: Props) {
     const { auth } = usePage<PageProps>().props;
     const currentUser: Author = {
         id: auth.user.id,
@@ -294,6 +295,12 @@ export default function Hub({ posts }: Props) {
 
                 {/* ── Feed column ── */}
                 <div className="xl:col-span-3 space-y-4">
+                    <StoriesBar
+                        groups={stories}
+                        currentUserId={auth.user.id}
+                        currentUserName={auth.user.name}
+                        currentUserAvatar={(auth.user as any).avatar ?? null}
+                    />
                     <ComposePost currentUser={currentUser} />
 
                     {posts.data.length === 0 ? (

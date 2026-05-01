@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\Mahasiswa\LeaderboardController;
 use App\Http\Controllers\Web\Mentor\MenteesController;
 use App\Http\Controllers\Web\Mentor\HafalanController      as MentorHafalan;
 use App\Http\Controllers\Web\Mentor\DashboardController    as MentorDash;
+use Illuminate\Support\Facades\Auth;
 
 // ─── Public / Guest ───────────────────────────────────────────
 Route::get('/', fn () => inertia('Welcome'))->name('home');
@@ -79,13 +80,21 @@ Route::middleware('auth')->group(function () {
         Route::post('/hub/posts/{post}/comments', [App\Http\Controllers\Web\Alumni\AlumniHubController::class, 'storeComment'])->name('comments.store');
         Route::post('/hub/posts/{post}/like',     [App\Http\Controllers\Web\Alumni\AlumniHubController::class, 'toggleLike'])  ->name('posts.like');
 
+        // Stories (24h auto-expire)
+        Route::post('/hub/stories',                  [App\Http\Controllers\Web\Alumni\AlumniHubController::class, 'storeStory'])  ->name('stories.store');
+        Route::delete('/hub/stories/{story}',        [App\Http\Controllers\Web\Alumni\AlumniHubController::class, 'destroyStory'])->name('stories.destroy');
+        Route::post('/hub/stories/{story}/view',     [App\Http\Controllers\Web\Alumni\AlumniHubController::class, 'viewStory'])   ->name('stories.view');
+
         // Jobs board
         Route::get('/jobs',        [App\Http\Controllers\Web\Alumni\AlumniHubController::class, 'jobs'])    ->name('jobs.index');
         Route::post('/jobs',       [App\Http\Controllers\Web\Alumni\AlumniHubController::class, 'storeJob'])->name('jobs.store');
 
-        // Profil
-        Route::get('/profil',  [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'index']) ->name('profil.index');
-        Route::put('/profil',  [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'update'])->name('profil.update');
+        // Profil — unified pattern (sama dengan Mahasiswa)
+        Route::get('/profil',                    [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'index'])         ->name('profil.index');
+        Route::put('/profil',                    [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'update'])        ->name('profil.update');
+        Route::post('/profil/riwayat',           [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'storeRiwayat']) ->name('profil.riwayat.store');
+        Route::put('/profil/riwayat/{riwayat}',  [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'updateRiwayat'])->name('profil.riwayat.update');
+        Route::delete('/profil/riwayat/{riwayat}',[App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'destroyRiwayat'])->name('profil.riwayat.destroy');
 
         // Bisnis directory
         Route::get('/bisnis',  [App\Http\Controllers\Web\Alumni\AlumniBusinessController::class, 'index']) ->name('bisnis.index');

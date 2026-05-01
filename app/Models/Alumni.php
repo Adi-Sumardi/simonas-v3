@@ -28,6 +28,10 @@ class Alumni extends Model
         'jabatan_asrama',
         'foto',
         'teman_angkatan',
+        // Tambahan untuk profil unified
+        'bidang_keahlian',
+        'pekerjaan_sekarang',
+        'bidang_pekerjaan',
     ];
 
     protected $hidden = ['created_at', 'updated_at'];

@@ -7,7 +7,9 @@ use App\Models\AlumniPost;
 use App\Models\AlumniComment;
 use App\Models\AlumniLike;
 use App\Models\AlumniJob;
+use App\Models\AlumniStory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class AlumniHubController extends Controller
@@ -16,6 +18,35 @@ class AlumniHubController extends Controller
     public function hub(Request $request)
     {
         $user = $request->user();
+
+        // Stories aktif (24h), grouped per user. Story milik user current selalu di depan.
+        $stories = AlumniStory::active()
+            ->with('user:id,name,avatar')
+            ->orderByDesc('created_at')
+            ->get()
+            ->groupBy('user_id')
+            ->map(function ($userStories) use ($user) {
+                $owner = $userStories->first()->user;
+                $viewedIds = $userStories->first()
+                    ->viewers()->where('user_id', $user->id)->pluck('alumni_stories.id')->all();
+
+                return [
+                    'user_id'   => $owner->id,
+                    'name'      => $owner->name,
+                    'avatar'    => $owner->avatar,
+                    'is_self'   => $owner->id === $user->id,
+                    'all_seen'  => $userStories->pluck('id')->diff($viewedIds)->isEmpty(),
+                    'items'     => $userStories->sortBy('created_at')->values()->map(fn ($s) => [
+                        'id'         => $s->id,
+                        'image_url'  => $s->image_url,
+                        'caption'    => $s->caption,
+                        'created_at' => $s->created_at->diffForHumans(),
+                        'expires_at' => $s->expires_at->toIso8601String(),
+                    ])->all(),
+                ];
+            })
+            ->sortByDesc(fn ($g) => $g['is_self'])  // self first
+            ->values();
 
         $posts = AlumniPost::with(['user:id,name,avatar,angkatan', 'comments.user:id,name,avatar'])
             ->withCount('likes')
@@ -50,8 +81,49 @@ class AlumniHubController extends Controller
             });
 
         return Inertia::render('Alumni/Hub', [
-            'posts' => $posts,
+            'posts'   => $posts,
+            'stories' => $stories,
         ]);
+    }
+
+    // ─── Stories CRUD (24h auto-expire) ─────────────────────────
+    public function storeStory(Request $request)
+    {
+        $validated = $request->validate([
+            'image'   => 'required|image|max:5120', // 5 MB
+            'caption' => 'nullable|string|max:280',
+        ]);
+
+        $path = $request->file('image')->store('alumni_stories', 'public');
+
+        AlumniStory::create([
+            'user_id'    => $request->user()->id,
+            'image_path' => $path,
+            'caption'    => $validated['caption'] ?? null,
+            'expires_at' => now()->addHours(24),
+        ]);
+
+        return back()->with('success', 'Story dibagikan! Akan hilang dalam 24 jam.');
+    }
+
+    public function destroyStory(Request $request, AlumniStory $story)
+    {
+        abort_if($story->user_id !== $request->user()->id, 403);
+
+        if (Storage::disk('public')->exists($story->image_path)) {
+            Storage::disk('public')->delete($story->image_path);
+        }
+        $story->delete();
+
+        return back()->with('success', 'Story dihapus.');
+    }
+
+    public function viewStory(Request $request, AlumniStory $story)
+    {
+        // Auto-record view (deduplikasi by unique constraint)
+        $story->viewers()->syncWithoutDetaching([$request->user()->id => ['viewed_at' => now()]]);
+
+        return response()->noContent();
     }
 
     // ─── Store Post ─────────────────────────────────────────────
