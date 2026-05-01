@@ -15,7 +15,9 @@
 !/bootstrap/cache/.gitkeep
 /vendor
 .env
+.env.*
 .env.backup
+.env.production_backup
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
