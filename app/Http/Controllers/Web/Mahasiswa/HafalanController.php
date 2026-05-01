@@ -44,16 +44,45 @@ class HafalanController extends Controller
 
         return Inertia::render('Mahasiswa/Hafalan', [
             'hafalan'       => [
-                'current_juz'  => $hafalan->current_juz,
-                'current_ayah' => $hafalan->current_ayah,
-                'target_juz'   => $hafalan->target_juz,
-                'streak_days'  => $hafalan->streak_days,
-                'total_ayah'   => $hafalan->total_ayah_completed,
+                'current_juz'         => $hafalan->current_juz,
+                'current_ayah'        => $hafalan->current_ayah,
+                'target_juz'          => $hafalan->target_juz,
+                'streak_days'         => $hafalan->streak_days,
+                'total_ayah'          => $hafalan->total_ayah_completed,
+                // Bookmark fields
+                'current_surah_nomor' => $hafalan->current_surah_nomor ?? 1,
+                'current_surah_nama'  => $hafalan->current_surah_nama  ?? 'Al-Fatihah',
+                'current_ayat'        => $hafalan->current_ayat        ?? 1,
             ],
             'logs'    => $logs,
             'weekly'  => $weekly,
             'quality' => $quality,
         ]);
+    }
+
+    public function bookmark(Request $request)
+    {
+        $data = $request->validate([
+            'surah_nomor' => 'required|integer|min:1|max:114',
+            'surah_nama'  => 'required|string|max:100',
+            'ayat'        => 'required|integer|min:1',
+            'juz'         => 'required|integer|min:1|max:30',
+        ]);
+
+        $user    = Auth::user();
+        $hafalan = Hafalan::firstOrCreate(
+            ['user_id' => $user->id],
+            ['target_juz' => 30, 'current_juz' => 0, 'current_ayah' => 0]
+        );
+
+        $hafalan->update([
+            'current_surah_nomor' => $data['surah_nomor'],
+            'current_surah_nama'  => $data['surah_nama'],
+            'current_ayat'        => $data['ayat'],
+            'current_juz'         => $data['juz'],
+        ]);
+
+        return back()->with('success', 'Posisi hafalan berhasil disimpan.');
     }
 
     public function storeLog(Request $request)

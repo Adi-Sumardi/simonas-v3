@@ -19,6 +19,10 @@ class Hafalan extends Model
         'total_ayah_completed',
         'streak_days',
         'last_tasmi_at',
+        // Bookmark
+        'current_surah_nomor',
+        'current_surah_nama',
+        'current_ayat',
     ];
 
     protected $casts = [

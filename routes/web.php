@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/hafalan/log',             [MahasiswaHafalan::class, 'storeLog'])  ->name('hafalan.log.store');
         Route::put('/hafalan/log/{log}',        [MahasiswaHafalan::class, 'updateLog']) ->name('hafalan.log.update');
         Route::delete('/hafalan/log/{log}',     [MahasiswaHafalan::class, 'destroyLog'])->name('hafalan.log.destroy');
+        Route::post('/hafalan/bookmark',        [MahasiswaHafalan::class, 'bookmark'])  ->name('hafalan.bookmark');
 
         // ── Leaderboard ──────────────────────────────────────────
         Route::get('/leaderboard',              [LeaderboardController::class, 'index'])->name('leaderboard.index');
