@@ -44,7 +44,6 @@ const MENU_GROUPS: MenuGroup[] = [
         section: 'Mentor',
         forRoles: ['mentor'],
         items: [
-            { label: 'Beranda',        icon: 'home',            href: '/mentor' },
             { label: 'Warga Bimbingan', icon: 'people',          href: '/mentor/mentees' },
             { label: 'Hafalan Pending', icon: 'pending_actions', href: '/mentor/hafalan/pending', permission: 'nilai-santri' },
             { label: 'Penilaian',       icon: 'rate_review',     href: '/mentor/penilaian' },
@@ -57,6 +56,7 @@ const MENU_GROUPS: MenuGroup[] = [
         items: [
             { label: 'Role & Permission', icon: 'admin_panel_settings', href: '/super/role-permission' },
             { label: 'Warga',             icon: 'people_alt',           href: '/super/warga' },
+            { label: 'Mentor',            icon: 'supervisor_account',   href: '/super/mentor' },
             { label: 'Alumni',            icon: 'school',               href: '/super/alumni' },
             { label: 'Kegiatan',          icon: 'event',                href: '/super/kegiatan' },
             { label: 'Hafalan',           icon: 'menu_book',            href: '/super/hafalan' },
@@ -81,7 +81,8 @@ const MENU_GROUPS: MenuGroup[] = [
         forRoles: ['alumni'],
         items: [
             { label: 'Profil',          icon: 'person',      href: '/alumni/profil' },
-            { label: 'Postingan',       icon: 'people',      href: '/alumni/hub' },
+            { label: 'Database',        icon: 'groups',      href: '/alumni/database' },
+            { label: 'Postingan',       icon: 'forum',       href: '/alumni/hub' },
             { label: 'Bisnis',          icon: 'storefront',  href: '/alumni/bisnis' },
             { label: 'Lowongan',        icon: 'work',        href: '/alumni/jobs' },
         ],
@@ -91,23 +92,28 @@ const MENU_GROUPS: MenuGroup[] = [
 // Mobile bottom nav hrefs per role
 const BOTTOM_NAV: Record<string, string[]> = {
     mahasiswa: ['/dashboard', '/mahasiswa/aktivitas', '/mahasiswa/hafalan', '/mahasiswa/leaderboard', '/mahasiswa/profil'],
-    mentor:    ['/mentor', '/mentor/mentees', '/mentor/hafalan/pending', '/mentor/penilaian', '/mentor/kalender'],
-    super:     ['/dashboard', '/super/role-permission', '/mahasiswa/profil', '/mentor/mentees'],
+    mentor:    ['/dashboard', '/mentor/penilaian', '/mentor/kalender', 'drawer-toggle'],
+    super:     ['/dashboard', '/super/warga', '/super/alumni', 'drawer-toggle'],
     admin:     ['/dashboard', '/super/role-permission'],
     alumni:    ['/dashboard', '/alumni/hub', '/alumni/jobs', '/alumni/bisnis', '/alumni/profil'],
 };
 
 const FAB_BY_ROLE: Record<string, { label: string; href: string; icon: string } | null> = {
-    mahasiswa: { label: 'Log Aktivitas', href: '/mahasiswa/aktivitas/create', icon: 'add_circle' },
+    mahasiswa: { label: 'Log Aktivitas', href: '/mahasiswa/aktivitas?action=create', icon: 'add_circle' },
     mentor:    null,
     super:     null,
     admin:     null,
     alumni:    null,
 };
 
-interface SidebarProps { user: User }
+interface SidebarProps { 
+    user: User; 
+    drawerOpen?: boolean;
+    onClose?: () => void;
+    onOpen?: () => void;
+}
 
-export function Sidebar({ user }: SidebarProps) {
+export function Sidebar({ user, drawerOpen = false, onClose, onOpen }: SidebarProps) {
     const { url, props } = usePage<PageProps>();
 
     // Multi-role: use Spatie roles array, fall back to single role column
@@ -136,7 +142,13 @@ export function Sidebar({ user }: SidebarProps) {
     const bottomHrefs = [...new Set(userRoles.flatMap(r => BOTTOM_NAV[r] ?? []))];
     const bottomNav   = allItems.filter(m => bottomHrefs.includes(m.href) && !m.soon).slice(0, 5);
 
+    // Add drawer toggle to bottom nav if requested
+    if (bottomHrefs.includes('drawer-toggle')) {
+        bottomNav.push({ label: 'Menu', icon: 'menu', href: 'drawer-toggle' });
+    }
+
     function isActive(href: string) {
+        if (href === 'drawer-toggle') return drawerOpen;
         if (href === '/dashboard') return url === '/dashboard' || url === '/dashboard/';
         // Exact-match routes that should not prefix-match sub-paths
         if (href === '/mentor') return url === '/mentor' || url === '/mentor/';
@@ -161,6 +173,20 @@ export function Sidebar({ user }: SidebarProps) {
                         Soon
                     </span>
                 </div>
+            );
+        }
+
+        if (item.href === 'drawer-toggle') {
+            return (
+                <button
+                    onClick={onOpen || (() => {})}
+                    className={`flex flex-col items-center justify-center gap-0.5 transition-all ${
+                        active ? 'text-primary-container scale-110' : 'text-secondary/70'
+                    }`}
+                >
+                    <Icon name={item.icon} className="text-2xl" filled={active} />
+                    <span className="font-display text-[9px] uppercase tracking-wider leading-tight text-center">{item.label}</span>
+                </button>
             );
         }
 
@@ -191,21 +217,39 @@ export function Sidebar({ user }: SidebarProps) {
 
     return (
         <>
-            {/* ── Desktop Sidebar ── */}
-            <aside className="hidden lg:flex flex-col h-[calc(100vh-64px)] w-64 fixed left-0 top-16 bg-white/60 backdrop-blur-2xl border-r border-white/30 shadow-[20px_0_30px_rgba(37,99,235,0.05)] p-4 z-40">
+            {/* ── Overlay Backdrop (Mobile & Super Admin Drawer) ── */}
+            {(drawerOpen) && (
+                <div 
+                    className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity"
+                    onClick={onClose}
+                />
+            )}
+
+            {/* ── Sidebar / Drawer ── */}
+            <aside className={`flex flex-col h-[calc(100vh-64px)] w-64 fixed left-0 top-16 bg-white/60 backdrop-blur-2xl border-r border-white/30 shadow-[20px_0_30px_rgba(37,99,235,0.05)] p-4 z-40 transition-transform duration-300 ${
+                drawerOpen ? 'translate-x-0 !flex' : '-translate-x-full lg:translate-x-0 lg:flex'
+            }`}>
                 {/* Brand */}
-                <div className="mb-4 px-2">
-                    <div className="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center text-white shadow-md mb-3">
-                        <Icon name="school" className="text-xl" filled />
+                <div className="mb-4 px-2 flex items-center justify-between">
+                    <div>
+                        <div className="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center text-white shadow-md mb-3">
+                            <Icon name="school" className="text-xl" filled />
+                        </div>
+                        <p className="font-display text-sm font-black text-primary-container">SIMONAS</p>
                     </div>
-                    <p className="font-display text-sm font-black text-primary-container">SIMONAS</p>
-                    <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">
-                        {userRoles.length > 1
-                            ? userRoles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(' · ')
-                            : userRoles[0] === 'super' ? 'Super Admin' : userRoles[0].charAt(0).toUpperCase() + userRoles[0].slice(1)
-                        } Portal
-                    </p>
+                    {drawerOpen && (
+                        <button onClick={onClose} className="lg:hidden p-2 text-on-surface-variant hover:bg-surface-container rounded-lg">
+                            <Icon name="close" />
+                        </button>
+                    )}
                 </div>
+                
+                <p className="px-2 mb-4 text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">
+                    {userRoles.length > 1
+                        ? userRoles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(' · ')
+                        : userRoles[0] === 'super' ? 'Super Admin' : userRoles[0].charAt(0).toUpperCase() + userRoles[0].slice(1)
+                    } Portal
+                </p>
 
                 {/* Grouped nav */}
                 <nav className="flex-1 overflow-y-auto space-y-0.5 pr-1">

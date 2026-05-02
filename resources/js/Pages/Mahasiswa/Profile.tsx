@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { Icon } from '@/Components/ui/Icon';
+import { Modal } from '@/Components/ui/Modal';
 import { PageProps } from '@/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -139,58 +140,36 @@ function RiwayatModal({
     const meta = TIPE_META[tipe];
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-white/40">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${meta.bg}`}>
-                            <Icon name={meta.icon} className={`text-xl ${meta.color}`} filled />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-on-surface">
-                                {editItem ? 'Edit' : 'Tambah'} {meta.label}
-                            </h3>
-                            {!editItem && (
-                                <p className="text-xs text-on-surface-variant">Bisa tambahkan lebih dari satu sekaligus</p>
-                            )}
-                        </div>
-                    </div>
-                    <button onClick={onClose} className="w-8 h-8 rounded-lg bg-surface-container hover:bg-white/80 flex items-center justify-center">
-                        <Icon name="close" className="text-on-surface-variant" />
+        <Modal open={true} onClose={onClose} title={`${editItem ? 'Edit' : 'Tambah'} ${meta.label}`} icon={meta.icon} size="md"
+            footer={
+                <>
+                    <button type="button" onClick={onClose}
+                        className="px-5 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-black/10 transition-colors">
+                        Batal
                     </button>
-                </div>
+                    <button form="riwayat-form" type="submit" disabled={saving}
+                        className="px-5 py-2.5 rounded-xl font-bold text-sm bg-primary-container text-white disabled:opacity-50 hover:opacity-90 transition-opacity flex items-center gap-2">
+                        <Icon name="save" className="text-base" />
+                        {saving ? 'Menyimpan...' : editItem ? 'Simpan Perubahan' : `Simpan ${entries.length > 1 ? `(${entries.length})` : ''}`}
+                    </button>
+                </>
+            }>
+            {!editItem && <p className="text-xs text-on-surface-variant mb-5">Bisa tambahkan lebih dari satu sekaligus</p>}
+            <form id="riwayat-form" onSubmit={submit} className="space-y-4">
+                {entries.map((entry, idx) => (
+                    <EntryRow key={idx} entry={entry} idx={idx} tipe={tipe}
+                        onChange={change} onRemove={removeRow} showRemove={entries.length > 1} />
+                ))}
 
-                {/* Body */}
-                <form onSubmit={submit} className="px-6 py-5 space-y-4">
-                    {entries.map((entry, idx) => (
-                        <EntryRow key={idx} entry={entry} idx={idx} tipe={tipe}
-                            onChange={change} onRemove={removeRow} showRemove={entries.length > 1} />
-                    ))}
-
-                    {/* Add more button (only for new entries) */}
-                    {!editItem && (
-                        <button type="button" onClick={addRow}
-                            className="w-full py-3 rounded-2xl border-2 border-dashed border-outline-variant text-on-surface-variant text-sm font-bold flex items-center justify-center gap-2 hover:border-primary-container hover:text-primary-container transition-colors">
-                            <Icon name="add_circle" className="text-xl" />
-                            Tambah {meta.label} Lagi
-                        </button>
-                    )}
-
-                    <div className="flex gap-3 pt-2">
-                        <button type="button" onClick={onClose}
-                            className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-white/60 transition-colors">
-                            Batal
-                        </button>
-                        <button type="submit" disabled={saving}
-                            className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-primary-container text-white hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2">
-                            <Icon name="save" className="text-base" />
-                            {saving ? 'Menyimpan...' : editItem ? 'Simpan Perubahan' : `Simpan ${entries.length > 1 ? `(${entries.length})` : ''}`}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                {!editItem && (
+                    <button type="button" onClick={addRow}
+                        className="w-full py-3 rounded-2xl border-2 border-dashed border-outline-variant text-on-surface-variant text-sm font-bold flex items-center justify-center gap-2 hover:border-primary-container hover:text-primary-container transition-colors">
+                        <Icon name="add_circle" className="text-xl" />
+                        Tambah {meta.label} Lagi
+                    </button>
+                )}
+            </form>
+        </Modal>
     );
 }
 
@@ -230,6 +209,17 @@ export default function Profile({ user, mentor, riwayats }: ProfileProps) {
     const [editItem, setEditItem] = useState<Riwayat | null>(null);
     const [editBio, setEditBio] = useState(false);
     const [bioVal, setBioVal] = useState(user.bio ?? '');
+    const [updatingAvatar, setUpdatingAvatar] = useState(false);
+
+    function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUpdatingAvatar(true);
+        router.post('/mahasiswa/profil/avatar', { avatar: file }, {
+            onFinish: () => setUpdatingAvatar(false),
+        });
+    }
 
     function openAdd(tipe: Tipe) { setModalTipe(tipe); setEditItem(null); }
     function openEdit(item: Riwayat) { setModalTipe(item.tipe); setEditItem(item); }
@@ -266,15 +256,24 @@ export default function Profile({ user, mentor, riwayats }: ProfileProps) {
 
                     {/* Avatar + Info */}
                     <div className="glass-card rounded-3xl p-6 text-center space-y-4">
-                        <div className="relative inline-block">
-                            <div className="w-24 h-24 rounded-full overflow-hidden bg-primary-fixed mx-auto ring-4 ring-white/60">
+                        <div className="relative inline-block group">
+                            <div className="w-24 h-24 rounded-full overflow-hidden bg-primary-fixed mx-auto ring-4 ring-white/60 relative">
                                 {user.avatar
                                     ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                                     : <div className="w-full h-full flex items-center justify-center">
                                         <Icon name="person" className="text-4xl text-primary-container" filled />
                                       </div>
                                 }
+                                {updatingAvatar && (
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    </div>
+                                )}
                             </div>
+                            <label className="absolute bottom-0 right-0 w-8 h-8 bg-primary-container text-white rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:scale-110 transition-transform ring-4 ring-white">
+                                <Icon name="photo_camera" className="text-sm" />
+                                <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} disabled={updatingAvatar} />
+                            </label>
                         </div>
                         <div>
                             <h2 className="font-display font-bold text-xl text-on-surface">{user.name}</h2>

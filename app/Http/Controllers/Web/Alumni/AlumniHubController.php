@@ -27,8 +27,11 @@ class AlumniHubController extends Controller
             ->groupBy('user_id')
             ->map(function ($userStories) use ($user) {
                 $owner = $userStories->first()->user;
-                $viewedIds = $userStories->first()
-                    ->viewers()->where('user_id', $user->id)->pluck('alumni_stories.id')->all();
+                $viewedIds = \Illuminate\Support\Facades\DB::table('alumni_story_views')
+                    ->where('user_id', $user->id)
+                    ->whereIn('story_id', $userStories->pluck('id'))
+                    ->pluck('story_id')
+                    ->all();
 
                 return [
                     'user_id'   => $owner->id,
@@ -133,11 +136,21 @@ class AlumniHubController extends Controller
             'type'    => 'required|in:story,achievement,event,question',
             'title'   => 'nullable|string|max:200',
             'content' => 'required|string|max:3000',
+            'image'   => 'nullable|image|max:5120',
         ]);
 
-        AlumniPost::create([
-            ...$validated,
-            'user_id' => $request->user()->id,
+        $imageUrl = null;
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('alumni_posts', 'public');
+            $imageUrl = \Illuminate\Support\Facades\Storage::url($path);
+        }
+
+        \App\Models\AlumniPost::create([
+            'type'      => $validated['type'],
+            'title'     => $validated['title'] ?? null,
+            'content'   => $validated['content'],
+            'user_id'   => $request->user()->id,
+            'image_url' => $imageUrl,
         ]);
 
         return back()->with('success', 'Post berhasil dibagikan!');
@@ -146,7 +159,7 @@ class AlumniHubController extends Controller
     // ─── Delete Post ────────────────────────────────────────────
     public function destroyPost(Request $request, AlumniPost $post)
     {
-        $this->authorize('delete', $post); // only owner
+        abort_if($post->user_id !== $request->user()->id, 403);
         $post->delete();
         return back()->with('success', 'Post dihapus.');
     }

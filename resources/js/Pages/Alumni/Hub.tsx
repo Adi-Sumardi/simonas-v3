@@ -1,8 +1,12 @@
 import { Head, Link, useForm, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { Icon } from '@/Components/ui/Icon';
+import { Modal } from '@/Components/ui/Modal';
+import { ConfirmDialog } from '@/Components/ui/ConfirmDialog';
+import { ActionButtons } from '@/Components/ui/ActionButtons';
+import { useToast } from '@/Components/ui/Toast';
 import { AlumniSidebar } from '@/Components/Alumni/AlumniSidebar';
 import { StoriesBar, type StoryGroup } from '@/Components/Alumni/StoriesBar';
 import { usePage } from '@inertiajs/react';
@@ -48,15 +52,41 @@ function Avatar({ author, size = 10 }: { author: Author; size?: number }) {
 // ─── Compose Post Form ────────────────────────────────────────────────────────
 function ComposePost({ currentUser }: { currentUser: Author }) {
     const [open, setOpen] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const { data, setData, post, processing, reset, errors } = useForm({
         type: 'story' as string,
         title: '',
         content: '',
+        image: null as File | null,
     });
+
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        post('/alumni/hub/posts', { onSuccess: () => { reset(); setOpen(false); } });
+        post('/alumni/hub/posts', {
+            forceFormData: true,
+            onSuccess: () => {
+                reset();
+                setOpen(false);
+                setPreviewUrl(null);
+            }
+        });
+    }
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (file) {
+            setData('image', file);
+            setPreviewUrl(URL.createObjectURL(file));
+        }
+    }
+
+    function removeImage() {
+        setData('image', null);
+        setPreviewUrl(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
     }
 
     return (
@@ -81,60 +111,72 @@ function ComposePost({ currentUser }: { currentUser: Author }) {
             </div>
 
             {/* Modal */}
-            {open && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-                    <div className="glass-card rounded-2xl w-full max-w-lg p-6 shadow-2xl animate-slide-up">
-                        <div className="flex items-center justify-between mb-5">
-                            <div className="flex items-center gap-3">
-                                <Avatar author={currentUser} size={10} />
-                                <div>
-                                    <p className="font-bold text-on-surface text-sm">{currentUser.name}</p>
-                                    <p className="text-xs text-on-surface-variant">Alumni · {currentUser.angkatan}</p>
-                                </div>
-                            </div>
-                            <button onClick={() => setOpen(false)} className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center">
-                                <Icon name="close" className="text-on-surface-variant" />
+            <Modal open={open} onClose={() => setOpen(false)} size="md"
+                title={
+                    <div className="flex items-center gap-3">
+                        <Avatar author={currentUser} size={10} />
+                        <div>
+                            <p className="font-bold text-on-surface text-sm">{currentUser.name}</p>
+                            <p className="text-xs text-on-surface-variant">Alumni · {currentUser.angkatan}</p>
+                        </div>
+                    </div>
+                }
+                footer={
+                    <>
+                        <button type="button" onClick={() => setOpen(false)}
+                            className="px-5 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-black/10 transition-colors">
+                            Batal
+                        </button>
+                        <button form="post-form" type="submit" disabled={processing || !data.content.trim()}
+                            className="px-5 py-2.5 rounded-xl font-bold text-sm bg-emerald-500 text-white disabled:opacity-50 hover:bg-emerald-600 transition-colors">
+                            {processing ? 'Memposting...' : 'Bagikan'}
+                        </button>
+                    </>
+                }>
+                <form id="post-form" onSubmit={submit} className="space-y-4">
+                    {/* Type selector */}
+                    <div className="flex gap-2 flex-wrap">
+                        {Object.entries(POST_TYPE_META).map(([key, m]) => (
+                            <button type="button" key={key}
+                                onClick={() => setData('type', key)}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
+                                    data.type === key ? m.color + ' scale-105' : 'bg-surface-container border-white/30 text-on-surface-variant'
+                                }`}>
+                                <Icon name={m.icon} className="text-xs" filled={data.type === key} />
+                                {m.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <input type="text" value={data.title} onChange={e => setData('title', e.target.value)}
+                        placeholder="Judul (opsional)..."
+                        className="glass-input w-full text-sm" />
+
+                    <textarea rows={5} value={data.content} onChange={e => setData('content', e.target.value)}
+                        placeholder="Apa yang ingin kamu bagikan kepada sesama alumni...?"
+                        className="glass-input w-full text-sm resize-none" required />
+                    {errors.content && <p className="text-xs text-rose-600">{errors.content}</p>}
+
+                    {previewUrl && (
+                        <div className="relative rounded-2xl overflow-hidden border border-white/30 aspect-video bg-black/5">
+                            <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
+                            <button type="button" onClick={removeImage}
+                                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors">
+                                <Icon name="close" className="text-sm" />
                             </button>
                         </div>
+                    )}
 
-                        <form onSubmit={submit} className="space-y-4">
-                            {/* Type selector */}
-                            <div className="flex gap-2 flex-wrap">
-                                {Object.entries(POST_TYPE_META).map(([key, m]) => (
-                                    <button type="button" key={key}
-                                        onClick={() => setData('type', key)}
-                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
-                                            data.type === key ? m.color + ' scale-105' : 'bg-surface-container border-white/30 text-on-surface-variant'
-                                        }`}>
-                                        <Icon name={m.icon} className="text-xs" filled={data.type === key} />
-                                        {m.label}
-                                    </button>
-                                ))}
-                            </div>
-
-                            <input type="text" value={data.title} onChange={e => setData('title', e.target.value)}
-                                placeholder="Judul (opsional)..."
-                                className="glass-input w-full text-sm" />
-
-                            <textarea rows={5} value={data.content} onChange={e => setData('content', e.target.value)}
-                                placeholder="Apa yang ingin kamu bagikan kepada sesama alumni...?"
-                                className="glass-input w-full text-sm resize-none" required />
-                            {errors.content && <p className="text-xs text-rose-600">{errors.content}</p>}
-
-                            <div className="flex gap-3">
-                                <button type="button" onClick={() => setOpen(false)}
-                                    className="flex-1 py-3 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant">
-                                    Batal
-                                </button>
-                                <button type="submit" disabled={processing || !data.content.trim()}
-                                    className="flex-1 py-3 rounded-xl font-bold text-sm bg-emerald-500 text-white disabled:opacity-50 hover:bg-emerald-600 transition-colors">
-                                    {processing ? 'Memposting...' : 'Bagikan'}
-                                </button>
-                            </div>
-                        </form>
+                    <div className="flex items-center gap-2 pt-2">
+                        <button type="button" onClick={() => fileInputRef.current?.click()}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container-low text-on-surface-variant hover:bg-white/60 transition-colors text-xs font-bold">
+                            <Icon name="image" className="text-lg text-emerald-500" filled />
+                            {data.image ? 'Ganti Foto' : 'Tambah Foto'}
+                        </button>
+                        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
                     </div>
-                </div>
-            )}
+                </form>
+            </Modal>
         </div>
     );
 }
@@ -167,6 +209,9 @@ function PostCard({ post, currentUser }: { post: Post; currentUser: Author }) {
     const [showComments, setShowComments] = useState(false);
     const [liked, setLiked] = useState(post.is_liked);
     const [likesCount, setLikesCount] = useState(post.likes_count);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const { toast } = useToast();
     const meta = POST_TYPE_META[post.type];
 
     function handleLike() {
@@ -177,8 +222,32 @@ function PostCard({ post, currentUser }: { post: Post; currentUser: Author }) {
     }
 
     function handleDelete() {
-        if (!confirm('Hapus post ini?')) return;
-        router.delete(`/alumni/hub/posts/${post.id}`, { preserveScroll: true });
+        setDeleting(true);
+        router.delete(`/alumni/hub/posts/${post.id}`, {
+            preserveScroll: true,
+            onSuccess: () => setShowDeleteConfirm(false),
+            onFinish: () => setDeleting(false),
+        });
+    }
+
+    function handleShare() {
+        const shareTitle = post.title || `Postingan dari ${post.author.name}`;
+        const shareText = `*${shareTitle}*\n\n"${post.content.substring(0, 150)}${post.content.length > 150 ? '...' : ''}"\n\nLihat selengkapnya di SIMONAS Alumni Hub:`;
+        const shareUrl = window.location.origin + '/alumni/hub';
+
+        if (navigator.share) {
+            navigator.share({
+                title: shareTitle,
+                text: shareText,
+                url: shareUrl,
+            }).then(() => {
+                toast('Berhasil dibagikan!', 'success');
+            }).catch(() => {});
+        } else {
+            // Fallback to WhatsApp
+            const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + '\n' + shareUrl)}`;
+            window.open(waUrl, '_blank');
+        }
     }
 
     return (
@@ -210,9 +279,10 @@ function PostCard({ post, currentUser }: { post: Post; currentUser: Author }) {
                             {meta.label}
                         </span>
                         {currentUser.id === post.author.id && (
-                            <button onClick={handleDelete} className="w-7 h-7 rounded-lg bg-surface-container/50 flex items-center justify-center text-on-surface-variant hover:bg-rose-100 hover:text-rose-600 transition-colors">
-                                <Icon name="delete" className="text-xs" />
-                            </button>
+                            <ActionButtons 
+                                onDelete={() => setShowDeleteConfirm(true)}
+                                variant="glass"
+                            />
                         )}
                     </div>
                 </div>
@@ -240,7 +310,8 @@ function PostCard({ post, currentUser }: { post: Post; currentUser: Author }) {
                         {post.comments_count > 0 && <span>{post.comments_count}</span>}
                     </button>
 
-                    <button className="flex items-center gap-1.5 text-sm font-bold text-on-surface-variant hover:text-blue-500 transition-colors ml-auto">
+                    <button onClick={handleShare}
+                        className="flex items-center gap-1.5 text-sm font-bold text-on-surface-variant hover:text-blue-500 transition-colors ml-auto">
                         <Icon name="share" className="text-base" />
                     </button>
                 </div>
@@ -264,6 +335,17 @@ function PostCard({ post, currentUser }: { post: Post; currentUser: Author }) {
                     </div>
                 )}
             </div>
+
+            <ConfirmDialog
+                open={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={handleDelete}
+                loading={deleting}
+                title="Hapus Postingan?"
+                message="Postingan ini akan dihapus permanen dari timeline alumni."
+                confirmText="Ya, Hapus"
+                type="danger"
+            />
         </div>
     );
 }

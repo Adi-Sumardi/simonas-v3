@@ -39,35 +39,191 @@ class DashboardController extends Controller
 
     private function mahasiswaPayload($user): array
     {
+        $today = now()->format('Y-m-d');
+        $now = now();
+
+        $events = \App\Models\UserEvent::where('user_id', $user->id)
+            ->where('type', 'shalat')
+            ->get();
+
+        $allTodayPrayers = $events->map(function($e) use ($today, $now) {
+            $isCompleted = in_array($today, $e->completed_at_dates ?? []);
+            
+            if ($e->recurring) {
+                if ($today < $e->date->format('Y-m-d')) return null;
+            } else if ($e->date->format('Y-m-d') !== $today) {
+                return null;
+            }
+
+            $prayerTime = \Carbon\Carbon::parse($today . ' ' . ($e->time ?? '00:00'));
+            
+            $checkTime = ($isCompleted && isset($e->completed_at_details[$today])) 
+                ? \Carbon\Carbon::parse($e->completed_at_details[$today]) 
+                : $now;
+
+            $isLate = $checkTime->greaterThan($prayerTime->copy()->addMinutes(90));
+            $isTimeArrived = $now->greaterThanOrEqualTo($prayerTime);
+            
+            return [
+                'id'              => $e->id,
+                'title'           => $e->title,
+                'time'            => $e->time,
+                'completed'       => $isCompleted,
+                'is_late'         => $isLate,
+                'is_time_arrived' => $isTimeArrived,
+                'status'          => $isCompleted 
+                                    ? ($isLate ? 'Tidak Tepat Waktu' : 'Tepat Waktu') 
+                                    : ($isLate ? 'Terlambat' : 'Menunggu'),
+            ];
+        })->filter()->sortBy('time')->values();
+
+        // Filter list to only show: already completed OR time has arrived
+        $todayPrayers = $allTodayPrayers->filter(function($p) {
+            return $p['completed'] || $p['is_time_arrived'];
+        })->values();
+
+        $completedOnTime = $allTodayPrayers->where('completed', true)->where('is_late', false)->count();
+        $visualCompleted = $allTodayPrayers->where('completed', true)->count();
+        $totalCount = $allTodayPrayers->count();
+        $next = $allTodayPrayers->where('completed', false)->where('is_time_arrived', false)->first();
+
+        // 2. Real Activity Logs Calculation (Current Month)
+        $month = now()->month;
+        $year = now()->year;
+        $monthLogsCount = 0;
+
+        $models = [
+            \App\Models\Akademik::class,
+            \App\Models\Leadership::class,
+            \App\Models\Karakter::class,
+            \App\Models\Kreatif::class,
+        ];
+
+        foreach ($models as $m) {
+            $monthLogsCount += $m::where('user_id', $user->id)
+                ->whereMonth('waktu', $month)
+                ->whereYear('waktu', $year)
+                ->count();
+        }
+
+        $logTarget = 23;
+
+        // Points calculation based on on-time completion
+        $basePoints = 1200;
+        $shalatPoints = $completedOnTime * 10; 
+
+        // 1. Real Hafalan Data
+        $hafalanRecord = \App\Models\Hafalan::where('user_id', $user->id)->first();
+
+        // 3. Recent Activities (Top 3)
+        $recent = collect();
+        foreach ($models as $m) {
+            $items = $m::where('user_id', $user->id)
+                ->latest('waktu')
+                ->take(3)
+                ->get()
+                ->map(fn($r) => [
+                    'id'         => $r->id,
+                    'jenis'      => $r->kegiatan ?? $r->nama_kegiatan ?? 'Aktivitas',
+                    'deskripsi'  => ($r->tempat ? $r->tempat . ' - ' : '') . ($r->keterangan ?? ''),
+                    'created_at' => $r->waktu ? \Carbon\Carbon::parse($r->waktu)->format('d M Y') : $r->created_at->format('d M Y'),
+                    'icon'       => 'event_note',
+                    'image_url'  => $r->file ? asset('storage/' . $r->file) : null,
+                ]);
+            $recent = $recent->merge($items);
+        }
+        $recentActivities = $recent->sortByDesc(fn($r) => $r['created_at'])->take(3)->values();
+
         return [
             'stats' => [
-                'shalat'       => ['completed' => 4, 'total' => 5, 'next' => 'Isha 19:15'],
-                'study_hours'  => ['today' => 3.5, 'target' => 5],
-                'hafalan'      => ['progress_percent' => 75, 'current_surah' => 'Al-Kahf', 'juz' => 15],
-                'points'       => ['total' => 1240, 'rank' => 4, 'to_next' => 160],
+                'shalat' => [
+                    'completed'   => $completedOnTime,
+                    'visual_done' => $visualCompleted,
+                    'total'       => $totalCount ?: 5,
+                    'next_prayer' => $next ? $next['title'] . ' ' . $next['time'] : 'Selesai',
+                    'list'        => $todayPrayers,
+                ],
+                'activity_logs' => [
+                    'count'  => $monthLogsCount,
+                    'target' => $logTarget
+                ],
+                'hafalan' => [
+                    'progress_percent' => $hafalanRecord ? $hafalanRecord->progress_percent : 0,
+                    'current_surah'    => $hafalanRecord ? $hafalanRecord->current_surah_nama : 'Belum Mulai',
+                    'juz'              => $hafalanRecord ? $hafalanRecord->current_juz : 0,
+                ],
+                'points' => [
+                    'total'   => $basePoints + $shalatPoints,
+                    'rank'    => 4,
+                    'to_next' => 160,
+                ],
             ],
-            'recent_activities' => [],
+            'recent_activities' => $recentActivities,
         ];
     }
 
     private function mentorPayload($user): array
     {
+        $mentees = \App\Models\User::where('mentor_id', $user->id)->get();
+        $menteeIds = $mentees->pluck('id');
+
+        // Stats
+        $totalMentees = $mentees->count();
+        
+        // Avg Performance (Scale 0-100)
+        $avgAkademik = \App\Models\Akademik::whereIn('user_id', $menteeIds)->avg('nilai') ?? 0;
+        $avgLeadership = \App\Models\Leadership::whereIn('user_id', $menteeIds)->avg('nilai') ?? 0;
+        $avgKarakter = \App\Models\Karakter::whereIn('user_id', $menteeIds)->avg('nilai') ?? 0;
+        $avgKreatif = \App\Models\Kreatif::whereIn('user_id', $menteeIds)->avg('nilai') ?? 0;
+        
+        $avgPerformance = ($avgAkademik + $avgLeadership + $avgKarakter + $avgKreatif) / 4;
+
+        $pendingNilai = \App\Models\HafalanLog::where('mentor_id', $user->id)
+            ->where('score', 'pending')
+            ->count();
+
+        // Quran Target: based on average progress in 'hafalans' table
+        $hafalanRecords = \App\Models\Hafalan::whereIn('user_id', $menteeIds)->get();
+        $avgQuran = $hafalanRecords->count() > 0 ? $hafalanRecords->avg('progress_percent') : 0;
+
+        // Performance Trend (last 5 weeks)
+        $trend = [];
+        for ($i = 4; $i >= 0; $i--) {
+            $start = now()->subWeeks($i)->startOfWeek();
+            $end = now()->subWeeks($i)->endOfWeek();
+            
+            $weekAvg = \App\Models\Akademik::whereIn('user_id', $menteeIds)
+                ->whereBetween('created_at', [$start, $end])
+                ->avg('nilai') ?? 50; // default 50 if no data
+            
+            $trend[] = [
+                'label'   => $i === 0 ? 'Now' : 'W' . (now()->subWeeks($i)->weekOfYear),
+                'percent' => (int)$weekAvg
+            ];
+        }
+
+        $menteesList = $mentees->map(function($m) {
+            $hafalan = \App\Models\Hafalan::where('user_id', $m->id)->first();
+            return [
+                'id'       => $m->id,
+                'name'     => $m->name,
+                'avatar'   => $m->avatar,
+                'asrama'   => $m->asrama,
+                'progress' => $hafalan ? $hafalan->progress_percent : 0,
+                'last_log' => $m->updated_at->diffForHumans(),
+            ];
+        });
+
         return [
             'stats' => [
-                'total_mentees'        => 12,
-                'avg_performance'      => 88.4,
-                'pending_nilai'        => 4,
-                'quran_target_percent' => 85,
+                'total_mentees'        => $totalMentees,
+                'avg_performance'      => round($avgPerformance, 1),
+                'pending_nilai'        => $pendingNilai,
+                'quran_target_percent' => round($avgQuran, 1),
+                'performance_trend'    => $trend,
+                'mentees'              => $menteesList,
+                'featured_mentee'      => $menteesList->sortByDesc('progress')->first(),
             ],
-            'performance_trend' => [
-                ['label' => 'Week 1', 'percent' => 60],
-                ['label' => 'Week 2', 'percent' => 45],
-                ['label' => 'Week 3', 'percent' => 85],
-                ['label' => 'Week 4', 'percent' => 70],
-                ['label' => 'Now',    'percent' => 95],
-            ],
-            'mentees'        => [],
-            'featured_mentee'=> null,
         ];
     }
 
@@ -104,6 +260,15 @@ class DashboardController extends Controller
 
         $asramas = $students->pluck('asrama')->unique()->sort()->values();
 
+        $asramaStats = \App\Models\Asrama::all()->map(function($a) {
+            return [
+                'id'       => $a->id,
+                'name'     => $a->nama_asrama,
+                'capacity' => $a->kapasitas,
+                'current'  => \App\Models\User::where('role', 'mahasiswa')->where('asrama', $a->nama_asrama)->count(),
+            ];
+        });
+
         return [
             'stats' => [
                 'total_warga'   => 120,
@@ -111,8 +276,9 @@ class DashboardController extends Controller
                 'total_alumni'  => 340,
                 'avg_score'     => round($students->avg('total')),
             ],
-            'students' => $students->values(),
-            'asramas'  => $asramas,
+            'students'      => $students->values(),
+            'asramas'       => $asramas,
+            'asrama_stats'  => $asramaStats,
         ];
     }
 

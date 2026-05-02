@@ -52,7 +52,43 @@ class MenteesController extends Controller
                 ];
             });
 
-        return Inertia::render('Mentor/Mentees/Index', compact('mentees'));
+        $availableStudents = User::where('role', 'mahasiswa')
+            ->whereNull('mentor_id')
+            ->select(['id', 'name', 'nim', 'asrama', 'prodi'])
+            ->get();
+
+        return Inertia::render('Mentor/Mentees/Index', [
+            'mentees' => $mentees,
+            'available_students' => $availableStudents,
+        ]);
+    }
+
+    public function addMentee(Request $request)
+    {
+        $request->validate([
+            'student_id' => 'required|exists:users,id',
+        ]);
+
+        $mentor = $request->user();
+        $student = User::where('id', $request->student_id)
+            ->where('role', 'mahasiswa')
+            ->firstOrFail();
+
+        $student->update(['mentor_id' => $mentor->id]);
+
+        return back()->with('success', "{$student->name} berhasil ditambahkan ke bimbingan Anda.");
+    }
+
+    public function removeMentee(Request $request, $id)
+    {
+        $mentor = $request->user();
+        $student = User::where('id', $id)
+            ->where('mentor_id', $mentor->id)
+            ->firstOrFail();
+
+        $student->update(['mentor_id' => null]);
+
+        return back()->with('success', "{$student->name} berhasil dihapus dari bimbingan Anda.");
     }
 
     public function show(Request $request, $id)

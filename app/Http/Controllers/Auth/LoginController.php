@@ -54,4 +54,20 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
     }
+
+    /**
+     * The user has been authenticated.
+     */
+    protected function authenticated(\Illuminate\Http\Request $request, $user)
+    {
+        session()->flash('success', 'Selamat datang kembali, ' . $user->name . '!');
+    }
+
+    /**
+     * The user has logged out of the application.
+     */
+    protected function loggedOut(\Illuminate\Http\Request $request)
+    {
+        session()->flash('success', 'Berhasil keluar. Sampai jumpa lagi!');
+    }
 }

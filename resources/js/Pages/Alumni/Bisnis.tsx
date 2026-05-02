@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { Icon } from '@/Components/ui/Icon';
+import { Modal } from '@/Components/ui/Modal';
 import { AlumniSidebar } from '@/Components/Alumni/AlumniSidebar';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -106,7 +107,7 @@ function BusinessCard({ biz }: { biz: Business }) {
 }
 
 // ─── Register Business Modal ──────────────────────────────────────────────────
-function RegisterModal({ onClose }: { onClose: () => void }) {
+function RegisterModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         company_name:  '',
         business_type: '',
@@ -125,89 +126,80 @@ function RegisterModal({ onClose }: { onClose: () => void }) {
     const TYPES = ['Kuliner', 'Teknologi', 'Pendidikan', 'Perdagangan', 'Jasa', 'Kreatif', 'Kesehatan', 'Properti', 'Pertanian', 'Lainnya'];
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
-            <div className="glass-card rounded-2xl w-full max-w-xl p-6 shadow-2xl animate-slide-up my-4">
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h2 className="font-display text-lg font-bold text-on-surface">Daftarkan Bisnis</h2>
-                        <p className="text-xs text-on-surface-variant mt-0.5">Promosikan bisnis kamu ke seluruh alumni</p>
-                    </div>
-                    <button onClick={onClose} className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center">
-                        <Icon name="close" className="text-on-surface-variant" />
+        <Modal open={open} onClose={onClose} title="Daftarkan Bisnis" icon="add_business" size="md"
+            footer={
+                <>
+                    <button type="button" onClick={onClose}
+                        className="px-5 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-black/10 transition-colors">
+                        Batal
                     </button>
+                    <button form="bisnis-form" type="submit" disabled={processing}
+                        className="px-5 py-2.5 rounded-xl font-bold text-sm bg-emerald-500 text-white disabled:opacity-50 hover:bg-emerald-600 transition-colors">
+                        {processing ? 'Mendaftarkan...' : '🏪 Daftar Bisnis'}
+                    </button>
+                </>
+            }>
+            <p className="text-xs text-on-surface-variant mb-5">Promosikan bisnis kamu ke seluruh alumni</p>
+            <form id="bisnis-form" onSubmit={submit} className="space-y-4">
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Nama Bisnis *</label>
+                    <input type="text" value={data.company_name} onChange={e => setData('company_name', e.target.value)}
+                        placeholder="Nama usaha atau perusahaan" className="glass-input w-full text-sm" required />
                 </div>
 
-                <form onSubmit={submit} className="space-y-4">
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Bidang Usaha *</label>
+                    <div className="flex flex-wrap gap-1.5">
+                        {TYPES.map(t => (
+                            <button type="button" key={t} onClick={() => setData('business_type', t)}
+                                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
+                                    data.business_type === t
+                                        ? 'bg-emerald-500 text-white border-emerald-600'
+                                        : 'border-white/30 text-on-surface-variant hover:bg-surface-container'
+                                }`}>
+                                {t}
+                            </button>
+                        ))}
+                    </div>
+                    {errors.business_type && <p className="text-xs text-rose-600 mt-1">{errors.business_type}</p>}
+                </div>
+
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Deskripsi Bisnis *</label>
+                    <textarea rows={3} value={data.description} onChange={e => setData('description', e.target.value)}
+                        placeholder="Ceritakan produk/jasa yang kamu tawarkan, keunggulan, dll..."
+                        className="glass-input w-full text-sm resize-none" required />
+                </div>
+
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Alamat / Lokasi</label>
+                    <input type="text" value={data.address} onChange={e => setData('address', e.target.value)}
+                        placeholder="Kota, Provinsi atau Online" className="glass-input w-full text-sm" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Nama Bisnis *</label>
-                        <input type="text" value={data.company_name} onChange={e => setData('company_name', e.target.value)}
-                            placeholder="Nama usaha atau perusahaan" className="glass-input w-full text-sm" required />
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Website</label>
+                        <input type="url" value={data.website} onChange={e => setData('website', e.target.value)}
+                            placeholder="https://..." className="glass-input w-full text-sm" />
                     </div>
-
                     <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Bidang Usaha *</label>
-                        <div className="flex flex-wrap gap-1.5">
-                            {TYPES.map(t => (
-                                <button type="button" key={t} onClick={() => setData('business_type', t)}
-                                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
-                                        data.business_type === t
-                                            ? 'bg-emerald-500 text-white border-emerald-600'
-                                            : 'border-white/30 text-on-surface-variant hover:bg-surface-container'
-                                    }`}>
-                                    {t}
-                                </button>
-                            ))}
-                        </div>
-                        {errors.business_type && <p className="text-xs text-rose-600 mt-1">{errors.business_type}</p>}
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">No. WhatsApp</label>
+                        <input type="text" value={data.phone} onChange={e => setData('phone', e.target.value)}
+                            placeholder="08xxxxxxxxxx" className="glass-input w-full text-sm" />
                     </div>
+                </div>
 
-                    <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Deskripsi Bisnis *</label>
-                        <textarea rows={3} value={data.description} onChange={e => setData('description', e.target.value)}
-                            placeholder="Ceritakan produk/jasa yang kamu tawarkan, keunggulan, dll..."
-                            className="glass-input w-full text-sm resize-none" required />
-                    </div>
-
-                    <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Alamat / Lokasi</label>
-                        <input type="text" value={data.address} onChange={e => setData('address', e.target.value)}
-                            placeholder="Kota, Provinsi atau Online" className="glass-input w-full text-sm" />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Website</label>
-                            <input type="url" value={data.website} onChange={e => setData('website', e.target.value)}
-                                placeholder="https://..." className="glass-input w-full text-sm" />
-                        </div>
-                        <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">No. WhatsApp</label>
-                            <input type="text" value={data.phone} onChange={e => setData('phone', e.target.value)}
-                                placeholder="08xxxxxxxxxx" className="glass-input w-full text-sm" />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Email Bisnis</label>
-                        <input type="email" value={data.email} onChange={e => setData('email', e.target.value)}
-                            placeholder="info@bisnisku.com" className="glass-input w-full text-sm" />
-                    </div>
-
-                    <div className="flex gap-3 pt-2">
-                        <button type="button" onClick={onClose}
-                            className="flex-1 py-3 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant">
-                            Batal
-                        </button>
-                        <button type="submit" disabled={processing}
-                            className="flex-1 py-3 rounded-xl font-bold text-sm bg-emerald-500 text-white disabled:opacity-50 hover:bg-emerald-600 transition-colors">
-                            {processing ? 'Mendaftarkan...' : '🏪 Daftar Bisnis'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Email Bisnis</label>
+                    <input type="email" value={data.email} onChange={e => setData('email', e.target.value)}
+                        placeholder="info@bisnisku.com" className="glass-input w-full text-sm" />
+                </div>
+            </form>
+        </Modal>
     );
 }
+
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Bisnis({ businesses, filter }: Props) {
@@ -289,7 +281,8 @@ export default function Bisnis({ businesses, filter }: Props) {
                 </div>
             </div>
 
-            {showModal && <RegisterModal onClose={() => setShowModal(false)} />}
+            {/* Modal */}
+            <RegisterModal open={showModal} onClose={() => setShowModal(false)} />
         </AppLayout>
     );
 }

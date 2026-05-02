@@ -50,8 +50,13 @@ export function ProgressDonut({
             </svg>
             {/* Center label */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-extrabold text-primary-container">{value}%</span>
-                {label && (
+                <span 
+                    className="font-extrabold text-primary-container leading-none"
+                    style={{ fontSize: `${Math.max(10, size * 0.2)}px` }}
+                >
+                    {value}%
+                </span>
+                {label && size > 80 && (
                     <span className="text-[10px] uppercase font-bold text-secondary text-center leading-tight mt-0.5 px-2">
                         {label}
                     </span>

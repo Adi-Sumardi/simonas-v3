@@ -139,6 +139,32 @@ export default function RolePermission({ roles, permissions, users }: Props) {
     const [showPw, setShowPw]   = useState(false);
     const [pwError, setPwError] = useState('');
 
+    // Add user modal state
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'mahasiswa' });
+
+    function openAddModal() {
+        setNewUser({ name: '', email: '', password: '', role: 'mahasiswa' });
+        setIsAddModalOpen(true);
+    }
+    function closeAddModal() { setIsAddModalOpen(false); }
+
+    function createUser() {
+        if (!newUser.name || !newUser.email || !newUser.password || !newUser.role) {
+            showToast('Semua field harus diisi.', 'error');
+            return;
+        }
+        router.post('/super/users', newUser, {
+            onSuccess: () => {
+                closeAddModal();
+                showToast(`✓ User ${newUser.name} berhasil dibuat.`);
+            },
+            onError: (errs) => {
+                showToast(Object.values(errs)[0] as string ?? 'Gagal membuat user.', 'error');
+            }
+        });
+    }
+
     function openPasswordModal(user: UserItem) {
         setPwUser(user);
         setPw(''); setPwConfirm(''); setPwError(''); setShowPw(false);
@@ -434,7 +460,16 @@ export default function RolePermission({ roles, permissions, users }: Props) {
                             placeholder="Cari nama atau email..."
                             className="bg-transparent outline-none flex-1 text-body-sm placeholder:text-on-surface-variant/60"
                         />
-                        <span className="text-label-caps text-on-surface-variant">{filteredUsers.length} users</span>
+                        <div className="flex items-center gap-4">
+                            <span className="text-label-caps text-on-surface-variant hidden sm:inline">{filteredUsers.length} users</span>
+                            <button
+                                onClick={openAddModal}
+                                className="btn-primary flex items-center gap-2 px-4 py-2 rounded-xl text-sm"
+                            >
+                                <Icon name="person_add" className="text-xl" />
+                                <span className="hidden sm:inline">Tambah User</span>
+                            </button>
+                        </div>
                     </div>
 
                     {/* Table header */}
@@ -713,6 +748,71 @@ export default function RolePermission({ roles, permissions, users }: Props) {
                 </div>
             )}
 
+
+            {/* ── Add User Modal ────────────────────────────────────── */}
+            {isAddModalOpen && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+                    onClick={e => e.target === e.currentTarget && closeAddModal()}
+                >
+                    <div className="glass-card rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-white/40">
+                            <h3 className="font-bold text-on-surface">Tambah User Manual</h3>
+                            <button onClick={closeAddModal} className="w-8 h-8 rounded-lg bg-surface-container hover:bg-white/80 flex items-center justify-center transition-colors">
+                                <Icon name="close" className="text-on-surface-variant" />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="text-label-caps text-on-surface-variant mb-1.5 block">Nama Lengkap</label>
+                                <input
+                                    type="text"
+                                    value={newUser.name}
+                                    onChange={e => setNewUser({ ...newUser, name: e.target.value })}
+                                    placeholder="Masukkan nama lengkap"
+                                    className="glass-input w-full"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-label-caps text-on-surface-variant mb-1.5 block">Email</label>
+                                <input
+                                    type="email"
+                                    value={newUser.email}
+                                    onChange={e => setNewUser({ ...newUser, email: e.target.value })}
+                                    placeholder="email@contoh.com"
+                                    className="glass-input w-full"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-label-caps text-on-surface-variant mb-1.5 block">Password</label>
+                                <input
+                                    type="password"
+                                    value={newUser.password}
+                                    onChange={e => setNewUser({ ...newUser, password: e.target.value })}
+                                    placeholder="Minimal 8 karakter"
+                                    className="glass-input w-full"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-label-caps text-on-surface-variant mb-1.5 block">Role Utama</label>
+                                <select
+                                    value={newUser.role}
+                                    onChange={e => setNewUser({ ...newUser, role: e.target.value })}
+                                    className="glass-input w-full"
+                                >
+                                    {roles.map(r => (
+                                        <option key={r.id} value={r.name}>{r.name.charAt(0).toUpperCase() + r.name.slice(1)}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 px-6 pb-6">
+                            <button onClick={closeAddModal} className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-white/60 transition-colors">Batal</button>
+                            <button onClick={createUser} className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-primary-container text-white hover:opacity-90 transition-opacity">Simpan User</button>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* ── Toast Notification ─────────────────────────────── */}
             {toast && (
                 <div className={`fixed bottom-6 right-6 z-[70] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-bold text-white transition-all ${

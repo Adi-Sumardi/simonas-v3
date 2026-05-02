@@ -16,6 +16,7 @@ interface TopbarProps {
     searchPlaceholder?: string;
     dropdownItems?: DropdownItem[];
     notificationCount?: number;
+    onMenuClick?: () => void;
 }
 
 export function Topbar({
@@ -23,15 +24,22 @@ export function Topbar({
     searchPlaceholder = 'Search...',
     dropdownItems = [],
     notificationCount = 0,
+    onMenuClick,
 }: TopbarProps) {
     const [profileOpen, setProfileOpen] = useState(false);
+    const [notificationsOpen, setNotificationsOpen] = useState(false);
+
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const notifRef = useRef<HTMLDivElement>(null);
 
     // Close on outside click
     useEffect(() => {
         function handleClick(e: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
                 setProfileOpen(false);
+            }
+            if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+                setNotificationsOpen(false);
             }
         }
         document.addEventListener('mousedown', handleClick);
@@ -49,6 +57,12 @@ export function Topbar({
         <header className="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-md border-b border-white/40 shadow-lg shadow-blue-500/5 px-6 py-3 flex justify-between items-center">
             {/* Brand */}
             <div className="flex items-center gap-3">
+                <button 
+                    onClick={onMenuClick}
+                    className="p-2 rounded-xl bg-primary/5 text-primary hover:bg-primary/10 transition-all lg:hidden"
+                >
+                    <Icon name="menu" className="text-xl" />
+                </button>
                 <div className="w-9 h-9 bg-primary-container rounded-xl flex items-center justify-center text-white shadow-md lg:hidden">
                     <Icon name="school" className="text-xl" filled />
                 </div>
@@ -70,17 +84,46 @@ export function Topbar({
             {/* Actions */}
             <div className="flex items-center gap-3">
                 {/* Notification */}
-                <button className="relative p-2 rounded-full text-secondary hover:bg-primary-fixed/50 transition-colors">
-                    <Icon name="notifications" className="text-xl" />
-                    {notificationCount > 0 && (
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full" />
-                    )}
-                </button>
+                <div className="relative" ref={notifRef}>
+                    <button 
+                        onClick={() => { setNotificationsOpen(!notificationsOpen); setProfileOpen(false); }}
+                        className={`relative p-2 rounded-full transition-colors ${notificationsOpen ? 'bg-primary/10 text-primary' : 'text-secondary hover:bg-primary-fixed/50'}`}
+                    >
+                        <Icon name="notifications" className="text-xl" />
+                        {notificationCount > 0 && (
+                            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-error text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                {notificationCount}
+                            </span>
+                        )}
+                    </button>
 
-                {/* Settings */}
-                <button className="p-2 rounded-full text-secondary hover:bg-primary-fixed/50 transition-colors">
-                    <Icon name="settings" className="text-xl" />
-                </button>
+                    {notificationsOpen && (
+                        <div className="absolute right-0 mt-2 w-72 bg-white/95 backdrop-blur-2xl border border-white/50 shadow-2xl rounded-2xl py-0 z-50 animate-in fade-in slide-in-from-top-2 duration-150 overflow-hidden">
+                            <div className="px-4 py-3 border-b border-outline-variant/30 bg-primary/5 flex items-center justify-between">
+                                <span className="text-sm font-bold text-on-surface">Notifikasi</span>
+                                <span className="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full">{notificationCount || 2} Baru</span>
+                            </div>
+                            <div className="max-h-64 overflow-y-auto bg-white/80">
+                                <div className="divide-y divide-outline-variant/20">
+                                    <div className="px-4 py-3 hover:bg-black/5 transition-colors cursor-pointer">
+                                        <p className="text-xs font-bold text-on-surface">Waktunya Sholat Dzuhur</p>
+                                        <p className="text-[10px] text-on-surface-variant mt-0.5 leading-relaxed">Jangan lupa ceklist sholat tepat waktu agar poinmu tetap maksimal!</p>
+                                        <p className="text-[9px] text-primary mt-1 font-bold">2 menit yang lalu</p>
+                                    </div>
+                                    <div className="px-4 py-3 hover:bg-black/5 transition-colors cursor-pointer">
+                                        <p className="text-xs font-bold text-on-surface">Target Log Aktivitas</p>
+                                        <p className="text-[10px] text-on-surface-variant mt-0.5 leading-relaxed">Kamu sudah mencapai 15/23 log bulan ini. Terus semangat!</p>
+                                        <p className="text-[9px] text-primary mt-1 font-bold">1 jam yang lalu</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="px-4 py-2 bg-surface-container-low text-center border-t border-outline-variant/30">
+                                <button className="text-[10px] font-bold text-primary hover:underline uppercase tracking-widest">Lihat Semua Notifikasi</button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
 
                 {/* Profile Dropdown */}
                 <div className="relative" ref={dropdownRef}>
@@ -97,7 +140,7 @@ export function Topbar({
                     </button>
 
                     {profileOpen && (
-                        <div className="absolute right-0 mt-2 w-56 glass-panel py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                        <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-2xl border border-white/50 shadow-2xl rounded-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                             <div className="px-4 py-2 border-b border-outline-variant/30 mb-1">
                                 <p className="text-body-sm font-semibold text-on-surface">{user.name}</p>
                                 <p className="text-label-caps text-on-surface-variant uppercase">{user.role}</p>

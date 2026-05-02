@@ -69,6 +69,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/kalender',                [\App\Http\Controllers\Web\Mahasiswa\MahasiswaKalenderController::class, 'store']) ->name('kalender.store');
         Route::put('/kalender/{event}',         [\App\Http\Controllers\Web\Mahasiswa\MahasiswaKalenderController::class, 'update'])->name('kalender.update');
         Route::delete('/kalender/{event}',      [\App\Http\Controllers\Web\Mahasiswa\MahasiswaKalenderController::class, 'destroy'])->name('kalender.destroy');
+        Route::patch('/kalender/{event}/toggle', [\App\Http\Controllers\Web\Mahasiswa\MahasiswaKalenderController::class, 'toggleComplete'])->name('kalender.toggle');
     });
 
     // ── Alumni (permission-gated) ─────────────────────────────
@@ -92,9 +93,14 @@ Route::middleware('auth')->group(function () {
         // Profil — unified pattern (sama dengan Mahasiswa)
         Route::get('/profil',                    [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'index'])         ->name('profil.index');
         Route::put('/profil',                    [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'update'])        ->name('profil.update');
+        Route::post('/profil/avatar',           [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'updateAvatar'])  ->name('profil.avatar');
         Route::post('/profil/riwayat',           [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'storeRiwayat']) ->name('profil.riwayat.store');
         Route::put('/profil/riwayat/{riwayat}',  [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'updateRiwayat'])->name('profil.riwayat.update');
         Route::delete('/profil/riwayat/{riwayat}',[App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'destroyRiwayat'])->name('profil.riwayat.destroy');
+
+        // Database Alumni
+        Route::get('/database', [App\Http\Controllers\Web\Alumni\AlumniDatabaseController::class, 'index'])->name('database.index');
+        Route::get('/database/{user}', [App\Http\Controllers\Web\Alumni\AlumniDatabaseController::class, 'details'])->name('database.details');
 
         // Bisnis directory
         Route::get('/bisnis',  [App\Http\Controllers\Web\Alumni\AlumniBusinessController::class, 'index']) ->name('bisnis.index');
@@ -108,8 +114,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/eval/{id}', [MentorDash::class, 'submitEval'])->name('eval.submit');
 
         // Mentees
-        Route::get('/mentees',      [MenteesController::class, 'index'])->name('mentees.index');
-        Route::get('/mentees/{id}', [MenteesController::class, 'show'])->name('mentees.show');
+        Route::get('/mentees',           [MenteesController::class, 'index'])->name('mentees.index');
+        Route::post('/mentees',          [MenteesController::class, 'addMentee'])->name('mentees.add');
+        Route::get('/mentees/{id}',      [MenteesController::class, 'show'])->name('mentees.show');
+        Route::delete('/mentees/{id}',   [MenteesController::class, 'removeMentee'])->name('mentees.remove');
 
         // Hafalan queue
         Route::get('/hafalan/pending',    [MentorHafalan::class, 'pending'])->name('hafalan.pending');
@@ -134,13 +142,17 @@ Route::middleware('auth')->group(function () {
         Route::post('/permissions',              [App\Http\Controllers\Web\Super\RolePermissionController::class, 'storePermission'])->name('permissions.store');
         Route::delete('/permissions/{permission}',[App\Http\Controllers\Web\Super\RolePermissionController::class, 'destroyPermission'])->name('permissions.destroy');
         Route::post('/roles/{role}/permissions', [App\Http\Controllers\Web\Super\RolePermissionController::class, 'syncRolePermissions'])->name('roles.permissions.sync');
+        Route::post('/users',                      [App\Http\Controllers\Web\Super\RolePermissionController::class, 'storeUser'])->name('users.store');
         Route::post('/users/{user}/role',          [App\Http\Controllers\Web\Super\RolePermissionController::class, 'assignUserRole'])->name('users.role.assign');
         Route::post('/users/{user}/password',      [App\Http\Controllers\Web\Super\RolePermissionController::class, 'changePassword'])->name('users.password.change');
 
         // Super Admin pages (Phase 5)
         Route::get('/warga',      [App\Http\Controllers\Web\Super\SuperController::class, 'warga'])->name('warga.index');
+        Route::get('/mentor',     [App\Http\Controllers\Web\Super\SuperController::class, 'mentor'])->name('mentor.index');
+        Route::get('/mentor/{id}/analysis', [App\Http\Controllers\Web\Super\SuperController::class, 'mentorAnalysis'])->name('mentor.analysis');
         Route::get('/alumni',     [App\Http\Controllers\Web\Super\SuperController::class, 'alumni'])->name('alumni.index');
         Route::get('/kegiatan',   [App\Http\Controllers\Web\Super\SuperController::class, 'kegiatan'])->name('kegiatan.index');
+        Route::post('/kegiatan',  [App\Http\Controllers\Web\Super\SuperController::class, 'storeKegiatan'])->name('kegiatan.store');
         Route::get('/hafalan',    [App\Http\Controllers\Web\Super\SuperController::class, 'hafalan'])->name('hafalan.index');
         Route::get('/leaderboard',[App\Http\Controllers\Web\Super\SuperController::class, 'leaderboard'])->name('leaderboard.index');
         Route::get('/laporan',    [App\Http\Controllers\Web\Super\SuperController::class, 'laporan'])->name('laporan.index');

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { Icon } from '@/Components/ui/Icon';
+import { Modal } from '@/Components/ui/Modal';
 import { PageProps } from '@/types';
 import { QuranReader } from '@/Components/QuranReader';
 
@@ -86,74 +87,60 @@ function LogModal({ editItem, onClose }: { editItem: HafalanLog | null; onClose:
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-md">
-                <div className="flex items-center justify-between px-6 py-5 border-b border-white/40">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                            <Icon name="auto_stories" className="text-emerald-600 text-xl" filled />
-                        </div>
-                        <h3 className="font-bold text-on-surface">
-                            {editItem ? 'Edit Setoran' : 'Setoran Hafalan'}
-                        </h3>
-                    </div>
-                    <button onClick={onClose} className="w-8 h-8 rounded-lg bg-surface-container hover:bg-white/80 flex items-center justify-center">
-                        <Icon name="close" className="text-on-surface-variant" />
+        <Modal open={true} onClose={onClose} title={editItem ? 'Edit Setoran' : 'Setoran Hafalan'} icon="auto_stories" size="md"
+            footer={
+                <>
+                    <button type="button" onClick={onClose}
+                        className="px-5 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-black/10 transition-colors">
+                        Batal
                     </button>
+                    <button form="hafalan-form" type="submit" disabled={saving}
+                        className="px-5 py-2.5 rounded-xl font-bold text-sm bg-emerald-500 text-white disabled:opacity-50 hover:bg-emerald-600 transition-colors flex items-center gap-2">
+                        <Icon name="send" className="text-base" />
+                        {saving ? 'Mengirim...' : editItem ? 'Simpan' : 'Kirim ke Mentor'}
+                    </button>
+                </>
+            }>
+            <form id="hafalan-form" onSubmit={submit} className="space-y-4">
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Surah *</label>
+                    <select value={form.surah} onChange={e => set('surah', e.target.value)} className="glass-input w-full text-sm" required>
+                        <option value="">— Pilih Surah —</option>
+                        {SURAHS.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
                 </div>
-
-                <form onSubmit={submit} className="px-6 py-5 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Surah *</label>
-                        <select value={form.surah} onChange={e => set('surah', e.target.value)} className="glass-input w-full text-sm" required>
-                            <option value="">— Pilih Surah —</option>
-                            {SURAHS.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Ayat Mulai *</label>
-                            <input type="number" min={1} value={form.ayat_start}
-                                onChange={e => set('ayat_start', parseInt(e.target.value))}
-                                className="glass-input w-full text-sm" required />
-                        </div>
-                        <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Ayat Selesai *</label>
-                            <input type="number" min={form.ayat_start} value={form.ayat_end}
-                                onChange={e => set('ayat_end', parseInt(e.target.value))}
-                                className="glass-input w-full text-sm" required />
-                        </div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Ayat Mulai *</label>
+                        <input type="number" min={1} value={form.ayat_start}
+                            onChange={e => set('ayat_start', parseInt(e.target.value))}
+                            className="glass-input w-full text-sm" required />
                     </div>
                     <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Tanggal Setoran</label>
-                        <input type="date" value={form.tested_at}
-                            onChange={e => set('tested_at', e.target.value)}
-                            className="glass-input w-full text-sm" />
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Ayat Selesai *</label>
+                        <input type="number" min={form.ayat_start} value={form.ayat_end}
+                            onChange={e => set('ayat_end', parseInt(e.target.value))}
+                            className="glass-input w-full text-sm" required />
                     </div>
-                    <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Catatan untuk Mentor</label>
-                        <textarea value={form.notes} onChange={e => set('notes', e.target.value)}
-                            rows={3} className="glass-input w-full text-sm resize-none"
-                            placeholder="Ada bagian yang terasa sulit? Ceritakan di sini..." />
-                    </div>
-                    <p className="text-xs text-on-surface-variant bg-amber-50 px-3 py-2 rounded-xl flex items-start gap-2">
-                        <Icon name="info" className="text-amber-600 text-sm flex-shrink-0 mt-0.5" />
-                        Setoran akan dikirim ke mentor untuk dinilai. Status awal: <strong>Menunggu Mentor</strong>.
-                    </p>
-                    <div className="flex gap-3 pt-1">
-                        <button type="button" onClick={onClose}
-                            className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-white/60 transition-colors">
-                            Batal
-                        </button>
-                        <button type="submit" disabled={saving}
-                            className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-emerald-500 text-white hover:bg-emerald-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-                            <Icon name="send" className="text-base" />
-                            {saving ? 'Mengirim...' : editItem ? 'Simpan' : 'Kirim ke Mentor'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                </div>
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Tanggal Setoran</label>
+                    <input type="date" value={form.tested_at}
+                        onChange={e => set('tested_at', e.target.value)}
+                        className="glass-input w-full text-sm" />
+                </div>
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Catatan untuk Mentor</label>
+                    <textarea value={form.notes} onChange={e => set('notes', e.target.value)}
+                        rows={3} className="glass-input w-full text-sm resize-none"
+                        placeholder="Ada bagian yang terasa sulit? Ceritakan di sini..." />
+                </div>
+                <p className="text-xs text-on-surface-variant bg-amber-50 px-3 py-2 rounded-xl flex items-start gap-2">
+                    <Icon name="info" className="text-amber-600 text-sm flex-shrink-0 mt-0.5" />
+                    Setoran akan dikirim ke mentor untuk dinilai. Status awal: <strong>Menunggu Mentor</strong>.
+                </p>
+            </form>
+        </Modal>
     );
 }
 

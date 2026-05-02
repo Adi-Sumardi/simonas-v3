@@ -4,6 +4,7 @@ import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { StatCard } from '@/Components/ui/StatCard';
 import { Icon } from '@/Components/ui/Icon';
+import { Modal } from '@/Components/ui/Modal';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Submission {
@@ -67,86 +68,82 @@ function ScoringModal({ sub, onClose }: { sub: Submission; onClose: () => void }
     });
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div className="glass-card rounded-2xl w-full max-w-lg p-6 shadow-2xl animate-slide-up">
-                <div className="flex items-center justify-between mb-5">
-                    <div>
-                        <h3 className="font-display text-lg font-bold text-on-surface">
-                            {sub.status === 'pending' ? 'Beri Penilaian' : 'Edit Penilaian'}
-                        </h3>
-                        <p className="text-xs text-on-surface-variant mt-0.5">{sub.santri_name} · {sub.asrama}</p>
-                    </div>
-                    <button onClick={onClose} className="w-8 h-8 rounded-lg bg-surface-container hover:bg-white/80 flex items-center justify-center transition-colors">
-                        <Icon name="close" className="text-on-surface-variant" />
-                    </button>
+        <Modal open={true} onClose={onClose} size="md" disableBackdropClose
+            title={
+                <div>
+                    <h3 className="font-display text-lg font-bold text-on-surface">
+                        {sub.status === 'pending' ? 'Beri Penilaian' : 'Edit Penilaian'}
+                    </h3>
+                    <p className="text-xs text-on-surface-variant mt-0.5">{sub.santri_name} · {sub.asrama}</p>
                 </div>
-
-                {/* Submission detail */}
-                <div className="bg-surface-container/40 rounded-xl p-4 mb-5 space-y-1.5">
-                    <div className="flex items-center gap-2 text-sm font-bold text-on-surface">
-                        <Icon name="auto_stories" className="text-emerald-600 text-base" filled />
-                        {sub.surah}
-                        {sub.juz && <span className="text-xs font-normal text-on-surface-variant">(Juz {sub.juz})</span>}
-                    </div>
-                    <div className="flex flex-wrap gap-3 text-xs text-on-surface-variant">
-                        <span>Ayat {sub.ayat_dari}–{sub.ayat_sampai}</span>
-                        <span>·</span>
-                        <span>{sub.tanggal}</span>
-                    </div>
-                </div>
-
-                {/* Score options */}
-                <div className="space-y-2 mb-5">
-                    {SCORE_OPTIONS.map(opt => (
-                        <button
-                            key={opt.value}
-                            onClick={() => setData('score', opt.value)}
-                            className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
-                                data.score === opt.value
-                                    ? opt.cls + ' scale-[1.01] shadow-sm'
-                                    : 'border-surface-container text-on-surface-variant hover:bg-white/60'
-                            }`}
-                        >
-                            <Icon name={opt.icon} className="text-2xl flex-shrink-0" filled={data.score === opt.value} />
-                            <div className="flex-1">
-                                <p className="font-bold text-sm">{opt.label}</p>
-                                <p className="text-[10px] opacity-70">{opt.desc}</p>
-                            </div>
-                            {data.score === opt.value && (
-                                <Icon name="radio_button_checked" className="text-lg flex-shrink-0" filled />
-                            )}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Notes */}
-                <div className="mb-5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-2">
-                        Catatan Mentor <span className="normal-case font-normal">(opsional)</span>
-                    </label>
-                    <textarea
-                        rows={3}
-                        value={data.mentor_notes}
-                        onChange={e => setData('mentor_notes', e.target.value)}
-                        placeholder="Tajwid, makhorijul huruf, saran perbaikan..."
-                        className="glass-input w-full text-sm resize-none"
-                    />
-                </div>
-
-                <div className="flex gap-3">
-                    <button onClick={onClose} className="flex-1 py-3 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-white/60 transition-colors">
+            }
+            footer={
+                <>
+                    <button onClick={onClose} className="px-5 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-black/10 transition-colors">
                         Batal
                     </button>
                     <button
                         disabled={processing}
                         onClick={() => post(`/mentor/penilaian/${sub.id}`, { onSuccess: onClose })}
-                        className="flex-1 py-3 rounded-xl font-bold text-sm bg-primary-container text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                        className="px-5 py-2.5 rounded-xl font-bold text-sm bg-primary-container text-white hover:opacity-90 transition-opacity disabled:opacity-50"
                     >
                         {processing ? 'Menyimpan...' : 'Simpan Penilaian'}
                     </button>
+                </>
+            }>
+
+            {/* Submission detail */}
+            <div className="bg-surface-container/40 rounded-xl p-4 mb-5 space-y-1.5">
+                <div className="flex items-center gap-2 text-sm font-bold text-on-surface">
+                    <Icon name="auto_stories" className="text-emerald-600 text-base" filled />
+                    {sub.surah}
+                    {sub.juz && <span className="text-xs font-normal text-on-surface-variant">(Juz {sub.juz})</span>}
+                </div>
+                <div className="flex flex-wrap gap-3 text-xs text-on-surface-variant">
+                    <span>Ayat {sub.ayat_dari}–{sub.ayat_sampai}</span>
+                    <span>·</span>
+                    <span>{sub.tanggal}</span>
                 </div>
             </div>
-        </div>
+
+            {/* Score options */}
+            <div className="space-y-2 mb-5">
+                {SCORE_OPTIONS.map(opt => (
+                    <button
+                        key={opt.value}
+                        onClick={() => setData('score', opt.value)}
+                        className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
+                            data.score === opt.value
+                                ? opt.cls + ' scale-[1.01] shadow-sm'
+                                : 'border-surface-container text-on-surface-variant hover:bg-white/60'
+                        }`}
+                    >
+                        <Icon name={opt.icon} className="text-2xl flex-shrink-0" filled={data.score === opt.value} />
+                        <div className="flex-1">
+                            <p className="font-bold text-sm">{opt.label}</p>
+                            <p className="text-[10px] opacity-70">{opt.desc}</p>
+                        </div>
+                        {data.score === opt.value && (
+                            <Icon name="radio_button_checked" className="text-lg flex-shrink-0" filled />
+                        )}
+                    </button>
+                ))}
+            </div>
+
+            {/* Notes */}
+            <div>
+                <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-2">
+                    Catatan Mentor <span className="normal-case font-normal">(opsional)</span>
+                </label>
+                <textarea
+                    rows={3}
+                    value={data.mentor_notes}
+                    onChange={e => setData('mentor_notes', e.target.value)}
+                    placeholder="Tajwid, makhorijul huruf, saran perbaikan..."
+                    className="glass-input w-full text-sm resize-none"
+                />
+            </div>
+        </Modal>
     );
 }
 

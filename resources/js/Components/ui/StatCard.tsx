@@ -23,14 +23,14 @@ const COLOR: Record<BadgeColor, { icon: string; badge: string; glow: string }> =
 export function StatCard({ icon, label, value, badge, badgeColor = 'blue', className = '' }: StatCardProps) {
     const c = COLOR[badgeColor];
     return (
-        <div className={`glass-card rounded-2xl p-5 flex flex-col gap-4 h-full ${className}`}>
+        <div className={`glass-card rounded-2xl p-4 sm:p-5 flex flex-col gap-3 sm:gap-4 h-full ${className}`}>
             {/* Top row: icon + badge */}
             <div className="flex items-center justify-between">
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${c.icon}`}>
-                    <Icon name={icon} className="text-xl" filled />
+                <div className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${c.icon}`}>
+                    <Icon name={icon} className="text-lg sm:text-xl" filled />
                 </div>
                 {badge && (
-                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${c.badge}`}>
+                    <span className={`text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border ${c.badge}`}>
                         {badge}
                     </span>
                 )}
@@ -38,10 +38,10 @@ export function StatCard({ icon, label, value, badge, badgeColor = 'blue', class
 
             {/* Bottom: label + value */}
             <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1">
+                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1">
                     {label}
                 </p>
-                <p className="font-display text-2xl font-bold text-on-surface leading-tight">
+                <p className="font-display text-lg sm:text-2xl font-bold text-on-surface leading-tight">
                     {value}
                 </p>
             </div>

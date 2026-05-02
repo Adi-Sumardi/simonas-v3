@@ -20,17 +20,20 @@ class MahasiswaKalenderController extends Controller
             ->orderBy('time')
             ->get()
             ->map(fn($e) => [
-                'id'        => $e->id,
-                'title'     => $e->title,
-                'date'      => $e->date->format('Y-m-d'),
-                'time'      => $e->time ?? '00:00',
-                'type'      => $e->type,
-                'color'     => $e->color,
-                'desc'      => $e->desc,
-                'recurring' => $e->recurring,
+                'id'             => $e->id,
+                'title'          => $e->title,
+                'date'           => $e->date->format('Y-m-d'),
+                'time'           => $e->time ?? '00:00',
+                'type'           => $e->type,
+                'color'          => $e->color,
+                'desc'           => $e->desc,
+                'recurring'      => $e->recurring,
+                'is_mandatory'   => $e->is_mandatory,
+                'excluded_dates' => $e->excluded_dates ?? [],
+                'completed_at_dates' => $e->completed_at_dates ?? [],
             ]);
 
-        $upcoming = $events->filter(fn($e) => $e['date'] >= $today)
+        $upcoming = $events->filter(fn($e) => $e['date'] >= $today && $e['type'] !== 'shalat')
             ->take(5)
             ->values();
 
@@ -64,6 +67,9 @@ class MahasiswaKalenderController extends Controller
     public function update(Request $request, UserEvent $event)
     {
         abort_if($event->user_id !== Auth::id(), 403);
+        if ($event->is_mandatory) {
+            return back()->with('error', 'Kegiatan wajib tidak dapat diubah.');
+        }
 
         $data = $request->validate([
             'title'     => 'required|string|max:255',
@@ -80,11 +86,55 @@ class MahasiswaKalenderController extends Controller
         return back()->with('success', 'Kegiatan berhasil diperbarui.');
     }
 
-    public function destroy(UserEvent $event)
+    public function destroy(Request $request, UserEvent $event)
     {
         abort_if($event->user_id !== Auth::id(), 403);
-        $event->delete();
+        if ($event->is_mandatory) {
+            return back()->with('error', 'Kegiatan wajib tidak dapat dihapus.');
+        }
 
-        return back()->with('success', 'Kegiatan dihapus.');
+        // Prevent deletion of shalat events
+        if ($event->type === 'shalat') {
+            return back()->with('error', 'Jadwal sholat tidak dapat dihapus.');
+        }
+
+        $excludeDate = $request->input('exclude_date');
+
+        if ($excludeDate && $event->recurring) {
+            $excluded = $event->excluded_dates ?? [];
+            if (!in_array($excludeDate, $excluded)) {
+                $excluded[] = $excludeDate;
+                $event->update(['excluded_dates' => $excluded]);
+            }
+            return back()->with('success', 'Jadwal pada tanggal tersebut telah dihapus.');
+        }
+
+        $event->delete();
+        return back()->with('success', 'Kegiatan berhasil dihapus.');
+    }
+
+    public function toggleComplete(Request $request, UserEvent $event)
+    {
+        abort_if($event->user_id !== Auth::id(), 403);
+        $date = $request->input('date');
+        if (!$date) return back();
+
+        $completed = $event->completed_at_dates ?? [];
+        $details = $event->completed_at_details ?? [];
+
+        if (in_array($date, $completed)) {
+            $completed = array_diff($completed, [$date]);
+            unset($details[$date]);
+        } else {
+            $completed[] = $date;
+            $details[$date] = now()->toDateTimeString();
+        }
+
+        $event->update([
+            'completed_at_dates'   => array_values($completed),
+            'completed_at_details' => $details,
+        ]);
+
+        return back();
     }
 }

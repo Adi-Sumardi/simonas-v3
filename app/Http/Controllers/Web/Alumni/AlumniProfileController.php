@@ -144,6 +144,27 @@ class AlumniProfileController extends Controller
         return back()->with('success', 'Profil berhasil diperbarui.');
     }
 
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|max:2048',
+        ]);
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        // Delete old avatar if exists
+        if ($user->avatar && str_contains($user->avatar, 'storage/')) {
+            $oldPath = str_replace(asset('storage/'), '', $user->avatar);
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+        }
+
+        $path = $request->file('avatar')->store('avatars', 'public');
+        $user->update(['avatar' => asset('storage/'.$path)]);
+
+        return back()->with('success', 'Foto profil diperbarui.');
+    }
+
     // ── Riwayat CRUD (unified) ───────────────────────────────────
 
     public function storeRiwayat(Request $request)

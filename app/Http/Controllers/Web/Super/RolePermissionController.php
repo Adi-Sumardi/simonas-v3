@@ -105,6 +105,29 @@ class RolePermissionController extends Controller
         return back()->with('success', "Permissions untuk role '{$role->name}' berhasil diperbarui.");
     }
 
+    // ── User Management ────────────────────────────────────────
+
+    public function storeUser(Request $request)
+    {
+        $data = $request->validate([
+            'name'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')],
+            'password' => ['required', 'string', 'min:8'],
+            'role'     => ['required', 'string', 'exists:roles,name'],
+        ]);
+
+        $user = User::create([
+            'name'     => $data['name'],
+            'email'    => $data['email'],
+            'password' => \Illuminate\Support\Facades\Hash::make($data['password']),
+            'role'     => $data['role'],
+        ]);
+
+        $user->assignRole($data['role']);
+
+        return back()->with('success', "User '{$user->name}' berhasil dibuat dengan role {$data['role']}.");
+    }
+
     // ── Assign role(s) to user — multi-role support ───────────
 
     public function assignUserRole(Request $request, User $user)

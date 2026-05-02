@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { Icon } from '@/Components/ui/Icon';
+import { Modal } from '@/Components/ui/Modal';
 import { AlumniSidebar } from '@/Components/Alumni/AlumniSidebar';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -109,7 +110,7 @@ function JobCard({ job }: { job: Job }) {
 }
 
 // ─── Post Job Modal ───────────────────────────────────────────────────────────
-function PostJobModal({ onClose }: { onClose: () => void }) {
+function PostJobModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     const { data, setData, post, processing, reset } = useForm({
         type: 'job',
         title: '',
@@ -129,104 +130,95 @@ function PostJobModal({ onClose }: { onClose: () => void }) {
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
-            <div className="glass-card rounded-2xl w-full max-w-2xl p-6 shadow-2xl animate-slide-up my-4">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="font-display text-lg font-bold text-on-surface">Posting Lowongan</h2>
-                    <button onClick={onClose} className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center">
-                        <Icon name="close" className="text-on-surface-variant" />
+        <Modal open={open} onClose={onClose} title="Posting Lowongan" icon="work" size="lg"
+            footer={
+                <>
+                    <button type="button" onClick={onClose}
+                        className="px-5 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-black/10 transition-colors">
+                        Batal
                     </button>
+                    <button form="job-form" type="submit" disabled={processing}
+                        className="px-5 py-2.5 rounded-xl font-bold text-sm bg-emerald-500 text-white disabled:opacity-50 hover:bg-emerald-600 transition-colors">
+                        {processing ? 'Memposting...' : '🚀 Post Lowongan'}
+                    </button>
+                </>
+            }>
+            <form id="job-form" onSubmit={submit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                    <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Tipe Lowongan *</label>
+                        <select value={data.type} onChange={e => setData('type', e.target.value)} className="glass-input w-full text-sm">
+                            <option value="job">Full-time</option>
+                            <option value="internship">Magang / Internship</option>
+                            <option value="freelance">Freelance / Project</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Mode Kerja *</label>
+                        <select value={data.work_type} onChange={e => setData('work_type', e.target.value)} className="glass-input w-full text-sm">
+                            <option value="onsite">Onsite</option>
+                            <option value="remote">Remote</option>
+                            <option value="hybrid">Hybrid</option>
+                        </select>
+                    </div>
                 </div>
 
-                <form onSubmit={submit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                        {/* Type */}
-                        <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Tipe Lowongan *</label>
-                            <select value={data.type} onChange={e => setData('type', e.target.value)} className="glass-input w-full text-sm">
-                                <option value="job">Full-time</option>
-                                <option value="internship">Magang / Internship</option>
-                                <option value="freelance">Freelance / Project</option>
-                            </select>
-                        </div>
-                        {/* Work type */}
-                        <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Mode Kerja *</label>
-                            <select value={data.work_type} onChange={e => setData('work_type', e.target.value)} className="glass-input w-full text-sm">
-                                <option value="onsite">Onsite</option>
-                                <option value="remote">Remote</option>
-                                <option value="hybrid">Hybrid</option>
-                            </select>
-                        </div>
-                    </div>
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Posisi / Judul Pekerjaan *</label>
+                    <input type="text" value={data.title} onChange={e => setData('title', e.target.value)}
+                        placeholder="Contoh: Frontend Developer" className="glass-input w-full text-sm" required />
+                </div>
 
+                <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Posisi / Judul Pekerjaan *</label>
-                        <input type="text" value={data.title} onChange={e => setData('title', e.target.value)}
-                            placeholder="Contoh: Frontend Developer" className="glass-input w-full text-sm" required />
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Perusahaan *</label>
+                        <input type="text" value={data.company} onChange={e => setData('company', e.target.value)}
+                            placeholder="Nama perusahaan" className="glass-input w-full text-sm" required />
                     </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Perusahaan *</label>
-                            <input type="text" value={data.company} onChange={e => setData('company', e.target.value)}
-                                placeholder="Nama perusahaan" className="glass-input w-full text-sm" required />
-                        </div>
-                        <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Lokasi *</label>
-                            <input type="text" value={data.location} onChange={e => setData('location', e.target.value)}
-                                placeholder="Jakarta / Remote" className="glass-input w-full text-sm" required />
-                        </div>
-                    </div>
-
                     <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Deskripsi Pekerjaan *</label>
-                        <textarea rows={4} value={data.description} onChange={e => setData('description', e.target.value)}
-                            placeholder="Deskripsikan pekerjaan, tanggung jawab, dan lingkungan kerja..."
-                            className="glass-input w-full text-sm resize-none" required />
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Lokasi *</label>
+                        <input type="text" value={data.location} onChange={e => setData('location', e.target.value)}
+                            placeholder="Jakarta / Remote" className="glass-input w-full text-sm" required />
                     </div>
+                </div>
 
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Deskripsi Pekerjaan *</label>
+                    <textarea rows={4} value={data.description} onChange={e => setData('description', e.target.value)}
+                        placeholder="Deskripsikan pekerjaan, tanggung jawab, dan lingkungan kerja..."
+                        className="glass-input w-full text-sm resize-none" required />
+                </div>
+
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Kualifikasi / Persyaratan</label>
+                    <textarea rows={2} value={data.requirements} onChange={e => setData('requirements', e.target.value)}
+                        placeholder="Pendidikan, skill, pengalaman yang dibutuhkan..."
+                        className="glass-input w-full text-sm resize-none" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Kualifikasi / Persyaratan</label>
-                        <textarea rows={2} value={data.requirements} onChange={e => setData('requirements', e.target.value)}
-                            placeholder="Pendidikan, skill, pengalaman yang dibutuhkan..."
-                            className="glass-input w-full text-sm resize-none" />
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Kisaran Gaji</label>
+                        <input type="text" value={data.salary_range} onChange={e => setData('salary_range', e.target.value)}
+                            placeholder="Rp 5–8 jt / negotiable" className="glass-input w-full text-sm" />
                     </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Kisaran Gaji</label>
-                            <input type="text" value={data.salary_range} onChange={e => setData('salary_range', e.target.value)}
-                                placeholder="Rp 5–8 jt / negotiable" className="glass-input w-full text-sm" />
-                        </div>
-                        <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Deadline Lamaran</label>
-                            <input type="date" value={data.deadline} onChange={e => setData('deadline', e.target.value)}
-                                className="glass-input w-full text-sm" />
-                        </div>
-                    </div>
-
                     <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Kontak / Email Apply *</label>
-                        <input type="text" value={data.contact_info} onChange={e => setData('contact_info', e.target.value)}
-                            placeholder="email@perusahaan.com atau link formulir" className="glass-input w-full text-sm" required />
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Deadline Lamaran</label>
+                        <input type="date" value={data.deadline} onChange={e => setData('deadline', e.target.value)}
+                            className="glass-input w-full text-sm" />
                     </div>
+                </div>
 
-                    <div className="flex gap-3 pt-2">
-                        <button type="button" onClick={onClose}
-                            className="flex-1 py-3 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant">
-                            Batal
-                        </button>
-                        <button type="submit" disabled={processing}
-                            className="flex-1 py-3 rounded-xl font-bold text-sm bg-emerald-500 text-white disabled:opacity-50 hover:bg-emerald-600 transition-colors">
-                            {processing ? 'Memposting...' : '🚀 Post Lowongan'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1.5">Kontak / Email Apply *</label>
+                    <input type="text" value={data.contact_info} onChange={e => setData('contact_info', e.target.value)}
+                        placeholder="email@perusahaan.com atau link formulir" className="glass-input w-full text-sm" required />
+                </div>
+            </form>
+        </Modal>
     );
 }
+
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Jobs({ jobs, filter }: Props) {
@@ -338,7 +330,7 @@ export default function Jobs({ jobs, filter }: Props) {
                 </div>
             </div>
 
-            {showPostModal && <PostJobModal onClose={() => setShowPostModal(false)} />}
+            <PostJobModal open={showPostModal} onClose={() => setShowPostModal(false)} />
         </AppLayout>
     );
 }

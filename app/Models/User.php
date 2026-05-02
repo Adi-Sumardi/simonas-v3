@@ -48,6 +48,7 @@ class User extends Authenticatable
         'organisasi',
         'nama_ayah',
         'nama_ibu',
+        'mentor_id',
     ];
 
     protected $hidden = [
@@ -56,7 +57,18 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'last_login_at' => 'datetime',
     ];
+
+    /**
+     * Always return full URL for avatar
+     */
+    public function getAvatarAttribute($value)
+    {
+        if (!$value) return null;
+        if (filter_var($value, FILTER_VALIDATE_URL)) return $value;
+        return asset('storage/' . $value);
+    }
 
     public function scopeAlumni($query)
     {
@@ -86,5 +98,29 @@ class User extends Authenticatable
     public function kreatifs()
     {
         return $this->hasMany(Kreatif::class);
+    }
+
+    /**
+     * Unified Profil relationships
+     */
+    public function alumni()
+    {
+        // Link by email as currently used in controllers
+        return $this->hasOne(Alumni::class, 'email', 'email');
+    }
+
+    public function profilRiwayats()
+    {
+        return $this->hasMany(ProfilRiwayat::class, 'user_id', 'id');
+    }
+
+    public function mentor()
+    {
+        return $this->belongsTo(User::class, 'mentor_id');
+    }
+
+    public function mentees()
+    {
+        return $this->hasMany(User::class, 'mentor_id');
     }
 }

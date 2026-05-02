@@ -19,6 +19,10 @@ class ProfileController extends Controller
         $mentor = $user->mentor_id
             ? User::select('id', 'name', 'email', 'avatar')->find($user->mentor_id)
             : null;
+            
+        if ($mentor && $mentor->avatar) {
+            // No need to manually format, accessor handles it
+        }
 
         $riwayats = ProfilRiwayat::where('user_id', $user->id)
             ->orderBy('mulai', 'desc')
@@ -139,5 +143,25 @@ class ProfileController extends Controller
         $riwayat->delete();
 
         return back()->with('success', 'Riwayat dihapus.');
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|max:2048',
+        ]);
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        // Delete old avatar if exists
+        if ($user->avatar && \Storage::disk('public')->exists($user->avatar)) {
+            \Storage::disk('public')->delete($user->avatar);
+        }
+
+        $path = $request->file('avatar')->store('avatars', 'public');
+        $user->update(['avatar' => $path]);
+
+        return back()->with('success', 'Foto profil berhasil diperbarui.');
     }
 }

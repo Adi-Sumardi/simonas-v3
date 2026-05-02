@@ -3,87 +3,316 @@
 namespace App\Http\Controllers\Web\Super;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\Alumni;
+use App\Models\Kegiatan;
+use App\Models\UserEvent;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 class SuperController extends Controller
 {
     // ── Warga ─────────────────────────────────────────────────
-    public function warga()
+    public function warga(Request $request)
     {
-        $warga = collect(range(1, 24))->map(fn($i) => [
-            'id'      => $i,
-            'nim'     => '2024' . str_pad($i, 4, '0', STR_PAD_LEFT),
-            'name'    => ['Ahmad Fauzi','Budi Santoso','Cahya Ramadhan','Dani Pratama','Eko Wahyudi',
-                          'Fahri Maulana','Galih Setiawan','Hendra Gunawan','Irfan Hakim','Joko Widodo',
-                          'Kemal Aditya','Lukman Hakim','Miftah Rizky','Naufal Hasan','Omar Syarif',
-                          'Pandu Wijaya','Qodir Rahman','Rizal Pratama','Syamsul Bahri','Taufik Hidayat',
-                          'Umar Faruq','Vino Ramadhan','Wahyu Saputra','Zaid Alfarisi'][($i-1)],
-            'asrama'  => ['Al-Farabi','Al-Ghazali','Ibnu Sina','Al-Kindi'][($i-1) % 4],
-            'angkatan'=> 2022 + (($i - 1) % 3),
-            'status'  => $i % 7 === 0 ? 'nonaktif' : 'aktif',
-            'hafalan_juz' => rand(5, 25),
-            'skor'    => rand(65, 98),
-            'mentor'  => ['Ust. Ahmad Yani', 'Ust. Basyir Rohim', 'Ust. Chandra'][($i-1) % 3],
-        ]);
+        $query = User::where('role', 'mahasiswa');
+
+        if ($request->search) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                  ->orWhere('no_induk', 'like', "%{$request->search}%");
+            });
+        }
+
+        if ($request->asrama) {
+            $query->where('asrama', $request->asrama);
+        }
+
+        if ($request->status) {
+            $query->where('status_warga', $request->status);
+        }
+
+        $warga = $query->paginate($request->per_page ?? 10)->withQueryString();
 
         return Inertia::render('Super/Warga', [
-            'warga'   => $warga->values(),
-            'asramas' => ['Al-Farabi','Al-Ghazali','Ibnu Sina','Al-Kindi'],
+            'warga'   => $warga,
+            'asramas' => ['Al-Farabi', 'Al-Ghazali', 'Ibnu Sina', 'Al-Kindi'],
             'stats'   => [
-                'total'   => $warga->count(),
-                'aktif'   => $warga->where('status','aktif')->count(),
-                'nonaktif'=> $warga->where('status','nonaktif')->count(),
-                'avg_skor'=> round($warga->avg('skor')),
+                'total'   => User::where('role', 'mahasiswa')->count(),
+                'aktif'   => User::where('role', 'mahasiswa')->where('status_warga', 'aktif')->count(),
+                'nonaktif'=> User::where('role', 'mahasiswa')->where('status_warga', 'nonaktif')->count(),
+                'avg_skor'=> 85,
             ],
+            'filters' => $request->only(['search', 'asrama', 'status', 'per_page']),
+        ]);
+    }
+
+    // ── Mentor ────────────────────────────────────────────────
+    public function mentor(Request $request)
+    {
+        $query = User::where('role', 'mentor')->with(['mentees']);
+
+        if ($request->search) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                  ->orWhere('email', 'like', "%{$request->search}%");
+            });
+        }
+
+        $mentors = $query->paginate($request->per_page ?? 10)->withQueryString();
+
+        // Calculate active status and stats
+        $mappedMentors = $mentors->getCollection()->map(function($m) {
+            $lastAkademik = \App\Models\Akademik::where('nama_penilai', $m->name)->latest('updated_at')->first();
+            $lastHafalan = \App\Models\HafalanLog::where('mentor_id', $m->id)->latest('updated_at')->first();
+
+            $lastDate = collect([$lastAkademik?->updated_at, $lastHafalan?->updated_at])->filter()->max();
+            $isActive = $lastDate && $lastDate->gt(now()->subDays(30));
+
+            // Count assessments
+            $categories = [];
+            $counts = [
+                'akademik'    => \App\Models\Akademik::where('nama_penilai', $m->name)->count(),
+                'leadership'  => \App\Models\Leadership::where('nama_penilai', $m->name)->count(),
+                'karakter'    => \App\Models\Karakter::where('nama_penilai', $m->name)->count(),
+                'kreatif'     => \App\Models\Kreatif::where('nama_penilai', $m->name)->count(),
+                'hafalan'     => \App\Models\HafalanLog::where('mentor_id', $m->id)->count(),
+            ];
+
+            foreach ($counts as $cat => $count) {
+                if ($count > 0) $categories[] = ucfirst($cat);
+            }
+
+            return [
+                'id'            => $m->id,
+                'name'          => $m->name,
+                'email'         => $m->email,
+                'avatar'        => $m->avatar,
+                'asrama'        => $m->asrama,
+                'no_telp'       => $m->no_telp,
+                'is_active'     => $isActive,
+                'last_login'    => $m->last_login_at ? $m->last_login_at->format('d M Y, H:i') : 'Belum pernah login',
+                'last_activity' => $lastDate ? $lastDate->format('d M Y') : 'Belum ada log',
+                'total_nilai'   => array_sum($counts),
+                'categories'    => $categories,
+                'mentee_count'  => $m->mentees->count(),
+                'mentees'       => $m->mentees->map(fn($st) => [
+                    'id'     => $st->id,
+                    'name'   => $st->name,
+                    'asrama' => $st->asrama,
+                    'avatar' => $st->avatar,
+                ]),
+            ];
+        });
+
+        $mentors->setCollection($mappedMentors);
+
+        return Inertia::render('Super/Mentor', [
+            'mentors' => $mentors,
+            'stats'   => [
+                'total'  => User::where('role', 'mentor')->count(),
+                'active' => $mappedMentors->where('is_active', true)->count(),
+            ],
+            'filters' => $request->only(['search', 'per_page']),
+        ]);
+    }
+
+    public function mentorAnalysis($id)
+    {
+        $mentor = User::where('id', $id)->where('role', 'mentor')->with(['mentees'])->firstOrFail();
+
+        // 1. Mentor Activity Trend (last 6 months)
+        $activityTrend = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $start = $month->copy()->startOfMonth();
+            $end   = $month->copy()->endOfMonth();
+
+            $count = \App\Models\Akademik::where('nama_penilai', $mentor->name)
+                ->whereBetween('created_at', [$start, $end])->count();
+            $count += \App\Models\Leadership::where('nama_penilai', $mentor->name)
+                ->whereBetween('created_at', [$start, $end])->count();
+            $count += \App\Models\Karakter::where('nama_penilai', $mentor->name)
+                ->whereBetween('created_at', [$start, $end])->count();
+            $count += \App\Models\Kreatif::where('nama_penilai', $mentor->name)
+                ->whereBetween('created_at', [$start, $end])->count();
+            $count += \App\Models\HafalanLog::where('mentor_id', $mentor->id)
+                ->whereBetween('created_at', [$start, $end])->count();
+
+            $activityTrend[] = [
+                'month' => $month->format('M'),
+                'count' => $count
+            ];
+        }
+
+        // 2. Mentees Progress (Averages)
+        $menteeStats = $mentor->mentees->map(function($st) {
+            return [
+                'name'   => $st->name,
+                'avatar' => $st->avatar,
+                'values' => [
+                    ['subject' => 'Akademik',   'A' => (float)(\App\Models\Akademik::where('user_id', $st->id)->avg('nilai') ?? 0), 'fullMark' => 100],
+                    ['subject' => 'Leadership', 'A' => (float)(\App\Models\Leadership::where('user_id', $st->id)->avg('nilai') ?? 0), 'fullMark' => 100],
+                    ['subject' => 'Karakter',   'A' => (float)(\App\Models\Karakter::where('user_id', $st->id)->avg('nilai') ?? 0), 'fullMark' => 100],
+                    ['subject' => 'Kreativitas','A' => (float)(\App\Models\Kreatif::where('user_id', $st->id)->avg('nilai') ?? 0), 'fullMark' => 100],
+                    ['subject' => 'Hafalan',    'A' => (float)(\App\Models\HafalanLog::where('user_id', $st->id)->where('score', 'memtas')->count() * 10), 'fullMark' => 100],
+                ]
+            ];
+        });
+
+        return Inertia::render('Super/MentorAnalysis', [
+            'mentor'        => $mentor,
+            'activityTrend' => $activityTrend,
+            'menteeStats'   => $menteeStats,
         ]);
     }
 
     // ── Alumni ────────────────────────────────────────────────
-    public function alumni()
+    public function alumni(Request $request)
     {
-        $alumni = collect([
-            ['id'=>1,'name'=>'Abdullah Karim','angkatan'=>2018,'asrama'=>'Al-Farabi',  'karir'=>'Software Engineer @ Gojek',         'kota'=>'Jakarta',   'avatar'=>null,'hafalan_juz'=>28,'linkedin'=>'#'],
-            ['id'=>2,'name'=>'Bagas Nugroho', 'angkatan'=>2018,'asrama'=>'Al-Ghazali', 'karir'=>'Product Manager @ Tokopedia',       'kota'=>'Jakarta',   'avatar'=>null,'hafalan_juz'=>20,'linkedin'=>'#'],
-            ['id'=>3,'name'=>'Chairul Umam',  'angkatan'=>2019,'asrama'=>'Ibnu Sina',  'karir'=>'Data Scientist @ Bukalapak',        'kota'=>'Bandung',   'avatar'=>null,'hafalan_juz'=>15,'linkedin'=>'#'],
-            ['id'=>4,'name'=>'Dimas Pratama', 'angkatan'=>2019,'asrama'=>'Al-Kindi',   'karir'=>'Full Stack Developer @ Traveloka',  'kota'=>'Jakarta',   'avatar'=>null,'hafalan_juz'=>22,'linkedin'=>'#'],
-            ['id'=>5,'name'=>'Eka Wijayanto', 'angkatan'=>2020,'asrama'=>'Al-Farabi',  'karir'=>'UI/UX Designer @ Grab',            'kota'=>'Surabaya',  'avatar'=>null,'hafalan_juz'=>18,'linkedin'=>'#'],
-            ['id'=>6,'name'=>'Faris Abdillah','angkatan'=>2020,'asrama'=>'Al-Ghazali', 'karir'=>'Android Developer @ OVO',          'kota'=>'Yogyakarta','avatar'=>null,'hafalan_juz'=>25,'linkedin'=>'#'],
-            ['id'=>7,'name'=>'Ghani Mufid',   'angkatan'=>2021,'asrama'=>'Ibnu Sina',  'karir'=>'Backend Engineer @ Shopee',         'kota'=>'Tangerang', 'avatar'=>null,'hafalan_juz'=>12,'linkedin'=>'#'],
-            ['id'=>8,'name'=>'Hilman Fathoni', 'angkatan'=>2021,'asrama'=>'Al-Kindi',  'karir'=>'DevOps Engineer @ Dana',            'kota'=>'Malang',    'avatar'=>null,'hafalan_juz'=>30,'linkedin'=>'#'],
-        ]);
+        // Alumni are users with role 'alumni'
+        $query = User::where('role', 'alumni')->with(['alumni', 'profilRiwayats']);
+
+        if ($request->search) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                  ->orWhere('email', 'like', "%{$request->search}%");
+            });
+        }
+
+        if ($request->asrama) {
+            $query->where('asrama', $request->asrama);
+        }
+
+        if ($request->angkatan) {
+            $query->where('angkatan', $request->angkatan);
+        }
+
+        $users = $query->paginate($request->per_page ?? 12)->withQueryString();
+
+        // Map User + Alumni data for frontend
+        $mappedData = $users->getCollection()->map(function($user) {
+            $alumniMeta = $user->alumni;
+            $riwayats   = $user->profilRiwayats;
+
+            return [
+                'id'                  => $user->id,
+                'nama'                => $user->name,
+                'email'               => $user->email,
+                'no_whatsapp'         => $user->no_telp ?? $alumniMeta?->no_whatsapp,
+                'foto'                => $user->avatar,
+                'asal_asrama'         => $user->asrama,
+                'tahun_masuk_asrama'  => (int)$user->angkatan,
+                'tahun_keluar_asrama' => $alumniMeta?->tahun_keluar_asrama,
+                'pekerjaan_sekarang'  => $riwayats->where('tipe', 'pekerjaan')->where('masih_berlangsung', true)->first()?->posisi ?? $alumniMeta?->pekerjaan_sekarang,
+                'alamat_domisili'     => $alumniMeta?->alamat_domisili ?? $user->alamat_sekarang,
+                'bidang_keahlian'     => $alumniMeta?->bidang_keahlian,
+                'nia'                 => $user->no_induk ?? $alumniMeta?->nia,
+                'provinsi_asal'       => $user->provinsi ?? $alumniMeta?->provinsi_asal,
+                'tanggal_lahir'       => $user->tgl_lahir ?? $alumniMeta?->tanggal_lahir,
+                
+                // Tabs data from profil_riwayats
+                'pendidikan' => $riwayats->where('tipe', 'pendidikan')->map(fn($r) => [
+                    'nama_sekolah'  => $r->judul,
+                    'jenjang'       => $r->posisi,
+                    'program_studi' => $r->deskripsi,
+                    'tahun_lulus'   => $r->selesai ? date('Y', strtotime($r->selesai)) : 'Sekarang',
+                ])->values(),
+                
+                'pekerjaan' => $riwayats->where('tipe', 'pekerjaan')->map(fn($r) => [
+                    'nama_perusahaan' => $r->judul,
+                    'jabatan'         => $r->posisi,
+                    'tahun_masuk'     => $r->mulai ? date('Y', strtotime($r->mulai)) : '',
+                    'tahun_keluar'    => $r->selesai ? date('Y', strtotime($r->selesai)) : ($r->masih_berlangsung ? 'Sekarang' : ''),
+                ])->values(),
+                
+                'organisasi' => $riwayats->where('tipe', 'organisasi')->map(fn($r) => [
+                    'nama_organisasi' => $r->judul,
+                    'jabatan'         => $r->posisi,
+                    'tahun_aktif'     => ($r->mulai ? date('Y', strtotime($r->mulai)) : '') . ($r->selesai ? ' - '.date('Y', strtotime($r->selesai)) : ''),
+                ])->values(),
+                
+                'prestasi' => $riwayats->where('tipe', 'penghargaan')->map(fn($r) => [
+                    'nama_prestasi' => $r->judul,
+                    'penyelenggara' => $r->posisi,
+                    'tahun'         => $r->mulai ? date('Y', strtotime($r->mulai)) : '',
+                ])->values(),
+            ];
+        });
+
+        $users->setCollection($mappedData);
 
         return Inertia::render('Super/Alumni', [
-            'alumni'      => $alumni->values(),
-            'asrama_list' => $alumni->pluck('asrama')->unique()->sort()->values(),
+            'alumni'      => $users,
+            'asrama_list' => ['Al-Farabi', 'Al-Ghazali', 'Ibnu Sina', 'Al-Kindi'],
             'stats'       => [
-                'total'         => $alumni->count(),
-                'hafidz'        => $alumni->where('hafalan_juz', 30)->count(),
-                'angkatan_list' => $alumni->pluck('angkatan')->unique()->sort()->values(),
+                'total'         => User::where('role', 'alumni')->count(),
+                'hafidz'        => 0, // Placeholder
+                'angkatan_list' => User::where('role', 'alumni')->whereNotNull('angkatan')->select('angkatan')->distinct()->orderBy('angkatan', 'desc')->pluck('angkatan'),
             ],
+            'filters' => $request->only(['search', 'asrama', 'angkatan', 'per_page']),
         ]);
     }
 
     // ── Kegiatan ──────────────────────────────────────────────
-    public function kegiatan()
+    public function kegiatan(Request $request)
     {
-        $kegiatan = collect([
-            ['id'=>1,'judul'=>'Ujian Tengah Semester','tanggal'=>now()->format('Y-m').'-15','waktu'=>'08:00','tempat'=>'Aula Utama','tipe'=>'akademik','status'=>'upcoming','peserta'=>120],
-            ['id'=>2,'judul'=>'Seminar Kewirausahaan Islam','tanggal'=>now()->format('Y-m').'-18','waktu'=>'09:00','tempat'=>'Ruang Serbaguna','tipe'=>'kegiatan','status'=>'upcoming','peserta'=>80],
-            ['id'=>3,'judul'=>'Tasmi\' Hafalan Bulanan','tanggal'=>now()->format('Y-m').'-20','waktu'=>'07:00','tempat'=>'Masjid Al-Hikmah','tipe'=>'hafalan','status'=>'upcoming','peserta'=>45],
-            ['id'=>4,'judul'=>'Pekan Olahraga Santri','tanggal'=>now()->format('Y-m').'-22','waktu'=>'07:30','tempat'=>'Lapangan Utama','tipe'=>'olahraga','status'=>'upcoming','peserta'=>120],
-            ['id'=>5,'judul'=>'Wisuda Angkatan 2021','tanggal'=>now()->subDays(10)->format('Y-m-d'),'waktu'=>'10:00','tempat'=>'Gedung Aula','tipe'=>'akademik','status'=>'selesai','peserta'=>35],
-            ['id'=>6,'judul'=>'Lomba Kaligrafi','tanggal'=>now()->subDays(5)->format('Y-m-d'),'waktu'=>'08:00','tempat'=>'Aula Seni','tipe'=>'kegiatan','status'=>'selesai','peserta'=>60],
-        ]);
+        $query = Kegiatan::query();
+
+        if ($request->status === 'upcoming') {
+            $query->where('waktu', '>=', now());
+        } elseif ($request->status === 'selesai') {
+            $query->where('waktu', '<', now());
+        }
+
+        $kegiatan = $query->orderBy('waktu', 'desc')->paginate($request->per_page ?? 12)->withQueryString();
 
         return Inertia::render('Super/Kegiatan', [
-            'kegiatan' => $kegiatan->values(),
+            'kegiatan' => $kegiatan,
             'stats'    => [
-                'upcoming' => $kegiatan->where('status','upcoming')->count(),
-                'selesai'  => $kegiatan->where('status','selesai')->count(),
-                'total'    => $kegiatan->count(),
+                'upcoming' => Kegiatan::where('waktu', '>=', now())->count(),
+                'selesai'  => Kegiatan::where('waktu', '<', now())->count(),
+                'total'    => Kegiatan::count(),
             ],
+            'filters' => $request->only(['status', 'per_page']),
         ]);
+    }
+
+    public function storeKegiatan(Request $request)
+    {
+        $data = $request->validate([
+            'nama_kegiatan' => 'required|string|max:255',
+            'tujuan'        => 'nullable|string',
+            'penyelenggara' => 'required|string|max:255',
+            'jenis_kegiatan'=> 'required|string',
+            'waktu'         => 'required|date',
+            'tempat'        => 'required|string|max:255',
+            'keterangan'    => 'nullable|string',
+        ]);
+
+        DB::transaction(function() use ($data) {
+            $kegiatan = Kegiatan::create($data);
+
+            $mahasiswa = User::where('role', 'mahasiswa')->get();
+            $dt = new \DateTime($data['waktu']);
+            
+            foreach ($mahasiswa as $user) {
+                UserEvent::create([
+                    'user_id'      => $user->id,
+                    'title'        => $data['nama_kegiatan'],
+                    'date'         => $dt->format('Y-m-d'),
+                    'time'         => $dt->format('H:i'),
+                    'type'         => 'kegiatan',
+                    'color'        => '#6366f1',
+                    'desc'         => $data['keterangan'] ?? "Kegiatan Pesantren: {$data['nama_kegiatan']}",
+                    'recurring'    => false,
+                    'is_mandatory' => true,
+                ]);
+            }
+        });
+
+        return back()->with('success', 'Kegiatan berhasil dibuat dan disinkronkan ke kalender mahasiswa.');
     }
 
     // ── Hafalan ───────────────────────────────────────────────

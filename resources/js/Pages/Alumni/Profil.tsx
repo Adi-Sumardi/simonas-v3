@@ -1,8 +1,9 @@
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { Icon } from '@/Components/ui/Icon';
+import { Modal } from '@/Components/ui/Modal';
 import { PageProps } from '@/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -151,53 +152,36 @@ function RiwayatModal({
     const meta = TIPE_META[tipe];
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between px-6 py-5 border-b border-white/40">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${meta.bg}`}>
-                            <Icon name={meta.icon} className={`text-xl ${meta.color}`} filled />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-on-surface">
-                                {editItem ? 'Edit' : 'Tambah'} {meta.label}
-                            </h3>
-                            {!editItem && <p className="text-xs text-on-surface-variant">Bisa tambahkan lebih dari satu sekaligus</p>}
-                        </div>
-                    </div>
-                    <button onClick={onClose} className="w-8 h-8 rounded-lg bg-surface-container hover:bg-white/80 flex items-center justify-center">
-                        <Icon name="close" className="text-on-surface-variant" />
+        <Modal open={true} onClose={onClose} title={`${editItem ? 'Edit' : 'Tambah'} ${meta.label}`} icon={meta.icon} size="md"
+            footer={
+                <>
+                    <button type="button" onClick={onClose}
+                        className="px-5 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-black/10 transition-colors">
+                        Batal
                     </button>
-                </div>
+                    <button form="riwayat-form" type="submit" disabled={saving}
+                        className="px-5 py-2.5 rounded-xl font-bold text-sm bg-emerald-500 text-white disabled:opacity-50 hover:bg-emerald-600 transition-colors flex items-center gap-2">
+                        <Icon name="save" className="text-base" />
+                        {saving ? 'Menyimpan...' : editItem ? 'Simpan Perubahan' : `Simpan ${entries.length > 1 ? `(${entries.length})` : ''}`}
+                    </button>
+                </>
+            }>
+            {!editItem && <p className="text-xs text-on-surface-variant mb-5">Bisa tambahkan lebih dari satu sekaligus</p>}
+            <form id="riwayat-form" onSubmit={submit} className="space-y-4">
+                {entries.map((entry, idx) => (
+                    <EntryRow key={idx} entry={entry} idx={idx} tipe={tipe}
+                        onChange={change} onRemove={removeRow} showRemove={entries.length > 1} />
+                ))}
 
-                <form onSubmit={submit} className="px-6 py-5 space-y-4">
-                    {entries.map((entry, idx) => (
-                        <EntryRow key={idx} entry={entry} idx={idx} tipe={tipe}
-                            onChange={change} onRemove={removeRow} showRemove={entries.length > 1} />
-                    ))}
-
-                    {!editItem && (
-                        <button type="button" onClick={addRow}
-                            className="w-full py-3 rounded-2xl border-2 border-dashed border-outline-variant text-on-surface-variant text-sm font-bold flex items-center justify-center gap-2 hover:border-emerald-500 hover:text-emerald-600 transition-colors">
-                            <Icon name="add_circle" className="text-xl" />
-                            Tambah {meta.label} Lagi
-                        </button>
-                    )}
-
-                    <div className="flex gap-3 pt-2">
-                        <button type="button" onClick={onClose}
-                            className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-white/60 transition-colors">
-                            Batal
-                        </button>
-                        <button type="submit" disabled={saving}
-                            className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-emerald-500 text-white hover:bg-emerald-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-                            <Icon name="save" className="text-base" />
-                            {saving ? 'Menyimpan...' : editItem ? 'Simpan Perubahan' : `Simpan ${entries.length > 1 ? `(${entries.length})` : ''}`}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                {!editItem && (
+                    <button type="button" onClick={addRow}
+                        className="w-full py-3 rounded-2xl border-2 border-dashed border-outline-variant text-on-surface-variant text-sm font-bold flex items-center justify-center gap-2 hover:border-emerald-500 hover:text-emerald-600 transition-colors">
+                        <Icon name="add_circle" className="text-xl" />
+                        Tambah {meta.label} Lagi
+                    </button>
+                )}
+            </form>
+        </Modal>
     );
 }
 
@@ -250,6 +234,23 @@ export default function Profil({ user, alumni, riwayats, posts }: ProfilProps) {
         bidang_keahlian: alumni.bidang_keahlian ?? '',
     });
 
+    const [avatarProcessing, setAvatarProcessing] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (file) {
+            setAvatarProcessing(true);
+            router.post('/alumni/profil/avatar', { avatar: file }, {
+                forceFormData: true,
+                onFinish: () => {
+                    setAvatarProcessing(false);
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                }
+            });
+        }
+    }
+
     function openAdd(tipe: Tipe) { setModalTipe(tipe); setEditItem(null); }
     function openEdit(item: Riwayat) { setModalTipe(item.tipe); setEditItem(item); }
     function closeModal() { setModalTipe(null); setEditItem(null); }
@@ -286,13 +287,22 @@ export default function Profil({ user, alumni, riwayats, posts }: ProfilProps) {
 
                     {/* Avatar + Info */}
                     <div className="glass-card rounded-3xl p-6 text-center space-y-4">
-                        <div className="relative inline-block">
+                        <div className="relative inline-block group">
                             <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-emerald-400 to-teal-600 mx-auto ring-4 ring-white/60 flex items-center justify-center">
                                 {user.avatar
                                     ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                                     : <span className="font-display font-black text-3xl text-white">{initials}</span>
                                 }
                             </div>
+                            <button 
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={avatarProcessing}
+                                className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-white shadow-lg border border-slate-100 text-emerald-600 flex items-center justify-center hover:scale-110 transition-all hover:bg-emerald-50"
+                                title="Ganti Foto"
+                            >
+                                <Icon name={avatarProcessing ? 'sync' : 'photo_camera'} className={`text-sm ${avatarProcessing ? 'animate-spin' : ''}`} />
+                            </button>
+                            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
                         </div>
                         <div>
                             <h2 className="font-display font-bold text-xl text-on-surface">{user.name}</h2>

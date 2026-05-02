@@ -18,11 +18,17 @@ class Leadership extends Model
         'keterangan',
         'file',
         'nama_penilai',
-        'nilai'
+        'nilai',
+        'tipe_kegiatan'
     ];
     
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function komponen()
+    {
+        return $this->belongsTo(Komponen::class, 'komponen_id');
     }
 }

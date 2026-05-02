@@ -69,6 +69,16 @@
         animation: slide-up 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
+    /* Modal panel entrance — scale + fade only (no translate to avoid misalignment) */
+    @keyframes modal-in {
+        from { opacity: 0; transform: scale(0.94) translateY(8px); }
+        to   { opacity: 1; transform: scale(1)    translateY(0); }
+    }
+    .animate-modal-in {
+        animation: modal-in 0.25s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+    }
+
+
     /* Safe area for iPhone notch / home indicator */
     .pb-safe {
         padding-bottom: env(safe-area-inset-bottom, 0.75rem);
@@ -96,4 +106,8 @@
     .line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
     .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
     .line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+
+    /* Hide scrollbar but allow scrolling */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }

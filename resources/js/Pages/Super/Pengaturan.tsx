@@ -75,10 +75,10 @@ export default function Pengaturan({ settings }: Props) {
                             <span className="text-sm text-on-surface-variant">juz</span>
                         </div>
                     </Field>
-                    <Field label="Target Belajar" hint="Jam belajar per hari">
+                    <Field label="Target Aktivitas" hint="Jumlah aktivitas per bulan">
                         <div className="flex items-center gap-3">
-                            <input type="number" min={1} max={12} value={data.study_hour_target} onChange={e => setData('study_hour_target', Number(e.target.value))} className="glass-input w-24 text-sm text-center" />
-                            <span className="text-sm text-on-surface-variant">jam / hari</span>
+                            <input type="number" min={1} max={100} value={data.study_hour_target} onChange={e => setData('study_hour_target', Number(e.target.value))} className="glass-input w-24 text-sm text-center" />
+                            <span className="text-sm text-on-surface-variant">aktivitas / bulan</span>
                         </div>
                     </Field>
                 </Section>
@@ -88,7 +88,7 @@ export default function Pengaturan({ settings }: Props) {
                     {[
                         { key:'point_shalat', label:'Poin Shalat', hint:'Per waktu shalat yang tercatat' },
                         { key:'point_hafalan', label:'Poin Hafalan', hint:'Per setoran hafalan yang diterima' },
-                        { key:'point_akademik', label:'Poin Akademik', hint:'Per jam belajar yang tercatat' },
+                        { key:'point_akademik', label:'Poin Aktivitas', hint:'Per aktivitas yang tercatat' },
                         { key:'point_kegiatan', label:'Poin Kegiatan', hint:'Per kegiatan yang diikuti' },
                     ].map(f => (
                         <Field key={f.key} label={f.label} hint={f.hint}>

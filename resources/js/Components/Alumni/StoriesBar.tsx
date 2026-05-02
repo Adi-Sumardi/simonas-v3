@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { Icon } from '@/Components/ui/Icon';
-import { StoryViewer } from './StoryViewer';
+import { Modal } from '@/Components/ui/Modal';
+import { StoryViewer } from '@/Components/Alumni/StoryViewer';
 
 export interface StoryItem {
     id: number;
@@ -180,58 +181,46 @@ export function StoriesBar({ groups, currentUserId, currentUserName, currentUser
             </div>
 
             {/* Upload preview modal */}
-            {previewUrl && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-                    <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
-                        <div className="flex items-center justify-between px-5 py-3 border-b border-white/40">
-                            <h3 className="font-bold text-on-surface flex items-center gap-2">
-                                <Icon name="auto_stories" className="text-emerald-600" filled />
-                                Bagikan Story
-                            </h3>
-                            <button onClick={cancelUpload}
-                                className="w-8 h-8 rounded-lg bg-surface-container hover:bg-white/80 flex items-center justify-center">
-                                <Icon name="close" className="text-on-surface-variant" />
+            {previewUrl && activeGroupIdx === null && (
+                <Modal open={true} onClose={cancelUpload} title="Bagikan Story" icon="auto_stories" size="md"
+                    footer={
+                        <>
+                            <button onClick={cancelUpload} disabled={uploading}
+                                className="px-5 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-black/10 transition-colors disabled:opacity-50">
+                                Batal
                             </button>
+                            <button onClick={uploadStory} disabled={uploading}
+                                className="px-5 py-2.5 rounded-xl font-bold text-sm bg-emerald-500 text-white hover:bg-emerald-600 transition-colors disabled:opacity-50 flex items-center gap-2">
+                                <Icon name="send" className="text-base" filled />
+                                {uploading ? 'Mengunggah...' : 'Bagikan'}
+                            </button>
+                        </>
+                    }>
+                    <div className="space-y-4">
+                        <div className="aspect-[9/16] max-h-[60vh] rounded-2xl overflow-hidden bg-black">
+                            <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
                         </div>
 
-                        <div className="p-5 space-y-4">
-                            <div className="aspect-[9/16] max-h-[60vh] rounded-2xl overflow-hidden bg-black">
-                                <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
-                            </div>
+                        <input
+                            ref={captionInput}
+                            type="text"
+                            placeholder="Tulis caption (opsional)..."
+                            maxLength={280}
+                            className="glass-input w-full text-sm"
+                        />
 
-                            <input
-                                ref={captionInput}
-                                type="text"
-                                placeholder="Tulis caption (opsional)..."
-                                maxLength={280}
-                                className="glass-input w-full text-sm"
-                            />
+                        {errMsg && (
+                            <p className="text-sm text-error bg-error-container/40 px-3 py-2 rounded-lg flex items-center gap-2">
+                                <Icon name="error" className="text-base" filled /> {errMsg}
+                            </p>
+                        )}
 
-                            {errMsg && (
-                                <p className="text-sm text-error bg-error-container/40 px-3 py-2 rounded-lg flex items-center gap-2">
-                                    <Icon name="error" className="text-base" filled /> {errMsg}
-                                </p>
-                            )}
-
-                            <div className="flex items-center gap-2 text-xs text-on-surface-variant">
-                                <Icon name="schedule" className="text-base" />
-                                Story akan otomatis hilang dalam 24 jam
-                            </div>
-
-                            <div className="flex gap-3 pt-1">
-                                <button onClick={cancelUpload} disabled={uploading}
-                                    className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-white/60 transition-colors disabled:opacity-50">
-                                    Batal
-                                </button>
-                                <button onClick={uploadStory} disabled={uploading}
-                                    className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-emerald-500 text-white hover:bg-emerald-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-                                    <Icon name="send" className="text-base" filled />
-                                    {uploading ? 'Mengunggah...' : 'Bagikan'}
-                                </button>
-                            </div>
+                        <div className="flex items-center gap-2 text-xs text-on-surface-variant">
+                            <Icon name="schedule" className="text-base" />
+                            Story akan otomatis hilang dalam 24 jam
                         </div>
                     </div>
-                </div>
+                </Modal>
             )}
 
             {/* Story viewer modal */}

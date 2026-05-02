@@ -19,6 +19,7 @@ class Akademik extends Model
         'file', 
         'nama_penilai', 
         'nilai',
+        'tipe_kegiatan',
     ];
 
     public function user()

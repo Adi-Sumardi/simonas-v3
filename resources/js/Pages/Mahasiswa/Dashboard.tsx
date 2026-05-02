@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { ProgressDonut } from '@/Components/ui/ProgressDonut';
@@ -11,6 +11,13 @@ interface DashboardMahasiswaProps extends PageProps {
         completed: number;
         total: number;
         next_prayer: string;
+        list: {
+            id: number;
+            title: string;
+            time: string;
+            completed: boolean;
+            is_late: boolean;
+        }[];
     };
     study_hours: {
         today: number;
@@ -40,6 +47,14 @@ export default function Dashboard({
 }: DashboardMahasiswaProps) {
     const prayerPercent = Math.round((shalat.completed / shalat.total) * 100);
 
+    function toggleShalat(id: number) {
+        const today = new Date().toISOString().split('T')[0];
+        router.patch(`/mahasiswa/kalender/${id}/toggle`, { date: today }, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    }
+
     return (
         <AppLayout searchPlaceholder="Cari aktivitas...">
             <Head title="Dashboard Mahasiswa" />
@@ -63,17 +78,50 @@ export default function Dashboard({
                                 Today
                             </span>
                         </div>
-                        <h3 className="font-display text-headline-md text-on-surface mb-1">Shalat 5 Waktu</h3>
-                        <p className="text-body-md text-secondary">{shalat.completed}/{shalat.total} Completed</p>
+                        <h3 className="font-display text-headline-sm text-on-surface mb-1">Shalat 5 Waktu</h3>
+                        <p className="text-body-sm text-secondary">{shalat.completed}/{shalat.total} Completed</p>
                     </div>
-                    <div className="mt-6 space-y-2">
-                        <div className="w-full bg-surface-container rounded-full h-2">
+                    
+                    <div className="mt-4 flex-1 overflow-y-auto max-h-[160px] space-y-2 pr-1">
+                        {shalat.list.length === 0 ? (
+                            <p className="text-xs text-on-surface-variant italic">Belum ada jadwal shalat.</p>
+                        ) : (
+                            shalat.list.map((s) => (
+                                <div key={s.id} className={`flex items-center gap-3 p-2 rounded-xl transition-all ${
+                                    s.completed ? 'bg-primary/5 opacity-60' : 'bg-surface-container/30'
+                                }`}>
+                                    <button
+                                        onClick={() => toggleShalat(s.id)}
+                                        className={`w-5 h-5 rounded-lg border-2 flex-shrink-0 flex items-center justify-center transition-all ${
+                                            s.completed ? 'bg-primary-container border-primary-container text-white' : 'border-on-surface-variant/30'
+                                        }`}
+                                    >
+                                        {s.completed && <Icon name="check" className="text-xs font-bold" />}
+                                    </button>
+                                    <div className="flex-1 min-w-0">
+                                        <p className={`text-sm font-bold text-on-surface truncate ${s.completed ? 'line-through' : ''}`}>
+                                            {s.title}
+                                        </p>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] text-on-surface-variant font-medium">{s.time}</span>
+                                            {s.is_late && (
+                                                <span className="text-[10px] text-rose-500 font-bold uppercase tracking-wider">Late</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    <div className="mt-4 space-y-2">
+                        <div className="w-full bg-surface-container rounded-full h-1.5">
                             <div
-                                className="bg-primary-container h-2 rounded-full shadow-[0_0_8px_rgba(37,99,235,0.4)] transition-all duration-700"
+                                className="bg-primary-container h-1.5 rounded-full shadow-[0_0_8px_rgba(37,99,235,0.4)] transition-all duration-700"
                                 style={{ width: `${prayerPercent}%` }}
                             />
                         </div>
-                        <p className="text-xs text-secondary font-medium">Next: {shalat.next_prayer}</p>
+                        <p className="text-[10px] text-secondary font-medium">Next: {shalat.next_prayer}</p>
                     </div>
                 </div>
 

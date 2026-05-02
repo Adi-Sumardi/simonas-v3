@@ -1,7 +1,16 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
+import { 
+    ResponsiveContainer, 
+    AreaChart, 
+    Area, 
+    XAxis, 
+    YAxis, 
+    CartesianGrid, 
+    Tooltip, 
+} from 'recharts';
 import { StatCard } from '@/Components/ui/StatCard';
 import { ProgressDonut } from '@/Components/ui/ProgressDonut';
 import { Icon } from '@/Components/ui/Icon';
@@ -12,8 +21,20 @@ import { MahasiswaRadarChart } from '@/Components/MahasiswaRadarChart';
 // ─── Types per role ───────────────────────────────────────────
 
 interface MahasiswaStats {
-    shalat: { completed: number; total: number; next: string };
-    study_hours: { today: number; target: number };
+    shalat: { 
+        completed: number; 
+        visual_done: number;
+        total: number; 
+        next_prayer: string;
+        list: {
+            id: number;
+            title: string;
+            time: string;
+            completed: boolean;
+            is_late: boolean;
+        }[];
+    };
+    activity_logs: { count: number; target: number };
     hafalan: { progress_percent: number; current_surah: string; juz: number };
     points: { total: number; rank: number; to_next: number };
 }
@@ -23,6 +44,16 @@ interface MentorStats {
     avg_performance: number;
     pending_nilai: number;
     quran_target_percent: number;
+    mentees: Array<{
+        id: number;
+        name: string;
+        avatar?: string;
+        asrama: string;
+        progress: number;
+        last_log: string;
+    }>;
+    featured_mentee: any;
+    performance_trend: Array<{ label: string; percent: number }>;
 }
 
 interface SuperStats {
@@ -38,6 +69,15 @@ interface StudentScore {
     fullMark: number;
 }
 
+interface AktivitasItem {
+    id: number;
+    jenis: string;
+    deskripsi: string;
+    created_at: string;
+    icon?: string;
+    image_url?: string;
+}
+
 interface StudentData {
     id: number;
     name: string;
@@ -46,59 +86,120 @@ interface StudentData {
     scores: StudentScore[];
 }
 
+interface AsramaStat {
+    id: number;
+    name: string;
+    capacity: number;
+    current: number;
+}
+
 interface DashboardProps extends PageProps {
     role: string;
     permissions: string[];
     stats: MahasiswaStats | MentorStats | SuperStats | AlumniStats | Record<string, unknown>;
+    recent_activities?: AktivitasItem[];
     students?: StudentData[];
     asramas?: string[];
+    asrama_stats?: AsramaStat[];
 }
 
 // ─── Sub-dashboards per role ──────────────────────────────────
 
-function MahasiswaDashboard({ stats, permissions }: { stats: MahasiswaStats; permissions: string[] }) {
+function MahasiswaDashboard({ stats, permissions, recent_activities = [] }: { stats: MahasiswaStats; permissions: string[]; recent_activities?: AktivitasItem[] }) {
     const s = stats;
-    const shalatPct = Math.round((s.shalat.completed / s.shalat.total) * 100);
-    const studyPct  = Math.round((s.study_hours.today / s.study_hours.target) * 100);
+    const shalatPct = Math.round((s.shalat.visual_done / s.shalat.total) * 100);
+    const activityPct = Math.round((s.activity_logs.count / s.activity_logs.target) * 100);
+
+    function toggleShalat(id: number) {
+        const today = new Date().toISOString().split('T')[0];
+        router.patch(`/mahasiswa/kalender/${id}/toggle`, { date: today }, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    }
 
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-                <StatCard icon="mosque" label="SHALAT HARI INI" value={`${s.shalat.completed}/${s.shalat.total}`} badge="Berikutnya" badgeColor="blue" />
-                <StatCard icon="menu_book" label="JAM BELAJAR" value={`${s.study_hours.today}h`} badge={`Target ${s.study_hours.target}h`} badgeColor="purple" />
+                <StatCard icon="mosque" label="SKOR DISIPLIN" value={`${s.shalat.completed}/${s.shalat.total}`} badge="Tepat Waktu" badgeColor="blue" />
+                <StatCard icon="assignment" label="LOG AKTIVITAS" value={`${s.activity_logs.count}`} badge={`Target ${s.activity_logs.target}`} badgeColor="purple" />
                 <StatCard icon="auto_stories" label="HAFALAN" value={`Juz ${s.hafalan.juz}`} badge={s.hafalan.current_surah} badgeColor="emerald" />
                 <StatCard icon="emoji_events" label="POIN SAYA" value={`${s.points.total}`} badge={`Rank #${s.points.rank}`} badgeColor="amber" />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
                 {/* Hafalan progress */}
-                <div className="glass-card p-6 rounded-2xl flex flex-col items-center gap-4">
+                <div className="glass-card p-6 rounded-2xl flex flex-col items-center gap-4 min-h-[320px]">
                     <h3 className="font-display text-headline-md self-start">Progress Hafalan</h3>
-                    <ProgressDonut value={s.hafalan.progress_percent} size={140} label={`Juz ${s.hafalan.juz}`} />
-                    <p className="text-body-sm text-on-surface-variant text-center">
-                        Sedang di <strong>{s.hafalan.current_surah}</strong> · Juz {s.hafalan.juz}
-                    </p>
+                    <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full">
+                        <ProgressDonut value={s.hafalan.progress_percent} size={130} label={`${s.hafalan.progress_percent}%`} />
+                        <p className="text-body-sm text-on-surface-variant text-center px-4">
+                            <strong>Juz {s.hafalan.juz}</strong> · {s.hafalan.current_surah}
+                        </p>
+                    </div>
                     {permissions.includes('log-hafalan') && (
-                        <Link href="/mahasiswa/hafalan" className="btn-primary w-full text-center py-2 rounded-xl text-sm">
+                        <Link href="/mahasiswa/hafalan" className="w-full py-2.5 bg-primary-container/10 text-primary-container rounded-xl text-sm font-bold text-center hover:bg-primary-container hover:text-white transition-all">
                             Lihat Detail Hafalan
                         </Link>
                     )}
                 </div>
 
                 {/* Shalat card */}
-                <div className="glass-card p-6 rounded-2xl space-y-4">
-                    <h3 className="font-display text-headline-md">Shalat Hari Ini</h3>
-                    <ProgressDonut value={shalatPct} size={120} label={`${s.shalat.completed}/${s.shalat.total} waktu`} />
-                    <p className="text-body-sm text-center text-on-surface-variant">Berikutnya: <strong>{s.shalat.next}</strong></p>
+                <div className="glass-card p-6 rounded-2xl flex flex-col min-h-[320px]">
+                    <h3 className="font-display text-headline-md mb-4">Shalat Hari Ini</h3>
+                    
+                    <div className="flex-1 space-y-2 mb-4 overflow-y-auto pr-1">
+                        {s.shalat.list?.filter(p => !p.completed).length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-8 text-center gap-2">
+                                <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                                    <Icon name="check_circle" className="text-2xl text-emerald-600" />
+                                </div>
+                                <p className="text-xs font-bold text-on-surface">Alhamdulillah!</p>
+                                <p className="text-[10px] text-on-surface-variant px-4">Semua sholat hari ini telah ditunaikan.</p>
+                            </div>
+                        ) : (
+                            s.shalat.list?.filter(p => !p.completed).map(prayer => (
+                                <div key={prayer.id} className="flex items-center gap-3 p-2.5 rounded-xl transition-all bg-surface-container/30">
+                                    <button onClick={() => toggleShalat(prayer.id)}
+                                        className="w-5 h-5 rounded-lg border-2 border-on-surface-variant/30 flex-shrink-0 flex items-center justify-center transition-all hover:border-primary-container">
+                                        {prayer.completed && <Icon name="check" className="text-[10px] font-bold" />}
+                                    </button>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-bold text-on-surface truncate">
+                                            {prayer.title}
+                                        </p>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[9px] text-on-surface-variant font-medium">{prayer.time}</span>
+                                            {prayer.is_late && <span className="text-[9px] text-rose-500 font-bold uppercase">Late</span>}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    <div className="pt-4 border-t border-surface-container flex items-center justify-between">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] text-on-surface-variant font-medium">Berikutnya</span>
+                            <span className="text-xs font-bold text-primary-container">{s.shalat.next_prayer}</span>
+                        </div>
+                        <ProgressDonut value={shalatPct} size={60} label={`${s.shalat.visual_done}/${s.shalat.total}`} />
+                    </div>
                 </div>
 
-                {/* Study hours */}
-                <div className="glass-card p-6 rounded-2xl space-y-4">
-                    <h3 className="font-display text-headline-md">Jam Belajar</h3>
-                    <ProgressDonut value={studyPct} size={120} label={`${s.study_hours.today}h / ${s.study_hours.target}h`} />
+                {/* Log Aktivitas */}
+                <div className="glass-card p-6 rounded-2xl flex flex-col items-center gap-4 min-h-[320px]">
+                    <h3 className="font-display text-headline-md self-start">Log Aktivitas</h3>
+                    <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full">
+                        <ProgressDonut value={activityPct} size={130} label={`${s.activity_logs.count} Logs`} />
+                        <p className="text-body-sm text-on-surface-variant text-center px-4">
+                            Target bulan ini: <strong>{s.activity_logs.target} log aktivitas</strong>
+                        </p>
+                    </div>
                     {permissions.includes('log-aktivitas') && (
-                        <Link href="/mahasiswa/aktivitas/create" className="btn-primary w-full text-center py-2 rounded-xl text-sm">
-                            + Log Aktivitas
+                        <Link href="/mahasiswa/aktivitas" className="w-full py-2.5 bg-primary-container text-white rounded-xl text-sm font-bold text-center shadow-lg shadow-primary-container/20 hover:opacity-90 transition-all flex items-center justify-center gap-2">
+                            <Icon name="add" className="text-base" />
+                            Catat Aktivitas
                         </Link>
                     )}
                 </div>
@@ -123,13 +224,34 @@ function MahasiswaDashboard({ stats, permissions }: { stats: MahasiswaStats; per
                 )}
                 <div className="glass-card p-6 rounded-2xl">
                     <h3 className="font-display text-headline-md mb-4">Aktivitas Terbaru</h3>
-                    <div className="flex flex-col items-center py-6 text-on-surface-variant gap-2">
-                        <Icon name="event_note" className="text-4xl opacity-30" />
-                        <p className="text-body-sm">Belum ada aktivitas hari ini.</p>
-                        {permissions.includes('log-aktivitas') && (
-                            <Link href="/mahasiswa/aktivitas/create" className="text-primary-container text-sm font-semibold hover:underline mt-1">
-                                Catat Sekarang →
-                            </Link>
+                    <div className="space-y-3">
+                        {recent_activities.length === 0 ? (
+                            <div className="flex flex-col items-center py-6 text-on-surface-variant gap-2">
+                                <Icon name="event_note" className="text-4xl opacity-30" />
+                                <p className="text-body-sm">Belum ada aktivitas baru.</p>
+                                {permissions.includes('log-aktivitas') && (
+                                    <Link href="/mahasiswa/aktivitas" className="text-primary-container text-sm font-semibold hover:underline mt-1">
+                                        Catat Sekarang →
+                                    </Link>
+                                )}
+                            </div>
+                        ) : (
+                            recent_activities.map((act) => (
+                                <div key={act.id} className="flex items-center gap-4 p-3 hover:bg-primary/5 rounded-xl transition-all">
+                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                        {act.image_url ? (
+                                            <img src={act.image_url} className="w-full h-full object-cover rounded-full" />
+                                        ) : (
+                                            <Icon name={act.icon || 'event_note'} className="text-xl text-primary" />
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-bold text-on-surface truncate">{act.jenis}</p>
+                                        <p className="text-[10px] text-on-surface-variant truncate">{act.deskripsi}</p>
+                                    </div>
+                                    <span className="text-[10px] font-medium text-outline flex-shrink-0">{act.created_at}</span>
+                                </div>
+                            ))
                         )}
                     </div>
                 </div>
@@ -141,103 +263,165 @@ function MahasiswaDashboard({ stats, permissions }: { stats: MahasiswaStats; per
 function MentorDashboard({ stats, permissions }: { stats: MentorStats; permissions: string[] }) {
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-                <StatCard icon="group" label="TOTAL MENTEES" value={`${stats.total_mentees} Santri`} badge="+2 New" badgeColor="blue" />
-                <StatCard icon="trending_up" label="AVG. PERFORMA" value={`${stats.avg_performance}`} badge="/ 100" badgeColor="emerald" />
-                <StatCard icon="rate_review" label="PENDING NILAI" value={`${stats.pending_nilai}`} badge="Review" badgeColor="amber" />
-                <StatCard icon="auto_stories" label="TARGET QURAN" value="Mingguan" badge={`${stats.quran_target_percent}%`} badgeColor="purple" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5">
+                <StatCard icon="group" label="TOTAL MENTEES" value={`${stats.total_mentees}`} badge="Santri" badgeColor="blue" />
+                <StatCard icon="trending_up" label="AVG. PERFORMA" value={`${stats.avg_performance}%`} badge="Avg" badgeColor="emerald" />
+                <StatCard icon="rate_review" label="PENDING NILAI" value={`${stats.pending_nilai}`} badge="Setoran" badgeColor="amber" />
+                <StatCard icon="auto_stories" label="PROGRESS QURAN" value={`${stats.quran_target_percent}%`} badge="Avg" badgeColor="purple" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {permissions.includes('nilai-santri') && (
-                    <div className="glass-card p-6 rounded-2xl">
-                        <h3 className="font-display text-headline-md mb-4">Hafalan Pending Penilaian</h3>
-                        <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                            <Icon name="pending" className="text-amber-500 text-2xl" />
-                            <div>
-                                <p className="font-semibold text-amber-800">{stats.pending_nilai} setoran menunggu</p>
-                                <p className="text-xs text-amber-600">Segera nilai sebelum deadline</p>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Main Content (Left) */}
+                <div className="lg:col-span-8 space-y-6">
+                    {/* Performance Trend Chart */}
+                    <div className="glass-card p-4 sm:p-6 rounded-2xl flex flex-col h-full">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">
+                            <h3 className="font-display text-title-sm sm:text-headline-md flex items-center gap-2">
+                                <Icon name="show_chart" className="text-blue-500" />
+                                Tren Performa Bimbingan
+                            </h3>
+                            <div className="w-fit flex items-center gap-1 text-[9px] font-black text-on-surface-variant uppercase tracking-wider bg-surface-container px-2 py-1 rounded-md">
+                                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                                Rata-rata Nilai
                             </div>
-                            <Link href="/mentor/hafalan/pending" className="ml-auto bg-amber-500 text-white px-4 py-1.5 rounded-lg text-sm font-bold">
-                                Nilai →
+                        </div>
+                        <div className="h-[200px] sm:h-[280px] w-full relative">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={stats.performance_trend || []} margin={{ top: 10, right: 5, left: -20, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorPerf" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                    <XAxis dataKey="label" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tickMargin={10} />
+                                    <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} domain={[0, 100]} tickMargin={10} />
+                                    <Tooltip 
+                                        contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                                    />
+                                    <Area type="monotone" dataKey="percent" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorPerf)" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+
+                    {/* Mentees List */}
+                    <div className="glass-card p-5 sm:p-6 rounded-2xl">
+                        <div className="flex justify-between items-start sm:items-center mb-6 gap-2">
+                            <div className="min-w-0">
+                                <h3 className="font-display text-title-sm sm:text-headline-md truncate">Warga Bimbingan</h3>
+                                <p className="text-[9px] text-on-surface-variant font-black uppercase tracking-widest">Daftar Mahasiswa Aktif</p>
+                            </div>
+                            <Link href="/mentor/mentees" className="text-primary-container text-[10px] sm:text-xs font-bold hover:bg-primary-container/10 px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 border border-primary-container/20 flex-shrink-0">
+                                <span className="hidden xs:inline">Semua</span> <Icon name="chevron_right" className="text-sm" />
                             </Link>
                         </div>
-                    </div>
-                )}
-                {permissions.includes('view-warga') && (
-                    <div className="glass-card p-6 rounded-2xl">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-display text-headline-md">Warga Bimbingan</h3>
-                            <Link href="/mentor/mentees" className="text-primary-container text-sm font-semibold hover:underline">Lihat Semua</Link>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            {(!stats.mentees || stats.mentees.length === 0) ? (
+                                <div className="col-span-full py-12 flex flex-col items-center justify-center text-on-surface-variant opacity-40 border-2 border-dashed border-surface-container rounded-2xl">
+                                    <Icon name="groups" className="text-5xl mb-3" />
+                                    <p className="font-bold">Belum ada warga bimbingan</p>
+                                    <p className="text-xs">Data mahasiswa bimbingan akan tampil di sini</p>
+                                </div>
+                            ) : (
+                                stats.mentees.slice(0, 4).map((m) => (
+                                    <div key={m.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-white/40 hover:bg-white/80 rounded-2xl transition-all border border-white/60 group">
+                                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-surface-container overflow-hidden shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
+                                            {m.avatar ? <img src={m.avatar} alt={m.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-xs sm:text-sm">{m.name.charAt(0)}</div>}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs sm:text-sm font-bold text-on-surface truncate">{m.name}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <div className="flex-1 h-1 bg-surface-container rounded-full overflow-hidden">
+                                                    <div className="h-full bg-primary-container rounded-full" style={{ width: `${m.progress}%` }} />
+                                                </div>
+                                                <span className="text-[9px] font-black text-primary-container">{m.progress}%</span>
+                                            </div>
+                                        </div>
+                                        <Link href={`/mentor/mentees/${m.id}`} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-primary-container hover:text-white transition-colors text-on-surface-variant">
+                                            <Icon name="arrow_forward" className="text-lg" />
+                                        </Link>
+                                    </div>
+                                ))
+                            )}
                         </div>
-                        <div className="text-center py-4 text-on-surface-variant text-body-sm">
-                            <Icon name="people" className="text-4xl opacity-30 block mx-auto mb-2" />
-                            Data warga dimuat dari database.
-                        </div>
                     </div>
-                )}
+                </div>
+
+                {/* Sidebar (Right) */}
+                <div className="lg:col-span-4 space-y-6">
+                    {/* Pending Actions */}
+                    {permissions.includes('nilai-santri') && (
+                        <div className="glass-card p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 to-transparent border-amber-200/50">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
+                                    <Icon name="pending_actions" className="text-2xl" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-on-surface text-sm">Hafalan Pending</h4>
+                                    <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-black">Butuh Penilaian</p>
+                                </div>
+                            </div>
+                            
+                            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-6">
+                                <span className="text-5xl font-display font-black text-amber-600 leading-none">{stats.pending_nilai}</span>
+                                <span className="text-[10px] sm:text-xs text-on-surface-variant font-bold">Setoran Mahasiswa</span>
+                            </div>
+
+                            <Link href="/mentor/hafalan/pending" className="w-full py-3.5 bg-amber-500 text-white rounded-xl text-sm font-bold text-center shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all flex items-center justify-center gap-2 group">
+                                <Icon name="rate_review" className="text-lg" />
+                                Nilai Sekarang
+                                <Icon name="arrow_forward" className="text-sm group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                        </div>
+                    )}
+
+                    {/* Featured Mentee Card */}
+                    <div className="glass-card p-5 sm:p-6 rounded-2xl overflow-hidden relative min-h-[350px] sm:min-h-[380px] flex flex-col">
+                        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                            <Icon name="star" className="text-[100px] sm:text-[120px]" />
+                        </div>
+                        <h3 className="font-display text-headline-md mb-1">Santri Teraktif</h3>
+                        <p className="text-[10px] text-on-surface-variant font-black uppercase tracking-widest mb-6 sm:mb-8">Pencapaian Pekan Ini</p>
+
+                        {stats.featured_mentee ? (
+                            <div className="flex-1 flex flex-col items-center text-center">
+                                <div className="w-24 h-24 rounded-3xl bg-surface-container overflow-hidden shadow-xl mb-4 border-4 border-white relative">
+                                    {stats.featured_mentee.avatar ? <img src={stats.featured_mentee.avatar} alt={stats.featured_mentee.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-violet-100 text-violet-600 font-bold text-3xl">{stats.featured_mentee.name.charAt(0)}</div>}
+                                    <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-amber-400 border-4 border-white flex items-center justify-center shadow-md">
+                                        <Icon name="workspace_premium" className="text-white text-xs" />
+                                    </div>
+                                </div>
+                                <h4 className="text-lg font-bold text-on-surface mb-1">{stats.featured_mentee.name}</h4>
+                                <p className="text-xs text-on-surface-variant mb-8">Asrama {stats.featured_mentee.asrama}</p>
+                                
+                                <div className="w-full grid grid-cols-2 gap-3">
+                                    <div className="p-4 bg-white/40 rounded-2xl border border-white/60">
+                                        <p className="text-[10px] font-black text-on-surface-variant uppercase mb-1">Hafalan</p>
+                                        <p className="text-2xl font-display font-black text-primary-container">{stats.featured_mentee.progress}%</p>
+                                    </div>
+                                    <div className="p-4 bg-white/40 rounded-2xl border border-white/60">
+                                        <p className="text-[10px] font-black text-on-surface-variant uppercase mb-1">Rank</p>
+                                        <p className="text-2xl font-display font-black text-emerald-600">#1</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex-1 flex flex-col items-center justify-center text-center opacity-40">
+                                <Icon name="military_tech" className="text-6xl mb-3" />
+                                <p className="font-bold">Belum ada data</p>
+                                <p className="text-xs">Lakukan penilaian untuk memicu ranking</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );
 }
 
-function SuperDashboard({ stats, students = [], asramas = [] }: { stats: SuperStats; permissions: string[]; students: StudentData[]; asramas: string[] }) {
-    const MENU_ITEMS = [
-        {
-            href: '/super/role-permission',
-            icon: 'admin_panel_settings',
-            iconBg: 'bg-violet-100',
-            iconColor: 'text-violet-600',
-            title: 'Role & Permission',
-            desc: 'Kelola hak akses dan izin fitur untuk setiap role pengguna',
-            available: true,
-        },
-        {
-            href: '#',
-            icon: 'people_alt',
-            iconBg: 'bg-blue-100',
-            iconColor: 'text-blue-600',
-            title: 'Manajemen Warga',
-            desc: 'Data warga pondok, kehadiran, dan status akademik',
-            available: false,
-        },
-        {
-            href: '#',
-            icon: 'school',
-            iconBg: 'bg-emerald-100',
-            iconColor: 'text-emerald-600',
-            title: 'Data Alumni',
-            desc: 'Direktori alumni, jejak karir, dan komunitas',
-            available: false,
-        },
-        {
-            href: '#',
-            icon: 'event',
-            iconBg: 'bg-amber-100',
-            iconColor: 'text-amber-600',
-            title: 'Kegiatan & Event',
-            desc: 'Program pesantren, jadwal kegiatan, dan rencana',
-            available: false,
-        },
-        {
-            href: '#',
-            icon: 'bar_chart',
-            iconBg: 'bg-rose-100',
-            iconColor: 'text-rose-600',
-            title: 'Laporan Eksekutif',
-            desc: 'Analitik performa, tren, dan ringkasan data',
-            available: false,
-        },
-        {
-            href: '#',
-            icon: 'settings',
-            iconBg: 'bg-slate-100',
-            iconColor: 'text-slate-600',
-            title: 'Pengaturan Sistem',
-            desc: 'Konfigurasi aplikasi, notifikasi, dan integrasi',
-            available: false,
-        },
-    ];
-
+function SuperDashboard({ stats, students = [], asramas = [], asrama_stats = [] }: { stats: SuperStats; permissions: string[]; students: StudentData[]; asramas: string[]; asrama_stats?: AsramaStat[] }) {
     return (
         <div className="space-y-8">
             {/* Stat cards — equal height via items-stretch */}
@@ -248,47 +432,47 @@ function SuperDashboard({ stats, students = [], asramas = [] }: { stats: SuperSt
                 <StatCard icon="analytics"          label="AVG. SCORE"   value={`${stats.avg_score}/100`} badge="Semester ini" badgeColor="amber" />
             </div>
 
-            {/* Quick menu — bento grid */}
-            <div>
-                <h2 className="font-display text-lg font-bold text-on-surface mb-4">Menu Manajemen</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {MENU_ITEMS.map((item) => (
-                        item.available ? (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className="glass-card rounded-2xl p-6 flex flex-col gap-4 hover:shadow-xl hover:-translate-y-0.5 transition-all group"
-                            >
-                                <div className={`w-12 h-12 rounded-xl ${item.iconBg} flex items-center justify-center`}>
-                                    <Icon name={item.icon} className={`text-2xl ${item.iconColor}`} filled />
+            {/* Asrama Capacity Cards */}
+            {asrama_stats.length > 0 && (
+                <div>
+                    <h2 className="font-display text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+                        <Icon name="home" className="text-primary-container" />
+                        Status Kapasitas Asrama
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {asrama_stats.map((asrama) => {
+                            const percent = Math.round((asrama.current / asrama.capacity) * 100);
+                            return (
+                                <div key={asrama.id} className="glass-card p-5 rounded-2xl flex flex-col gap-3 relative overflow-hidden group hover:shadow-lg transition-all">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="font-bold text-on-surface">{asrama.name}</h3>
+                                            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-wider">Kapasitas</p>
+                                        </div>
+                                        <div className="w-10 h-10 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary-container">
+                                            <Icon name="meeting_room" className="text-xl" />
+                                        </div>
+                                    </div>
+                                    <div className="mt-1">
+                                        <div className="flex justify-between items-end mb-1.5">
+                                            <span className="text-2xl font-display font-black text-on-surface">{asrama.current}<span className="text-sm font-medium text-on-surface-variant ml-1">/ {asrama.capacity}</span></span>
+                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${percent > 90 ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                                {percent}% Terisi
+                                            </span>
+                                        </div>
+                                        <div className="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+                                            <div 
+                                                className={`h-full transition-all duration-500 ${percent > 90 ? 'bg-rose-500' : 'bg-primary-container'}`} 
+                                                style={{ width: `${percent}%` }} 
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex-1">
-                                    <h3 className="font-bold text-on-surface">{item.title}</h3>
-                                    <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">{item.desc}</p>
-                                </div>
-                                <div className="flex items-center gap-1 text-xs font-bold text-primary-container">
-                                    Buka <Icon name="arrow_forward" className="text-sm group-hover:translate-x-1 transition-transform" />
-                                </div>
-                            </Link>
-                        ) : (
-                            <div key={item.title} className="glass-card rounded-2xl p-6 flex flex-col gap-4 opacity-50 cursor-not-allowed">
-                                <div className={`w-12 h-12 rounded-xl ${item.iconBg} flex items-center justify-center`}>
-                                    <Icon name={item.icon} className={`text-2xl ${item.iconColor}`} filled />
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="font-bold text-on-surface">{item.title}</h3>
-                                    <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">{item.desc}</p>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    <span className="text-[10px] font-black uppercase tracking-widest bg-surface-container text-on-surface-variant px-2 py-1 rounded-full">
-                                        Fase 5 — Coming Soon
-                                    </span>
-                                </div>
-                            </div>
-                        )
-                    ))}
+                            );
+                        })}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Radar chart — Perkembangan Mahasiswa */}
             {students.length > 0 && (
@@ -431,7 +615,7 @@ function AlumniDashboard({ stats }: { stats: AlumniStats }) {
 
 // ─── Main unified Dashboard ───────────────────────────────────
 
-export default function Dashboard({ role, permissions, stats, students = [], asramas = [] }: DashboardProps) {
+export default function Dashboard({ role, permissions, stats, students = [], asramas = [], recent_activities = [], asrama_stats = [] }: DashboardProps) {
     const greeting = (() => {
         const h = new Date().getHours();
         if (h < 12) return 'Selamat Pagi';
@@ -452,7 +636,11 @@ export default function Dashboard({ role, permissions, stats, students = [], asr
             />
 
             {role === 'mahasiswa' && (
-                <MahasiswaDashboard stats={stats as MahasiswaStats} permissions={permissions} />
+                <MahasiswaDashboard 
+                    stats={stats as MahasiswaStats} 
+                    permissions={permissions} 
+                    recent_activities={recent_activities}
+                />
             )}
             {role === 'mentor' && (
                 <MentorDashboard stats={stats as MentorStats} permissions={permissions} />
@@ -463,6 +651,7 @@ export default function Dashboard({ role, permissions, stats, students = [], asr
                     permissions={permissions}
                     students={students as StudentData[]}
                     asramas={asramas as string[]}
+                    asrama_stats={asrama_stats}
                 />
             )}
             {role === 'alumni' && (
