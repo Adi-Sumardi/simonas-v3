@@ -149,13 +149,21 @@ function MahasiswaDashboard({ stats, permissions, recent_activities = [] }: { st
                     <h3 className="font-display text-headline-md mb-4">Shalat Hari Ini</h3>
                     
                     <div className="flex-1 space-y-2 mb-4 overflow-y-auto pr-1">
-                        {s.shalat.list?.filter(p => !p.completed).length === 0 ? (
+                        {s.shalat.visual_done === s.shalat.total ? (
                             <div className="flex flex-col items-center justify-center py-8 text-center gap-2">
                                 <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
-                                    <Icon name="check_circle" className="text-2xl text-emerald-600" />
+                                    <Icon name="done_all" className="text-2xl text-emerald-600" />
                                 </div>
-                                <p className="text-xs font-bold text-on-surface">Alhamdulillah!</p>
-                                <p className="text-[10px] text-on-surface-variant px-4">Semua sholat hari ini telah ditunaikan.</p>
+                                <p className="text-xs font-bold text-on-surface">Maa Syaa Allah!</p>
+                                <p className="text-[10px] text-on-surface-variant px-4">Semua sholat hari ini telah ditunaikan tepat waktu.</p>
+                            </div>
+                        ) : s.shalat.list?.filter(p => !p.completed).length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-8 text-center gap-2 opacity-60">
+                                <div className="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center">
+                                    <Icon name="schedule" className="text-2xl text-on-surface-variant" />
+                                </div>
+                                <p className="text-xs font-bold text-on-surface">Belum ada jadwal</p>
+                                <p className="text-[10px] text-on-surface-variant px-4">Tunggu waktu sholat berikutnya tiba.</p>
                             </div>
                         ) : (
                             s.shalat.list?.filter(p => !p.completed).map(prayer => (

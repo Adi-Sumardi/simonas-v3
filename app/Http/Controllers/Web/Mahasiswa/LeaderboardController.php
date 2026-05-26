@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Web\Mahasiswa;
 
 use App\Http\Controllers\Controller;
+use App\Models\AppSetting;
+use App\Models\HafalanLog;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -12,27 +15,42 @@ class LeaderboardController extends Controller
     {
         $asrama = $request->get('asrama', 'Semua');
 
-        // TODO: load from LeaderboardSnapshot or compute view
-        $top3 = [
-            ['rank' => 1, 'user_id' => 1, 'name' => 'Zaid Al-Amin',   'asrama' => 'Asrama A', 'points' => 3120, 'badge' => 'MVP Asrama A'],
-            ['rank' => 2, 'user_id' => 2, 'name' => 'Ahmad Farhan',   'asrama' => 'Asrama A', 'points' => 2840],
-            ['rank' => 3, 'user_id' => 3, 'name' => 'Hassan Rizwan',  'asrama' => 'Asrama A', 'points' => 2615],
-        ];
+        // Build real leaderboard from mahasiswa data
+        $query = User::where('role', 'mahasiswa');
 
-        $entries = [
-            ['rank' => 4, 'user_id' => 4, 'name' => 'Siti Nurhaliza', 'asrama' => 'Asrama A', 'points' => 2450],
-            ['rank' => 5, 'user_id' => 5, 'name' => 'Umar Khalid',    'asrama' => 'Asrama A', 'points' => 2320],
-            ['rank' => 6, 'user_id' => 6, 'name' => 'Ibrahim Yusuf',  'asrama' => 'Asrama A', 'points' => 2180],
-        ];
+        if ($asrama !== 'Semua') {
+            $query->where('asrama', $asrama);
+        }
 
-        $available_asrama = ['Asrama A', 'Asrama B', 'Asrama C', 'Asrama D'];
+        $students = $query->get()->map(function ($u) {
+            return [
+                'user_id' => $u->id,
+                'name'    => $u->name,
+                'asrama'  => $u->asrama ?? '-',
+                'avatar'  => $u->avatar,
+                'points'  => $u->calculatePoints(),
+            ];
+        })
+        ->sortByDesc('points')
+        ->values()
+        ->map(function ($entry, $index) {
+            $entry['rank'] = $index + 1;
+            return $entry;
+        });
 
-        $current_user_rank = [
-            'rank' => 4, 'user_id' => auth()->id(),
-            'name' => auth()->user()->name,
-            'asrama' => 'Asrama A',
-            'points' => 2450,
-        ];
+        $top3    = $students->take(3)->values()->toArray();
+        $entries = $students->slice(3)->values()->toArray();
+
+        $available_asrama = User::where('role', 'mahasiswa')
+            ->whereNotNull('asrama')
+            ->distinct()
+            ->pluck('asrama')
+            ->sort()
+            ->values()
+            ->toArray();
+
+        // Current user's rank
+        $current_user_rank = $students->firstWhere('user_id', auth()->id());
 
         return Inertia::render('Mahasiswa/Leaderboard', compact(
             'top3', 'entries', 'available_asrama', 'current_user_rank'

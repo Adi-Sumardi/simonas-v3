@@ -247,6 +247,11 @@ export default function Profile({ user, mentor, riwayats }: ProfileProps) {
                 title="Profil Saya"
                 subtitle="Kelola informasi pribadi dan riwayat kamu."
                 breadcrumbs={[{ label: 'Beranda', href: '/mahasiswa' }, { label: 'Profil' }]}
+                actions={
+                    <a href="/mahasiswa/portfolio" className="btn-secondary flex items-center gap-2">
+                        <Icon name="print" /> Cetak Portofolio
+                    </a>
+                }
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

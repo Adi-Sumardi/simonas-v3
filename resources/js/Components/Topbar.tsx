@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 import { Icon } from '@/Components/ui/Icon';
 import { User } from '@/types';
+import NotificationCenter from '@/Components/NotificationCenter';
 
 interface DropdownItem {
     label: string;
@@ -23,23 +24,17 @@ export function Topbar({
     user,
     searchPlaceholder = 'Search...',
     dropdownItems = [],
-    notificationCount = 0,
     onMenuClick,
 }: TopbarProps) {
     const [profileOpen, setProfileOpen] = useState(false);
-    const [notificationsOpen, setNotificationsOpen] = useState(false);
 
     const dropdownRef = useRef<HTMLDivElement>(null);
-    const notifRef = useRef<HTMLDivElement>(null);
 
     // Close on outside click
     useEffect(() => {
         function handleClick(e: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
                 setProfileOpen(false);
-            }
-            if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
-                setNotificationsOpen(false);
             }
         }
         document.addEventListener('mousedown', handleClick);
@@ -83,46 +78,8 @@ export function Topbar({
 
             {/* Actions */}
             <div className="flex items-center gap-3">
-                {/* Notification */}
-                <div className="relative" ref={notifRef}>
-                    <button 
-                        onClick={() => { setNotificationsOpen(!notificationsOpen); setProfileOpen(false); }}
-                        className={`relative p-2 rounded-full transition-colors ${notificationsOpen ? 'bg-primary/10 text-primary' : 'text-secondary hover:bg-primary-fixed/50'}`}
-                    >
-                        <Icon name="notifications" className="text-xl" />
-                        {notificationCount > 0 && (
-                            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-error text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                                {notificationCount}
-                            </span>
-                        )}
-                    </button>
-
-                    {notificationsOpen && (
-                        <div className="absolute right-0 mt-2 w-72 bg-white/95 backdrop-blur-2xl border border-white/50 shadow-2xl rounded-2xl py-0 z-50 animate-in fade-in slide-in-from-top-2 duration-150 overflow-hidden">
-                            <div className="px-4 py-3 border-b border-outline-variant/30 bg-primary/5 flex items-center justify-between">
-                                <span className="text-sm font-bold text-on-surface">Notifikasi</span>
-                                <span className="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full">{notificationCount || 2} Baru</span>
-                            </div>
-                            <div className="max-h-64 overflow-y-auto bg-white/80">
-                                <div className="divide-y divide-outline-variant/20">
-                                    <div className="px-4 py-3 hover:bg-black/5 transition-colors cursor-pointer">
-                                        <p className="text-xs font-bold text-on-surface">Waktunya Sholat Dzuhur</p>
-                                        <p className="text-[10px] text-on-surface-variant mt-0.5 leading-relaxed">Jangan lupa ceklist sholat tepat waktu agar poinmu tetap maksimal!</p>
-                                        <p className="text-[9px] text-primary mt-1 font-bold">2 menit yang lalu</p>
-                                    </div>
-                                    <div className="px-4 py-3 hover:bg-black/5 transition-colors cursor-pointer">
-                                        <p className="text-xs font-bold text-on-surface">Target Log Aktivitas</p>
-                                        <p className="text-[10px] text-on-surface-variant mt-0.5 leading-relaxed">Kamu sudah mencapai 15/23 log bulan ini. Terus semangat!</p>
-                                        <p className="text-[9px] text-primary mt-1 font-bold">1 jam yang lalu</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="px-4 py-2 bg-surface-container-low text-center border-t border-outline-variant/30">
-                                <button className="text-[10px] font-bold text-primary hover:underline uppercase tracking-widest">Lihat Semua Notifikasi</button>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                {/* Notification Center */}
+                <NotificationCenter />
 
 
                 {/* Profile Dropdown */}

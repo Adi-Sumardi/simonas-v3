@@ -49,6 +49,9 @@ class User extends Authenticatable
         'nama_ayah',
         'nama_ibu',
         'mentor_id',
+        'bio',
+        'no_hp',
+        'nim',
     ];
 
     protected $hidden = [
@@ -68,6 +71,52 @@ class User extends Authenticatable
         if (!$value) return null;
         if (filter_var($value, FILTER_VALIDATE_URL)) return $value;
         return asset('storage/' . $value);
+    }
+
+    public function calculatePoints(): int
+    {
+        $pointShalat   = (int) \App\Models\AppSetting::val('point_shalat', 10);
+        $pointHafalan  = (int) \App\Models\AppSetting::val('point_hafalan', 25);
+        $pointAkademik = (int) \App\Models\AppSetting::val('point_akademik', 15);
+        $pointKegiatan = (int) \App\Models\AppSetting::val('point_kegiatan', 20);
+
+        // 1. Shalat points (all-time completed dates)
+        $shalatPoints = 0;
+        $shalatEvents = \App\Models\UserEvent::where('user_id', $this->id)
+            ->where('type', 'shalat')
+            ->get();
+        foreach ($shalatEvents as $se) {
+            $shalatPoints += count($se->completed_at_dates ?? []) * $pointShalat;
+        }
+
+        // 2. Hafalan points (all-time approved)
+        $hafalanPoints = \App\Models\HafalanLog::where('user_id', $this->id)
+            ->where('score', 'memtas')
+            ->count() * $pointHafalan;
+
+        // 3. Activity points (all-time)
+        $activityCount = 0;
+        $models = [
+            \App\Models\Akademik::class,
+            \App\Models\Leadership::class,
+            \App\Models\Karakter::class,
+            \App\Models\Kreatif::class,
+        ];
+        foreach ($models as $m) {
+            $activityCount += $m::where('user_id', $this->id)->count();
+        }
+        $akademikPoints = $activityCount * $pointAkademik;
+
+        // 4. Kegiatan points (all-time completed dates)
+        $kegiatanPoints = 0;
+        $kegiatanEvents = \App\Models\UserEvent::where('user_id', $this->id)
+            ->where('type', 'kegiatan')
+            ->get();
+        foreach ($kegiatanEvents as $ke) {
+            $kegiatanPoints += count($ke->completed_at_dates ?? []) * $pointKegiatan;
+        }
+
+        return $shalatPoints + $hafalanPoints + $akademikPoints + $kegiatanPoints;
     }
 
     public function scopeAlumni($query)

@@ -24,10 +24,13 @@ class HafalanLog extends Model
         'score',
         'notes',
         'tested_at',
+        'mentor_notes',
+        'reviewed_at',
     ];
 
     protected $casts = [
         'tested_at' => 'datetime',
+        'reviewed_at' => 'datetime',
         'ayat_start' => 'integer',
         'ayat_end' => 'integer',
     ];

@@ -411,21 +411,41 @@ class SuperController extends Controller
     // ── Pengaturan ────────────────────────────────────────────
     public function pengaturan()
     {
+        $s = \App\Models\AppSetting::allValues();
+
         return Inertia::render('Super/Pengaturan', [
             'settings' => [
                 'app_name'         => config('app.name', 'SIMONAS'),
                 'app_url'          => config('app.url'),
                 'mail_driver'      => env('MAIL_MAILER', 'smtp'),
                 'google_oauth'     => !empty(env('GOOGLE_CLIENT_ID')),
-                'shalat_target'    => 5,
-                'hafalan_target'   => 30,
-                'study_hour_target'=> 4,
-                'point_shalat'     => 10,
-                'point_hafalan'    => 25,
-                'point_akademik'   => 15,
-                'point_kegiatan'   => 20,
-                'maintenance_mode' => false,
+                'shalat_target'    => (int) ($s['shalat_target'] ?? 5),
+                'hafalan_target'   => (int) ($s['hafalan_target'] ?? 30),
+                'study_hour_target'=> (int) ($s['study_hour_target'] ?? 4),
+                'point_shalat'     => (int) ($s['point_shalat'] ?? 10),
+                'point_hafalan'    => (int) ($s['point_hafalan'] ?? 25),
+                'point_akademik'   => (int) ($s['point_akademik'] ?? 15),
+                'point_kegiatan'   => (int) ($s['point_kegiatan'] ?? 20),
+                'maintenance_mode' => (bool) ($s['maintenance_mode'] ?? false),
             ],
         ]);
+    }
+
+    public function updatePengaturan(Request $request)
+    {
+        $data = $request->validate([
+            'shalat_target'     => 'required|integer|min:1|max:5',
+            'hafalan_target'    => 'required|integer|min:1|max:30',
+            'study_hour_target' => 'required|integer|min:1|max:100',
+            'point_shalat'      => 'required|integer|min:1',
+            'point_hafalan'     => 'required|integer|min:1',
+            'point_akademik'    => 'required|integer|min:1',
+            'point_kegiatan'    => 'required|integer|min:1',
+            'maintenance_mode'  => 'boolean',
+        ]);
+
+        \App\Models\AppSetting::setMany($data);
+
+        return back()->with('success', 'Pengaturan berhasil disimpan.');
     }
 }

@@ -145,6 +145,64 @@ class ProfileController extends Controller
         return back()->with('success', 'Riwayat dihapus.');
     }
 
+    public function portfolio()
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        // 1. Basic Info & Riwayats
+        $riwayats = ProfilRiwayat::where('user_id', $user->id)
+            ->orderBy('mulai', 'desc')
+            ->get()
+            ->groupBy('tipe')
+            ->map(fn($items) => $items->map(fn($r) => [
+                'id'                => $r->id,
+                'tipe'              => $r->tipe,
+                'judul'             => $r->judul,
+                'posisi'            => $r->posisi,
+                'mulai'             => $r->mulai?->format('Y-m'),
+                'selesai'           => $r->selesai?->format('Y-m'),
+                'masih_berlangsung' => $r->masih_berlangsung,
+                'deskripsi'         => $r->deskripsi,
+                'lokasi'            => $r->lokasi,
+            ])->values());
+
+        // 2. Activity Summary (last 12 months)
+        $activities = [
+            'akademik'   => \App\Models\Akademik::where('user_id', $user->id)->latest('waktu')->take(5)->get(),
+            'leadership' => \App\Models\Leadership::where('user_id', $user->id)->latest('waktu')->take(5)->get(),
+            'karakter'   => \App\Models\Karakter::where('user_id', $user->id)->latest('waktu')->take(5)->get(),
+            'kreativitas' => \App\Models\Kreatif::where('user_id', $user->id)->latest('waktu')->take(5)->get(),
+        ];
+
+        // 3. Hafalan Summary
+        $hafalan = \App\Models\Hafalan::where('user_id', $user->id)->first();
+        $hafalanLogs = \App\Models\HafalanLog::where('user_id', $user->id)
+            ->where('score', 'memtas')
+            ->orderBy('surah')
+            ->get();
+
+        return Inertia::render('Mahasiswa/Portfolio', [
+            'user' => [
+                'name'     => $user->name,
+                'nim'      => $user->nim,
+                'avatar'   => $user->avatar,
+                'asrama'   => $user->asrama,
+                'angkatan' => $user->angkatan,
+                'bio'      => $user->bio,
+                'no_hp'    => $user->no_hp,
+                'prodi'    => $user->prodi,
+                'universitas' => $user->universitas,
+            ],
+            'riwayats'   => $riwayats,
+            'activities' => $activities,
+            'hafalan'    => [
+                'summary' => $hafalan,
+                'logs'    => $hafalanLogs,
+            ],
+        ]);
+    }
+
     public function updateAvatar(Request $request)
     {
         $request->validate([

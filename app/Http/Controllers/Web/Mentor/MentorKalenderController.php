@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Web\Mentor;
 
 use App\Http\Controllers\Controller;
+use App\Models\HafalanLog;
+use App\Models\Kegiatan;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -11,29 +14,57 @@ class MentorKalenderController extends Controller
     public function index(Request $request)
     {
         $mentor = $request->user();
+        $menteeIds = User::where('mentor_id', $mentor->id)->pluck('id');
 
-        $events = [
-            ['id'=>1, 'title'=>'Setoran Hafalan — Ahmad Fauzi',    'date'=>now()->format('Y-m').'-'.str_pad(now()->day,2,'0',STR_PAD_LEFT), 'time'=>'08:00','type'=>'hafalan',  'color'=>'#10b981','santri'=>'Ahmad Fauzi',  'asrama'=>'Al-Farabi'],
-            ['id'=>2, 'title'=>'Setoran Hafalan — Budi Santoso',   'date'=>now()->format('Y-m').'-'.str_pad(now()->day,2,'0',STR_PAD_LEFT), 'time'=>'09:00','type'=>'hafalan',  'color'=>'#10b981','santri'=>'Budi Santoso', 'asrama'=>'Al-Farabi'],
-            ['id'=>3, 'title'=>'Mentoring Kelompok Al-Farabi',     'date'=>now()->format('Y-m').'-'.str_pad(now()->day+1,2,'0',STR_PAD_LEFT),'time'=>'16:00','type'=>'mentoring','color'=>'#2563eb','santri'=>null,           'asrama'=>'Al-Farabi'],
-            ['id'=>4, 'title'=>'Setoran Hafalan — Cahya Ramadhan', 'date'=>now()->format('Y-m').'-'.str_pad(now()->day+2,2,'0',STR_PAD_LEFT),'time'=>'08:00','type'=>'hafalan',  'color'=>'#10b981','santri'=>'Cahya Ramadhan','asrama'=>'Al-Ghazali'],
-            ['id'=>5, 'title'=>'Evaluasi Bulanan Santri',          'date'=>now()->format('Y-m').'-20','time'=>'10:00','type'=>'evaluasi',  'color'=>'#f59e0b','santri'=>null,'asrama'=>null],
-            ['id'=>6, 'title'=>'Rapat Mentor Bulanan',             'date'=>now()->format('Y-m').'-25','time'=>'14:00','type'=>'rapat',    'color'=>'#8b5cf6','santri'=>null,'asrama'=>null],
-            ['id'=>7, 'title'=>'Tasmi Hafalan — Eko Wahyudi',      'date'=>now()->format('Y-m').'-'.str_pad(now()->day+5,2,'0',STR_PAD_LEFT),'time'=>'07:30','type'=>'hafalan','color'=>'#10b981','santri'=>'Eko Wahyudi','asrama'=>'Ibnu Sina'],
-        ];
+        // Build events from real hafalan log data (setoran submissions)
+        $hafalanEvents = HafalanLog::whereIn('user_id', $menteeIds)
+            ->with('user:id,name,asrama')
+            ->orderByDesc('tested_at')
+            ->take(30)
+            ->get()
+            ->map(fn($log) => [
+                'id'     => 'hafalan-' . $log->id,
+                'title'  => 'Setoran Hafalan — ' . ($log->user->name ?? 'Santri'),
+                'date'   => $log->tested_at?->format('Y-m-d') ?? $log->created_at->format('Y-m-d'),
+                'time'   => $log->tested_at?->format('H:i') ?? '08:00',
+                'type'   => 'hafalan',
+                'color'  => $log->score === 'pending' ? '#f59e0b' : '#10b981',
+                'santri' => $log->user->name ?? null,
+                'asrama' => $log->user->asrama ?? null,
+            ]);
+
+        // Build events from kegiatan (global events synced by admin)
+        $kegiatanEvents = Kegiatan::orderByDesc('waktu')
+            ->take(20)
+            ->get()
+            ->map(fn($k) => [
+                'id'     => 'kegiatan-' . $k->id,
+                'title'  => $k->nama_kegiatan,
+                'date'   => $k->waktu ? (new \DateTime($k->waktu))->format('Y-m-d') : now()->format('Y-m-d'),
+                'time'   => $k->waktu ? (new \DateTime($k->waktu))->format('H:i') : '10:00',
+                'type'   => 'kegiatan',
+                'color'  => '#8b5cf6',
+                'santri' => null,
+                'asrama' => null,
+            ]);
+
+        $events = $hafalanEvents->merge($kegiatanEvents)->sortBy('date')->values()->toArray();
 
         $upcoming = collect($events)
             ->filter(fn($e) => $e['date'] >= now()->format('Y-m-d'))
-            ->sortBy('date')->values()->take(5);
+            ->sortBy('date')->values()->take(5)->toArray();
 
-        // Jadwal setoran reguler per santri
-        $jadwal_setoran = [
-            ['santri'=>'Ahmad Fauzi',   'hari'=>'Senin & Kamis', 'waktu'=>'08:00-09:00', 'asrama'=>'Al-Farabi'],
-            ['santri'=>'Budi Santoso',  'hari'=>'Selasa & Jumat','waktu'=>'08:00-09:00', 'asrama'=>'Al-Farabi'],
-            ['santri'=>'Cahya Ramadhan','hari'=>'Rabu & Sabtu',  'waktu'=>'07:30-08:30', 'asrama'=>'Al-Ghazali'],
-            ['santri'=>'Dani Pratama',  'hari'=>'Senin & Rabu',  'waktu'=>'09:00-10:00', 'asrama'=>'Al-Ghazali'],
-            ['santri'=>'Eko Wahyudi',   'hari'=>'Selasa & Kamis','waktu'=>'07:30-08:30', 'asrama'=>'Ibnu Sina'],
-        ];
+        // Jadwal setoran: based on real mentees
+        $jadwal_setoran = User::where('mentor_id', $mentor->id)
+            ->select('id', 'name', 'asrama')
+            ->get()
+            ->map(fn($m) => [
+                'santri' => $m->name,
+                'hari'   => 'Setiap hari',
+                'waktu'  => '08:00-09:00',
+                'asrama' => $m->asrama ?? '-',
+            ])
+            ->toArray();
 
         return Inertia::render('Mentor/Kalender', [
             'events'         => $events,

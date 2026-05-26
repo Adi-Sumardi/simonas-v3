@@ -30,6 +30,12 @@ Auth::routes();
 // ─── Authenticated ────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
 
+    // ── Notifications ─────────────────────────────────────────
+    Route::get('/notifications', [\App\Http\Controllers\Web\NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/read-all', [\App\Http\Controllers\Web\NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+    Route::patch('/notifications/{notification}/read', [\App\Http\Controllers\Web\NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::delete('/notifications/{notification}', [\App\Http\Controllers\Web\NotificationController::class, 'destroy'])->name('notifications.destroy');
+
     // ── Unified Dashboard (all roles) ─────────────────────────
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -58,6 +64,7 @@ Route::middleware('auth')->group(function () {
 
         // ── Profil + Riwayat CRUD ────────────────────────────────
         Route::get('/profil',                   [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'index'])         ->name('profil.index');
+        Route::get('/portfolio',                [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'portfolio'])     ->name('portfolio');
         Route::put('/profil',                   [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'update'])        ->name('profil.update');
         Route::post('/profil/avatar',           [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'updateAvatar'])  ->name('profil.avatar');
         Route::post('/profil/riwayat',          [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'storeRiwayat']) ->name('profil.riwayat.store');
@@ -157,6 +164,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/leaderboard',[App\Http\Controllers\Web\Super\SuperController::class, 'leaderboard'])->name('leaderboard.index');
         Route::get('/laporan',    [App\Http\Controllers\Web\Super\SuperController::class, 'laporan'])->name('laporan.index');
         Route::get('/pengaturan', [App\Http\Controllers\Web\Super\SuperController::class, 'pengaturan'])->name('pengaturan.index');
+        Route::post('/pengaturan', [App\Http\Controllers\Web\Super\SuperController::class, 'updatePengaturan'])->name('pengaturan.update');
     });
 
 });

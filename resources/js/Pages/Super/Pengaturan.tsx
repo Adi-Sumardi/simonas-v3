@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { Icon } from '@/Components/ui/Icon';
@@ -7,7 +7,12 @@ interface Settings { app_name:string; app_url:string; mail_driver:string; google
 interface Props { settings:Settings }
 
 export default function Pengaturan({ settings }: Props) {
-    const { data, setData, processing } = useForm({ ...settings });
+    const { data, setData, post, processing } = useForm({ ...settings });
+    const { flash } = usePage<{ flash: { success?: string } }>().props;
+
+    function handleSave() {
+        post('/super/pengaturan', { preserveScroll: true });
+    }
 
     function Section({ title, icon, children }: { title:string; icon:string; children:React.ReactNode }) {
         return (
@@ -48,6 +53,14 @@ export default function Pengaturan({ settings }: Props) {
                 breadcrumbs={[{ label:'Dashboard', href:'/dashboard' }, { label:'Pengaturan' }]} />
 
             <div className="space-y-6">
+                {/* Flash message */}
+                {flash?.success && (
+                    <div className="flex items-center gap-3 px-5 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-sm font-semibold animate-slide-up">
+                        <Icon name="check_circle" className="text-xl" filled />
+                        {flash.success}
+                    </div>
+                )}
+
                 {/* App info */}
                 <Section title="Informasi Aplikasi" icon="info">
                     <Field label="Nama Aplikasi" hint="Nama yang tampil di header dan email">
@@ -122,7 +135,7 @@ export default function Pengaturan({ settings }: Props) {
 
                 {/* Save */}
                 <div className="flex gap-3">
-                    <button disabled={processing} className="btn-primary px-8 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50">
+                    <button onClick={handleSave} disabled={processing} className="btn-primary px-8 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50">
                         <Icon name="save" className="text-lg" />
                         {processing ? 'Menyimpan...' : 'Simpan Pengaturan'}
                     </button>

@@ -160,7 +160,7 @@ class AlumniProfileController extends Controller
         }
 
         $path = $request->file('avatar')->store('avatars', 'public');
-        $user->update(['avatar' => asset('storage/'.$path)]);
+        $user->update(['avatar' => $path]);
 
         return back()->with('success', 'Foto profil diperbarui.');
     }
