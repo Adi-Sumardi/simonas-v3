@@ -13,7 +13,7 @@
 !/storage/logs/.gitkeep
 /bootstrap/cache/*
 !/bootstrap/cache/.gitkeep
-/vendor
+# /vendor  — included for shared hosting deployment (no composer CLI on server)
 .env
 .env.*
 .env.backup
