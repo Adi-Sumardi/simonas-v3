@@ -414,7 +414,7 @@ class SuperController extends Controller
         $s = \App\Models\AppSetting::allValues();
 
         return Inertia::render('Super/Pengaturan', [
-            'asramas' => \App\Models\Asrama::orderBy('nama_asrama')->get(),
+            'asramas' => \App\Models\Asrama::with('jabatans')->orderBy('nama_asrama')->get(),
             'settings' => [
                 'app_name'         => config('app.name', 'SIMONAS'),
                 'app_url'          => config('app.url'),
@@ -479,5 +479,34 @@ class SuperController extends Controller
     {
         $asrama->delete();
         return back()->with('success', 'Asrama berhasil dihapus.');
+    }
+
+    // ── Jabatan CRUD ──────────────────────────────────────────
+    public function storeJabatan(Request $request, \App\Models\Asrama $asrama)
+    {
+        $data = $request->validate([
+            'tahun'    => 'required|integer|min:2000|max:2100',
+            'direktur' => 'nullable|string|max:100',
+            'ketua'    => 'nullable|string|max:100',
+        ]);
+        $asrama->jabatans()->updateOrCreate(['tahun' => $data['tahun']], $data);
+        return back()->with('success', 'Data jabatan berhasil disimpan.');
+    }
+
+    public function updateJabatan(Request $request, \App\Models\Asrama $asrama, \App\Models\AsramaJabatan $jabatan)
+    {
+        $data = $request->validate([
+            'tahun'    => 'required|integer|min:2000|max:2100',
+            'direktur' => 'nullable|string|max:100',
+            'ketua'    => 'nullable|string|max:100',
+        ]);
+        $jabatan->update($data);
+        return back()->with('success', 'Data jabatan berhasil diperbarui.');
+    }
+
+    public function destroyJabatan(\App\Models\Asrama $asrama, \App\Models\AsramaJabatan $jabatan)
+    {
+        $jabatan->delete();
+        return back()->with('success', 'Data jabatan dihapus.');
     }
 }

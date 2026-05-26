@@ -11,4 +11,14 @@ class Asrama extends Model
     ];
 
     protected $hidden = ['created_at', 'updated_at'];
+
+    public function jabatans()
+    {
+        return $this->hasMany(AsramaJabatan::class)->orderBy('tahun', 'desc');
+    }
+
+    public function jabatanTahunIni()
+    {
+        return $this->hasOne(AsramaJabatan::class)->where('tahun', now()->year);
+    }
 }
