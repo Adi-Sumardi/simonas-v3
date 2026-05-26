@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Head, useForm, usePage, router } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { Icon } from '@/Components/ui/Icon';
@@ -11,7 +11,6 @@ interface Props { settings:Settings; asramas:Asrama[] }
 
 export default function Pengaturan({ settings, asramas }: Props) {
     const { data, setData, post, processing } = useForm({ ...settings });
-    const { flash } = usePage<{ flash: { success?: string } }>().props;
 
     // Asrama state
     const [showAsramaModal, setShowAsramaModal] = useState(false);
@@ -102,14 +101,6 @@ export default function Pengaturan({ settings, asramas }: Props) {
                 breadcrumbs={[{ label:'Dashboard', href:'/dashboard' }, { label:'Pengaturan' }]} />
 
             <div className="space-y-6">
-                {/* Flash message */}
-                {flash?.success && (
-                    <div className="flex items-center gap-3 px-5 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-sm font-semibold animate-slide-up">
-                        <Icon name="check_circle" className="text-xl" filled />
-                        {flash.success}
-                    </div>
-                )}
-
                 {/* App info */}
                 <Section title="Informasi Aplikasi" icon="info">
                     <Field label="Nama Aplikasi" hint="Nama yang tampil di header dan email">
