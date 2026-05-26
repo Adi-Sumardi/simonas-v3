@@ -75,48 +75,67 @@ class User extends Authenticatable
 
     public function calculatePoints(): int
     {
-        $pointShalat   = (int) \App\Models\AppSetting::val('point_shalat', 10);
-        $pointHafalan  = (int) \App\Models\AppSetting::val('point_hafalan', 25);
-        $pointAkademik = (int) \App\Models\AppSetting::val('point_akademik', 15);
-        $pointKegiatan = (int) \App\Models\AppSetting::val('point_kegiatan', 20);
+        $rules = \App\Models\PointRule::activeRules();
 
-        // 1. Shalat points (all-time completed dates)
-        $shalatPoints = 0;
-        $shalatEvents = \App\Models\UserEvent::where('user_id', $this->id)
-            ->where('type', 'shalat')
-            ->get();
-        foreach ($shalatEvents as $se) {
-            $shalatPoints += count($se->completed_at_dates ?? []) * $pointShalat;
+        // Fallback to AppSetting if table not yet migrated
+        if ($rules->isEmpty()) {
+            return $this->calculatePointsLegacy();
         }
 
-        // 2. Hafalan points (all-time approved)
-        $hafalanPoints = \App\Models\HafalanLog::where('user_id', $this->id)
-            ->where('score', 'memtas')
-            ->count() * $pointHafalan;
-
-        // 3. Activity points (all-time)
-        $activityCount = 0;
-        $models = [
-            \App\Models\Akademik::class,
-            \App\Models\Leadership::class,
-            \App\Models\Karakter::class,
-            \App\Models\Kreatif::class,
-        ];
-        foreach ($models as $m) {
-            $activityCount += $m::where('user_id', $this->id)->count();
+        $total = 0;
+        foreach ($rules as $rule) {
+            $total += $this->countByActivityType($rule->activity_type) * $rule->poin;
         }
-        $akademikPoints = $activityCount * $pointAkademik;
+        return $total;
+    }
 
-        // 4. Kegiatan points (all-time completed dates)
-        $kegiatanPoints = 0;
-        $kegiatanEvents = \App\Models\UserEvent::where('user_id', $this->id)
-            ->where('type', 'kegiatan')
-            ->get();
-        foreach ($kegiatanEvents as $ke) {
-            $kegiatanPoints += count($ke->completed_at_dates ?? []) * $pointKegiatan;
-        }
+    private function countByActivityType(string $type): int
+    {
+        return match ($type) {
+            'shalat' => (int) \App\Models\UserEvent::where('user_id', $this->id)
+                ->where('type', 'shalat')
+                ->get()
+                ->sum(fn ($e) => count($e->completed_at_dates ?? [])),
 
-        return $shalatPoints + $hafalanPoints + $akademikPoints + $kegiatanPoints;
+            'hafalan' => \App\Models\HafalanLog::where('user_id', $this->id)
+                ->where('score', 'memtas')
+                ->count(),
+
+            'kegiatan' => (int) \App\Models\UserEvent::where('user_id', $this->id)
+                ->where('type', 'kegiatan')
+                ->get()
+                ->sum(fn ($e) => count($e->completed_at_dates ?? [])),
+
+            'akademik'   => \App\Models\Akademik::where('user_id', $this->id)->count(),
+            'leadership' => \App\Models\Leadership::where('user_id', $this->id)->count(),
+            'karakter'   => \App\Models\Karakter::where('user_id', $this->id)->count(),
+            'kreatif'    => \App\Models\Kreatif::where('user_id', $this->id)->count(),
+
+            default => 0,
+        };
+    }
+
+    private function calculatePointsLegacy(): int
+    {
+        $pS = (int) \App\Models\AppSetting::val('point_shalat', 10);
+        $pH = (int) \App\Models\AppSetting::val('point_hafalan', 25);
+        $pA = (int) \App\Models\AppSetting::val('point_akademik', 15);
+        $pK = (int) \App\Models\AppSetting::val('point_kegiatan', 20);
+
+        $shalatPts = (int) \App\Models\UserEvent::where('user_id', $this->id)->where('type', 'shalat')
+            ->get()->sum(fn ($e) => count($e->completed_at_dates ?? [])) * $pS;
+
+        $hafalanPts = \App\Models\HafalanLog::where('user_id', $this->id)->where('score', 'memtas')->count() * $pH;
+
+        $actCount = array_sum(array_map(
+            fn ($m) => $m::where('user_id', $this->id)->count(),
+            [\App\Models\Akademik::class, \App\Models\Leadership::class, \App\Models\Karakter::class, \App\Models\Kreatif::class]
+        ));
+
+        $kegiatanPts = (int) \App\Models\UserEvent::where('user_id', $this->id)->where('type', 'kegiatan')
+            ->get()->sum(fn ($e) => count($e->completed_at_dates ?? [])) * $pK;
+
+        return $shalatPts + $hafalanPts + ($actCount * $pA) + $kegiatanPts;
     }
 
     public function scopeAlumni($query)

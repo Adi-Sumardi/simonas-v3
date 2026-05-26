@@ -165,9 +165,24 @@ Route::middleware('auth')->group(function () {
         Route::get('/laporan',    [App\Http\Controllers\Web\Super\SuperController::class, 'laporan'])->name('laporan.index');
         Route::get('/pengaturan', [App\Http\Controllers\Web\Super\SuperController::class, 'pengaturan'])->name('pengaturan.index');
         Route::post('/pengaturan', [App\Http\Controllers\Web\Super\SuperController::class, 'updatePengaturan'])->name('pengaturan.update');
-        Route::post('/asrama',             [App\Http\Controllers\Web\Super\SuperController::class, 'storeAsrama'])  ->name('asrama.store');
-        Route::put('/asrama/{asrama}',     [App\Http\Controllers\Web\Super\SuperController::class, 'updateAsrama']) ->name('asrama.update');
-        Route::delete('/asrama/{asrama}',  [App\Http\Controllers\Web\Super\SuperController::class, 'destroyAsrama'])->name('asrama.destroy');
+
+        // Point Rules CRUD
+        Route::post('/point-rules',                     [App\Http\Controllers\Web\Super\SuperController::class, 'storePointRule'])  ->name('point-rules.store');
+        Route::put('/point-rules/{rule}',               [App\Http\Controllers\Web\Super\SuperController::class, 'updatePointRule']) ->name('point-rules.update');
+        Route::delete('/point-rules/{rule}',            [App\Http\Controllers\Web\Super\SuperController::class, 'destroyPointRule'])->name('point-rules.destroy');
+        Route::patch('/point-rules/{rule}/toggle',      [App\Http\Controllers\Web\Super\SuperController::class, 'togglePointRule']) ->name('point-rules.toggle');
+
+        // Daily Targets CRUD
+        Route::post('/daily-targets',                   [App\Http\Controllers\Web\Super\SuperController::class, 'storeDailyTarget'])  ->name('daily-targets.store');
+        Route::put('/daily-targets/{target}',           [App\Http\Controllers\Web\Super\SuperController::class, 'updateDailyTarget']) ->name('daily-targets.update');
+        Route::delete('/daily-targets/{target}',        [App\Http\Controllers\Web\Super\SuperController::class, 'destroyDailyTarget'])->name('daily-targets.destroy');
+        Route::patch('/daily-targets/{target}/toggle',  [App\Http\Controllers\Web\Super\SuperController::class, 'toggleDailyTarget']) ->name('daily-targets.toggle');
+        Route::post('/asrama',                          [App\Http\Controllers\Web\Super\SuperController::class, 'storeAsrama'])   ->name('asrama.store');
+        Route::put('/asrama/{asrama}',                  [App\Http\Controllers\Web\Super\SuperController::class, 'updateAsrama'])  ->name('asrama.update');
+        Route::delete('/asrama/{asrama}',               [App\Http\Controllers\Web\Super\SuperController::class, 'destroyAsrama']) ->name('asrama.destroy');
+        Route::post('/asrama/{asrama}/jabatan',          [App\Http\Controllers\Web\Super\SuperController::class, 'storeJabatan'])  ->name('asrama.jabatan.store');
+        Route::put('/asrama/{asrama}/jabatan/{jabatan}', [App\Http\Controllers\Web\Super\SuperController::class, 'updateJabatan']) ->name('asrama.jabatan.update');
+        Route::delete('/asrama/{asrama}/jabatan/{jabatan}',[App\Http\Controllers\Web\Super\SuperController::class, 'destroyJabatan'])->name('asrama.jabatan.destroy');
     });
 
 });

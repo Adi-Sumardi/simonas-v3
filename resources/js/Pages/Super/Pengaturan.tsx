@@ -4,70 +4,126 @@ import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { Icon } from '@/Components/ui/Icon';
 
-interface Settings { app_name:string; app_url:string; mail_driver:string; google_oauth:boolean; shalat_target:number; hafalan_target:number; study_hour_target:number; point_shalat:number; point_hafalan:number; point_akademik:number; point_kegiatan:number; maintenance_mode:boolean }
+// ─── Interfaces ───────────────────────────────────────────────────────────────
+interface Settings { app_name:string; app_url:string; mail_driver:string; google_oauth:boolean; maintenance_mode:boolean }
+
+interface PointRule { id:number; label:string; activity_type:string; poin:number; unit:string|null; is_active:boolean }
+interface DailyTarget { id:number; label:string; key:string; value:number; unit:string|null; description:string|null; is_active:boolean }
 interface AsramaJabatan { id:number; tahun:number; direktur:string|null; ketua:string|null }
 interface Asrama { id:number; nama_asrama:string; kapasitas:number|null; jabatans:AsramaJabatan[] }
-interface Props { settings:Settings; asramas:Asrama[] }
 
-export default function Pengaturan({ settings, asramas }: Props) {
+interface Props {
+    settings: Settings;
+    asramas: Asrama[];
+    pointRules: PointRule[];
+    dailyTargets: DailyTarget[];
+    activityTypes: Record<string, string>;
+}
+
+// ─── Badge colours per activity type ─────────────────────────────────────────
+const TYPE_COLORS: Record<string, string> = {
+    shalat:     'bg-blue-100 text-blue-700',
+    hafalan:    'bg-emerald-100 text-emerald-700',
+    kegiatan:   'bg-violet-100 text-violet-700',
+    akademik:   'bg-amber-100 text-amber-700',
+    leadership: 'bg-rose-100 text-rose-700',
+    karakter:   'bg-cyan-100 text-cyan-700',
+    kreatif:    'bg-orange-100 text-orange-700',
+};
+
+// ─── Re-usable Modal shell ────────────────────────────────────────────────────
+function ModalShell({ title, subtitle, onClose, children }: { title:string; subtitle?:string; onClose:()=>void; children:React.ReactNode }) {
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-in">
+                <div className="flex items-center justify-between p-6 border-b border-zinc-100">
+                    <div>
+                        <h3 className="font-bold text-on-surface">{title}</h3>
+                        {subtitle && <p className="text-xs text-on-surface-variant mt-0.5">{subtitle}</p>}
+                    </div>
+                    <button onClick={onClose} className="w-8 h-8 rounded-xl bg-zinc-100 flex items-center justify-center hover:bg-zinc-200">
+                        <Icon name="close" className="text-sm" />
+                    </button>
+                </div>
+                {children}
+            </div>
+        </div>
+    );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+export default function Pengaturan({ settings, asramas, pointRules, dailyTargets, activityTypes }: Props) {
     const { data, setData, post, processing } = useForm({ ...settings });
 
-    // Asrama state
-    const [showAsramaModal, setShowAsramaModal] = useState(false);
-    const [editAsrama, setEditAsrama] = useState<Asrama|null>(null);
+    // ── Asrama state ──────────────────────────────────────────────────────────
+    const [showAsramaModal, setShowAsramaModal]   = useState(false);
+    const [editAsrama, setEditAsrama]             = useState<Asrama|null>(null);
     const asramaForm = useForm({ nama_asrama: '', kapasitas: '' });
-
-    const [expandedAsrama, setExpandedAsrama] = useState<number|null>(null);
+    const [expandedAsrama, setExpandedAsrama]     = useState<number|null>(null);
     const [showJabatanModal, setShowJabatanModal] = useState(false);
-    const [jabatanAsrama, setJabatanAsrama] = useState<Asrama|null>(null);
-    const [editJabatan, setEditJabatan] = useState<AsramaJabatan|null>(null);
+    const [jabatanAsrama, setJabatanAsrama]       = useState<Asrama|null>(null);
+    const [editJabatan, setEditJabatan]           = useState<AsramaJabatan|null>(null);
     const jabatanForm = useForm({ tahun: new Date().getFullYear().toString(), direktur: '', ketua: '' });
 
+    // ── Point Rule state ──────────────────────────────────────────────────────
+    const [showRuleModal, setShowRuleModal]   = useState(false);
+    const [editRule, setEditRule]             = useState<PointRule|null>(null);
+    const ruleForm = useForm({ label: '', activity_type: 'shalat', poin: '', unit: '' });
+
+    // ── Daily Target state ────────────────────────────────────────────────────
+    const [showTargetModal, setShowTargetModal] = useState(false);
+    const [editTarget, setEditTarget]           = useState<DailyTarget|null>(null);
+    const targetForm = useForm({ label: '', key: '', value: '', unit: '', description: '' });
+
+    // ── Asrama handlers ───────────────────────────────────────────────────────
     function openAddAsrama() { asramaForm.reset(); setEditAsrama(null); setShowAsramaModal(true); }
-    function openEditAsrama(a: Asrama) {
-        asramaForm.setData({ nama_asrama: a.nama_asrama, kapasitas: a.kapasitas?.toString() ?? '' });
-        setEditAsrama(a); setShowAsramaModal(true);
-    }
+    function openEditAsrama(a: Asrama) { asramaForm.setData({ nama_asrama: a.nama_asrama, kapasitas: a.kapasitas?.toString() ?? '' }); setEditAsrama(a); setShowAsramaModal(true); }
     function submitAsrama() {
-        if (editAsrama) {
-            asramaForm.put(`/super/asrama/${editAsrama.id}`, { onSuccess: () => setShowAsramaModal(false) });
-        } else {
-            asramaForm.post('/super/asrama', { onSuccess: () => setShowAsramaModal(false) });
-        }
+        if (editAsrama) asramaForm.put(`/super/asrama/${editAsrama.id}`, { onSuccess: () => setShowAsramaModal(false) });
+        else            asramaForm.post('/super/asrama', { onSuccess: () => setShowAsramaModal(false) });
     }
-    function deleteAsrama(id: number) {
-        if (confirm('Hapus asrama ini?')) router.delete(`/super/asrama/${id}`, { preserveScroll: true });
-    }
-    function openAddJabatan(a: Asrama) {
-        jabatanForm.reset(); jabatanForm.setData({ tahun: new Date().getFullYear().toString(), direktur: '', ketua: '' });
-        setJabatanAsrama(a); setEditJabatan(null); setShowJabatanModal(true);
-    }
-    function openEditJabatan(a: Asrama, j: AsramaJabatan) {
-        jabatanForm.setData({ tahun: j.tahun.toString(), direktur: j.direktur ?? '', ketua: j.ketua ?? '' });
-        setJabatanAsrama(a); setEditJabatan(j); setShowJabatanModal(true);
-    }
+    function deleteAsrama(id: number) { if (confirm('Hapus asrama ini?')) router.delete(`/super/asrama/${id}`, { preserveScroll: true }); }
+    function openAddJabatan(a: Asrama) { jabatanForm.reset(); jabatanForm.setData({ tahun: new Date().getFullYear().toString(), direktur: '', ketua: '' }); setJabatanAsrama(a); setEditJabatan(null); setShowJabatanModal(true); }
+    function openEditJabatan(a: Asrama, j: AsramaJabatan) { jabatanForm.setData({ tahun: j.tahun.toString(), direktur: j.direktur ?? '', ketua: j.ketua ?? '' }); setJabatanAsrama(a); setEditJabatan(j); setShowJabatanModal(true); }
     function submitJabatan() {
         if (!jabatanAsrama) return;
-        if (editJabatan) {
-            jabatanForm.put(`/super/asrama/${jabatanAsrama.id}/jabatan/${editJabatan.id}`, { onSuccess: () => setShowJabatanModal(false) });
-        } else {
-            jabatanForm.post(`/super/asrama/${jabatanAsrama.id}/jabatan`, { onSuccess: () => setShowJabatanModal(false) });
-        }
+        if (editJabatan) jabatanForm.put(`/super/asrama/${jabatanAsrama.id}/jabatan/${editJabatan.id}`, { onSuccess: () => setShowJabatanModal(false) });
+        else             jabatanForm.post(`/super/asrama/${jabatanAsrama.id}/jabatan`, { onSuccess: () => setShowJabatanModal(false) });
     }
-    function deleteJabatan(asramaId: number, jabatanId: number) {
-        if (confirm('Hapus data jabatan ini?')) router.delete(`/super/asrama/${asramaId}/jabatan/${jabatanId}`, { preserveScroll: true });
-    }
+    function deleteJabatan(asramaId: number, jabatanId: number) { if (confirm('Hapus data jabatan ini?')) router.delete(`/super/asrama/${asramaId}/jabatan/${jabatanId}`, { preserveScroll: true }); }
 
-    function handleSave() {
-        post('/super/pengaturan', { preserveScroll: true });
+    // ── Point Rule handlers ───────────────────────────────────────────────────
+    function openAddRule() { ruleForm.reset(); ruleForm.setData({ label: '', activity_type: 'shalat', poin: '', unit: '' }); setEditRule(null); setShowRuleModal(true); }
+    function openEditRule(r: PointRule) { ruleForm.setData({ label: r.label, activity_type: r.activity_type, poin: String(r.poin), unit: r.unit ?? '' }); setEditRule(r); setShowRuleModal(true); }
+    function submitRule() {
+        if (editRule) ruleForm.put(`/super/point-rules/${editRule.id}`, { onSuccess: () => setShowRuleModal(false) });
+        else          ruleForm.post('/super/point-rules', { onSuccess: () => setShowRuleModal(false) });
     }
+    function deleteRule(id: number) { if (confirm('Hapus aturan poin ini?')) router.delete(`/super/point-rules/${id}`, { preserveScroll: true }); }
+    function toggleRule(id: number) { router.patch(`/super/point-rules/${id}/toggle`, {}, { preserveScroll: true }); }
 
-    function Section({ title, icon, children }: { title:string; icon:string; children:React.ReactNode }) {
+    // ── Daily Target handlers ─────────────────────────────────────────────────
+    function openAddTarget() { targetForm.reset(); setEditTarget(null); setShowTargetModal(true); }
+    function openEditTarget(t: DailyTarget) { targetForm.setData({ label: t.label, key: t.key, value: String(t.value), unit: t.unit ?? '', description: t.description ?? '' }); setEditTarget(t); setShowTargetModal(true); }
+    function submitTarget() {
+        if (editTarget) targetForm.put(`/super/daily-targets/${editTarget.id}`, { onSuccess: () => setShowTargetModal(false) });
+        else            targetForm.post('/super/daily-targets', { onSuccess: () => setShowTargetModal(false) });
+    }
+    function deleteTarget(id: number) { if (confirm('Hapus target ini?')) router.delete(`/super/daily-targets/${id}`, { preserveScroll: true }); }
+    function toggleTarget(id: number) { router.patch(`/super/daily-targets/${id}/toggle`, {}, { preserveScroll: true }); }
+
+    function handleSave() { post('/super/pengaturan', { preserveScroll: true }); }
+
+    // ── UI helpers ────────────────────────────────────────────────────────────
+    function Section({ title, icon, children, action }: { title:string; icon:string; children:React.ReactNode; action?:React.ReactNode }) {
         return (
             <div className="glass-card rounded-2xl overflow-hidden">
-                <div className="flex items-center gap-3 px-6 py-4 border-b border-white/40 bg-surface-container/20">
-                    <Icon name={icon} className="text-xl text-primary-container" filled />
-                    <h3 className="font-bold text-on-surface">{title}</h3>
+                <div className="flex items-center justify-between px-6 py-4 border-b border-white/40 bg-surface-container/20">
+                    <div className="flex items-center gap-3">
+                        <Icon name={icon} className="text-xl text-primary-container" filled />
+                        <h3 className="font-bold text-on-surface">{title}</h3>
+                    </div>
+                    {action}
                 </div>
                 <div className="p-6 space-y-5">{children}</div>
             </div>
@@ -94,6 +150,19 @@ export default function Pengaturan({ settings, asramas }: Props) {
         );
     }
 
+    function ActivePill({ active, onToggle }: { active:boolean; onToggle:()=>void }) {
+        return (
+            <button onClick={onToggle} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black transition-colors ${active ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-emerald-500' : 'bg-zinc-400'}`} />
+                {active ? 'Aktif' : 'Nonaktif'}
+            </button>
+        );
+    }
+
+    function FormLabel({ children }: { children: React.ReactNode }) {
+        return <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1.5 block">{children}</label>;
+    }
+
     return (
         <AppLayout>
             <Head title="Pengaturan Sistem" />
@@ -101,7 +170,8 @@ export default function Pengaturan({ settings, asramas }: Props) {
                 breadcrumbs={[{ label:'Dashboard', href:'/dashboard' }, { label:'Pengaturan' }]} />
 
             <div className="space-y-6">
-                {/* App info */}
+
+                {/* ── App info ─────────────────────────────────────────────── */}
                 <Section title="Informasi Aplikasi" icon="info">
                     <Field label="Nama Aplikasi" hint="Nama yang tampil di header dan email">
                         <input value={data.app_name} onChange={e => setData('app_name', e.target.value)} className="glass-input w-full text-sm" />
@@ -112,48 +182,144 @@ export default function Pengaturan({ settings, asramas }: Props) {
                     <Field label="Mode Maintenance" hint="Matikan akses untuk non-admin sementara">
                         <Toggle checked={data.maintenance_mode} onChange={v => setData('maintenance_mode', v)} />
                     </Field>
+                    <div className="pt-2">
+                        <button onClick={handleSave} disabled={processing} className="btn-primary px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 disabled:opacity-50">
+                            <Icon name="save" className="text-base" />
+                            {processing ? 'Menyimpan...' : 'Simpan'}
+                        </button>
+                    </div>
                 </Section>
 
-                {/* Target harian */}
-                <Section title="Target Harian" icon="flag">
-                    <Field label="Target Shalat" hint="Jumlah waktu shalat per hari">
-                        <div className="flex items-center gap-3">
-                            <input type="number" min={1} max={5} value={data.shalat_target} onChange={e => setData('shalat_target', Number(e.target.value))} className="glass-input w-24 text-sm text-center" />
-                            <span className="text-sm text-on-surface-variant">waktu / hari</span>
+                {/* ── Target Harian CRUD ────────────────────────────────────── */}
+                <Section title="Target Harian" icon="flag"
+                    action={
+                        <button onClick={openAddTarget} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-container text-white text-xs font-bold hover:opacity-90 transition-opacity">
+                            <Icon name="add" className="text-sm" /> Tambah Target
+                        </button>
+                    }>
+                    <p className="text-xs text-on-surface-variant -mt-3">
+                        Target yang aktif dipakai sebagai acuan progress dashboard mahasiswa. Klik nilai untuk mengedit langsung.
+                    </p>
+
+                    {dailyTargets.length === 0 ? (
+                        <div className="text-center py-8 text-on-surface-variant text-sm">Belum ada target.</div>
+                    ) : (
+                        <div className="overflow-x-auto -mx-6">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b border-white/40">
+                                        <th className="text-left px-6 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Label</th>
+                                        <th className="text-center px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Nilai</th>
+                                        <th className="text-left px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Satuan</th>
+                                        <th className="text-left px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest hidden sm:table-cell">Keterangan</th>
+                                        <th className="text-center px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Status</th>
+                                        <th className="px-6 py-2.5" />
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {dailyTargets.map(t => (
+                                        <tr key={t.id} className={`border-b border-white/20 transition-colors hover:bg-white/20 ${!t.is_active ? 'opacity-50' : ''}`}>
+                                            <td className="px-6 py-3">
+                                                <p className="font-bold text-on-surface text-sm">{t.label}</p>
+                                                <p className="text-[10px] text-on-surface-variant font-mono">{t.key}</p>
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
+                                                <span className="font-black text-2xl text-primary-container">{t.value}</span>
+                                            </td>
+                                            <td className="px-4 py-3 text-xs text-on-surface-variant">{t.unit || '—'}</td>
+                                            <td className="px-4 py-3 text-xs text-on-surface-variant hidden sm:table-cell">{t.description || '—'}</td>
+                                            <td className="px-4 py-3 text-center">
+                                                <ActivePill active={t.is_active} onToggle={() => toggleTarget(t.id)} />
+                                            </td>
+                                            <td className="px-6 py-3">
+                                                <div className="flex gap-1 justify-end">
+                                                    <button onClick={() => openEditTarget(t)} className="w-7 h-7 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-blue-50 text-blue-600 transition-colors">
+                                                        <Icon name="edit" className="text-xs" />
+                                                    </button>
+                                                    <button onClick={() => deleteTarget(t.id)} className="w-7 h-7 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-rose-50 text-rose-500 transition-colors">
+                                                        <Icon name="delete" className="text-xs" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
-                    </Field>
-                    <Field label="Target Hafalan" hint="Target juz hafalan total">
-                        <div className="flex items-center gap-3">
-                            <input type="number" min={1} max={30} value={data.hafalan_target} onChange={e => setData('hafalan_target', Number(e.target.value))} className="glass-input w-24 text-sm text-center" />
-                            <span className="text-sm text-on-surface-variant">juz</span>
-                        </div>
-                    </Field>
-                    <Field label="Target Aktivitas" hint="Jumlah aktivitas per bulan">
-                        <div className="flex items-center gap-3">
-                            <input type="number" min={1} max={100} value={data.study_hour_target} onChange={e => setData('study_hour_target', Number(e.target.value))} className="glass-input w-24 text-sm text-center" />
-                            <span className="text-sm text-on-surface-variant">aktivitas / bulan</span>
-                        </div>
-                    </Field>
+                    )}
                 </Section>
 
-                {/* Sistem poin */}
-                <Section title="Sistem Poin" icon="military_tech">
-                    {[
-                        { key:'point_shalat', label:'Poin Shalat', hint:'Per waktu shalat yang tercatat' },
-                        { key:'point_hafalan', label:'Poin Hafalan', hint:'Per setoran hafalan yang diterima' },
-                        { key:'point_akademik', label:'Poin Aktivitas', hint:'Per aktivitas yang tercatat' },
-                        { key:'point_kegiatan', label:'Poin Kegiatan', hint:'Per kegiatan yang diikuti' },
-                    ].map(f => (
-                        <Field key={f.key} label={f.label} hint={f.hint}>
-                            <div className="flex items-center gap-3">
-                                <input type="number" min={1} value={data[f.key as keyof typeof data] as number} onChange={e => setData(f.key as keyof typeof data, Number(e.target.value) as never)} className="glass-input w-24 text-sm text-center" />
-                                <span className="text-sm text-on-surface-variant">poin</span>
-                            </div>
-                        </Field>
-                    ))}
+                {/* ── Sistem Poin CRUD ──────────────────────────────────────── */}
+                <Section title="Sistem Poin" icon="military_tech"
+                    action={
+                        <button onClick={openAddRule} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-container text-white text-xs font-bold hover:opacity-90 transition-opacity">
+                            <Icon name="add" className="text-sm" /> Tambah Aturan
+                        </button>
+                    }>
+                    <p className="text-xs text-on-surface-variant -mt-3">
+                        Setiap aturan aktif dihitung otomatis ke total poin mahasiswa. Beberapa aturan per aktivitas diperbolehkan.
+                    </p>
+
+                    {pointRules.length === 0 ? (
+                        <div className="text-center py-8 text-on-surface-variant text-sm">Belum ada aturan poin.</div>
+                    ) : (
+                        <div className="overflow-x-auto -mx-6">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b border-white/40">
+                                        <th className="text-left px-6 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Label</th>
+                                        <th className="text-left px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Aktivitas</th>
+                                        <th className="text-center px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Poin</th>
+                                        <th className="text-left px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest hidden sm:table-cell">Satuan</th>
+                                        <th className="text-center px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Status</th>
+                                        <th className="px-6 py-2.5" />
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {pointRules.map(r => (
+                                        <tr key={r.id} className={`border-b border-white/20 transition-colors hover:bg-white/20 ${!r.is_active ? 'opacity-50' : ''}`}>
+                                            <td className="px-6 py-3 font-bold text-on-surface">{r.label}</td>
+                                            <td className="px-4 py-3">
+                                                <span className={`inline-block text-[10px] font-black px-2 py-0.5 rounded-full ${TYPE_COLORS[r.activity_type] ?? 'bg-zinc-100 text-zinc-600'}`}>
+                                                    {activityTypes[r.activity_type] ?? r.activity_type}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
+                                                <span className="font-black text-2xl text-amber-600">{r.poin}</span>
+                                            </td>
+                                            <td className="px-4 py-3 text-xs text-on-surface-variant hidden sm:table-cell">{r.unit || '—'}</td>
+                                            <td className="px-4 py-3 text-center">
+                                                <ActivePill active={r.is_active} onToggle={() => toggleRule(r.id)} />
+                                            </td>
+                                            <td className="px-6 py-3">
+                                                <div className="flex gap-1 justify-end">
+                                                    <button onClick={() => openEditRule(r)} className="w-7 h-7 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-blue-50 text-blue-600 transition-colors">
+                                                        <Icon name="edit" className="text-xs" />
+                                                    </button>
+                                                    <button onClick={() => deleteRule(r.id)} className="w-7 h-7 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-rose-50 text-rose-500 transition-colors">
+                                                        <Icon name="delete" className="text-xs" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+
+                    {/* How points connect */}
+                    <div className="mt-2 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                        <p className="text-xs font-bold text-amber-700 flex items-center gap-2">
+                            <Icon name="info" className="text-sm" filled /> Cara kerja
+                        </p>
+                        <p className="text-xs text-amber-600 mt-1 leading-relaxed">
+                            Total poin mahasiswa = Σ (jumlah aktivitas tiap tipe × poin per unit). Poin ditampilkan di leaderboard, dashboard mahasiswa, dan profil. Perubahan langsung berlaku setelah cache 5 menit.
+                        </p>
+                    </div>
                 </Section>
 
-                {/* Integrasi */}
+                {/* ── Integrasi ─────────────────────────────────────────────── */}
                 <Section title="Integrasi" icon="link">
                     <Field label="Google OAuth" hint="Login dengan akun Google">
                         <div className="flex items-center gap-3">
@@ -173,171 +339,217 @@ export default function Pengaturan({ settings, asramas }: Props) {
                     </Field>
                 </Section>
 
-                {/* Asrama CRUD */}
-                <Section title="Manajemen Asrama" icon="apartment">
-                    <div className="flex justify-between items-center mb-4">
-                        <p className="text-sm text-on-surface-variant">Kelola daftar asrama yang tersedia di sistem.</p>
-                        <button onClick={openAddAsrama} className="btn-primary flex items-center gap-2 text-sm px-4 py-2">
-                            <Icon name="add" className="text-base" /> Tambah Asrama
+                {/* ── Manajemen Asrama ──────────────────────────────────────── */}
+                <Section title="Manajemen Asrama" icon="apartment"
+                    action={
+                        <button onClick={openAddAsrama} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-container text-white text-xs font-bold hover:opacity-90 transition-opacity">
+                            <Icon name="add" className="text-sm" /> Tambah Asrama
                         </button>
-                    </div>
+                    }>
                     <div className="space-y-2">
                         {asramas.length === 0 && (
-                            <div className="text-center py-8 text-on-surface-variant text-sm">Belum ada asrama. Klik "Tambah Asrama" untuk memulai.</div>
+                            <div className="text-center py-8 text-on-surface-variant text-sm">Belum ada asrama.</div>
                         )}
                         {asramas.map(a => {
                             const latestJabatan = a.jabatans?.[0];
                             const isExpanded = expandedAsrama === a.id;
                             return (
-                            <div key={a.id} className="border border-white/30 rounded-xl overflow-hidden">
-                                {/* Asrama Row */}
-                                <div className="flex items-center justify-between p-4 bg-surface-container/30">
-                                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                                        <button onClick={() => setExpandedAsrama(isExpanded ? null : a.id)} className="w-10 h-10 bg-primary-container/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                                            <Icon name={isExpanded ? 'expand_less' : 'expand_more'} className="text-primary-container text-lg" />
-                                        </button>
-                                        <div className="min-w-0">
-                                            <p className="font-bold text-on-surface text-sm">{a.nama_asrama}</p>
-                                            <p className="text-xs text-on-surface-variant">
-                                                {a.kapasitas ? `Kapasitas: ${a.kapasitas}` : 'Kapasitas: -'}
-                                                {latestJabatan ? ` · Ketua ${latestJabatan.tahun}: ${latestJabatan.ketua || '-'}` : ' · Belum ada data jabatan'}
-                                            </p>
+                                <div key={a.id} className="border border-white/30 rounded-xl overflow-hidden">
+                                    <div className="flex items-center justify-between p-4 bg-surface-container/30">
+                                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                                            <button onClick={() => setExpandedAsrama(isExpanded ? null : a.id)} className="w-10 h-10 bg-primary-container/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                <Icon name={isExpanded ? 'expand_less' : 'expand_more'} className="text-primary-container text-lg" />
+                                            </button>
+                                            <div className="min-w-0">
+                                                <p className="font-bold text-on-surface text-sm">{a.nama_asrama}</p>
+                                                <p className="text-xs text-on-surface-variant">
+                                                    {a.kapasitas ? `Kapasitas: ${a.kapasitas}` : 'Kapasitas: -'}
+                                                    {latestJabatan ? ` · Ketua ${latestJabatan.tahun}: ${latestJabatan.ketua || '-'}` : ' · Belum ada data jabatan'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 flex-shrink-0">
+                                            <button onClick={() => openAddJabatan(a)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold hover:bg-emerald-100 transition-colors">
+                                                <Icon name="add" className="text-sm" /> Jabatan
+                                            </button>
+                                            <button onClick={() => openEditAsrama(a)} className="w-8 h-8 rounded-lg bg-white border border-zinc-200 flex items-center justify-center hover:bg-blue-50 text-blue-600 transition-colors">
+                                                <Icon name="edit" className="text-sm" />
+                                            </button>
+                                            <button onClick={() => deleteAsrama(a.id)} className="w-8 h-8 rounded-lg bg-white border border-zinc-200 flex items-center justify-center hover:bg-rose-50 text-rose-500 transition-colors">
+                                                <Icon name="delete" className="text-sm" />
+                                            </button>
                                         </div>
                                     </div>
-                                    <div className="flex gap-2 flex-shrink-0">
-                                        <button onClick={() => openAddJabatan(a)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold hover:bg-emerald-100 transition-colors">
-                                            <Icon name="add" className="text-sm" /> Jabatan
-                                        </button>
-                                        <button onClick={() => openEditAsrama(a)} className="w-8 h-8 rounded-lg bg-white border border-zinc-200 flex items-center justify-center hover:bg-blue-50 text-blue-600 transition-colors">
-                                            <Icon name="edit" className="text-sm" />
-                                        </button>
-                                        <button onClick={() => deleteAsrama(a.id)} className="w-8 h-8 rounded-lg bg-white border border-zinc-200 flex items-center justify-center hover:bg-rose-50 text-rose-500 transition-colors">
-                                            <Icon name="delete" className="text-sm" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Jabatan History */}
-                                {isExpanded && (
-                                    <div className="border-t border-white/30 bg-white/30 p-4">
-                                        <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-3">Riwayat Jabatan</p>
-                                        {a.jabatans?.length === 0 ? (
-                                            <p className="text-xs text-on-surface-variant italic">Belum ada data jabatan.</p>
-                                        ) : (
-                                            <div className="space-y-2">
-                                                {a.jabatans?.map(j => (
-                                                    <div key={j.id} className="flex items-center justify-between px-4 py-2.5 bg-white rounded-xl border border-zinc-100 text-sm">
-                                                        <div className="flex items-center gap-4">
-                                                            <span className="font-black text-primary-container w-12">{j.tahun}</span>
-                                                            <div>
-                                                                <span className="text-on-surface-variant text-xs">Direktur: </span>
-                                                                <span className="font-semibold text-on-surface text-xs">{j.direktur || '-'}</span>
-                                                                <span className="text-on-surface-variant text-xs ml-4">Ketua: </span>
-                                                                <span className="font-semibold text-on-surface text-xs">{j.ketua || '-'}</span>
+                                    {isExpanded && (
+                                        <div className="border-t border-white/30 bg-white/30 p-4">
+                                            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest mb-3">Riwayat Jabatan</p>
+                                            {a.jabatans?.length === 0 ? (
+                                                <p className="text-xs text-on-surface-variant italic">Belum ada data jabatan.</p>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    {a.jabatans?.map(j => (
+                                                        <div key={j.id} className="flex items-center justify-between px-4 py-2.5 bg-white rounded-xl border border-zinc-100 text-sm">
+                                                            <div className="flex items-center gap-4">
+                                                                <span className="font-black text-primary-container w-12">{j.tahun}</span>
+                                                                <div>
+                                                                    <span className="text-on-surface-variant text-xs">Direktur: </span>
+                                                                    <span className="font-semibold text-on-surface text-xs">{j.direktur || '-'}</span>
+                                                                    <span className="text-on-surface-variant text-xs ml-4">Ketua: </span>
+                                                                    <span className="font-semibold text-on-surface text-xs">{j.ketua || '-'}</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex gap-1">
+                                                                <button onClick={() => openEditJabatan(a, j)} className="w-7 h-7 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-blue-50 text-blue-600 transition-colors">
+                                                                    <Icon name="edit" className="text-xs" />
+                                                                </button>
+                                                                <button onClick={() => deleteJabatan(a.id, j.id)} className="w-7 h-7 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-rose-50 text-rose-500 transition-colors">
+                                                                    <Icon name="delete" className="text-xs" />
+                                                                </button>
                                                             </div>
                                                         </div>
-                                                        <div className="flex gap-1">
-                                                            <button onClick={() => openEditJabatan(a, j)} className="w-7 h-7 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-blue-50 text-blue-600 transition-colors">
-                                                                <Icon name="edit" className="text-xs" />
-                                                            </button>
-                                                            <button onClick={() => deleteJabatan(a.id, j.id)} className="w-7 h-7 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-rose-50 text-rose-500 transition-colors">
-                                                                <Icon name="delete" className="text-xs" />
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        );})}
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 </Section>
-
-                {/* Save */}
-                <div className="flex gap-3">
-                    <button onClick={handleSave} disabled={processing} className="btn-primary px-8 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50">
-                        <Icon name="save" className="text-lg" />
-                        {processing ? 'Menyimpan...' : 'Simpan Pengaturan'}
-                    </button>
-                    <button className="px-6 py-3 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-white/60 transition-colors">
-                        Reset Default
-                    </button>
-                </div>
             </div>
-            {/* Asrama Modal */}
+
+            {/* ── Asrama Modal ──────────────────────────────────────────────── */}
             {showAsramaModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-in">
-                        <div className="flex items-center justify-between p-6 border-b border-zinc-100">
-                            <h3 className="font-bold text-on-surface">{editAsrama ? 'Edit Asrama' : 'Tambah Asrama'}</h3>
-                            <button onClick={() => setShowAsramaModal(false)} className="w-8 h-8 rounded-xl bg-zinc-100 flex items-center justify-center hover:bg-zinc-200">
-                                <Icon name="close" className="text-sm" />
-                            </button>
+                <ModalShell title={editAsrama ? 'Edit Asrama' : 'Tambah Asrama'} onClose={() => setShowAsramaModal(false)}>
+                    <div className="p-6 space-y-4">
+                        <div>
+                            <FormLabel>Nama Asrama *</FormLabel>
+                            <input value={asramaForm.data.nama_asrama} onChange={e => asramaForm.setData('nama_asrama', e.target.value)} className="glass-input w-full text-sm" placeholder="cth. Al-Farabi" />
+                            {asramaForm.errors.nama_asrama && <p className="text-xs text-rose-500 mt-1">{asramaForm.errors.nama_asrama}</p>}
                         </div>
-                        <div className="p-6 space-y-4">
-                            <div>
-                                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1.5 block">Nama Asrama *</label>
-                                <input value={asramaForm.data.nama_asrama} onChange={e => asramaForm.setData('nama_asrama', e.target.value)} className="glass-input w-full text-sm" placeholder="cth. Al-Farabi" />
-                                {asramaForm.errors.nama_asrama && <p className="text-xs text-rose-500 mt-1">{asramaForm.errors.nama_asrama}</p>}
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1.5 block">Kapasitas</label>
-                                <input type="number" value={asramaForm.data.kapasitas} onChange={e => asramaForm.setData('kapasitas', e.target.value)} className="glass-input w-full text-sm" placeholder="cth. 30" />
-                            </div>
-                            <p className="text-xs text-on-surface-variant italic">Data direktur dan ketua asrama dikelola per tahun di bagian Riwayat Jabatan.</p>
+                        <div>
+                            <FormLabel>Kapasitas</FormLabel>
+                            <input type="number" value={asramaForm.data.kapasitas} onChange={e => asramaForm.setData('kapasitas', e.target.value)} className="glass-input w-full text-sm" placeholder="cth. 30" />
                         </div>
-                        <div className="p-6 pt-0 flex gap-3">
-                            <button onClick={submitAsrama} disabled={asramaForm.processing} className="btn-primary flex-1 py-3 rounded-xl font-bold text-sm">
-                                {asramaForm.processing ? 'Menyimpan...' : (editAsrama ? 'Simpan Perubahan' : 'Tambah Asrama')}
-                            </button>
-                            <button onClick={() => setShowAsramaModal(false)} className="px-6 py-3 rounded-xl font-bold text-sm bg-zinc-100 text-on-surface-variant hover:bg-zinc-200">
-                                Batal
-                            </button>
-                        </div>
+                        <p className="text-xs text-on-surface-variant italic">Data direktur dan ketua dikelola per tahun di Riwayat Jabatan.</p>
                     </div>
-                </div>
+                    <div className="p-6 pt-0 flex gap-3">
+                        <button onClick={submitAsrama} disabled={asramaForm.processing} className="btn-primary flex-1 py-3 rounded-xl font-bold text-sm">
+                            {asramaForm.processing ? 'Menyimpan...' : (editAsrama ? 'Simpan' : 'Tambah')}
+                        </button>
+                        <button onClick={() => setShowAsramaModal(false)} className="px-6 py-3 rounded-xl font-bold text-sm bg-zinc-100 text-on-surface-variant">Batal</button>
+                    </div>
+                </ModalShell>
             )}
 
-            {/* Jabatan Modal */}
+            {/* ── Jabatan Modal ──────────────────────────────────────────────── */}
             {showJabatanModal && jabatanAsrama && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-in">
-                        <div className="flex items-center justify-between p-6 border-b border-zinc-100">
-                            <div>
-                                <h3 className="font-bold text-on-surface">{editJabatan ? 'Edit Jabatan' : 'Tambah Jabatan'}</h3>
-                                <p className="text-xs text-on-surface-variant mt-0.5">{jabatanAsrama.nama_asrama}</p>
-                            </div>
-                            <button onClick={() => setShowJabatanModal(false)} className="w-8 h-8 rounded-xl bg-zinc-100 flex items-center justify-center hover:bg-zinc-200">
-                                <Icon name="close" className="text-sm" />
-                            </button>
+                <ModalShell title={editJabatan ? 'Edit Jabatan' : 'Tambah Jabatan'} subtitle={jabatanAsrama.nama_asrama} onClose={() => setShowJabatanModal(false)}>
+                    <div className="p-6 space-y-4">
+                        <div>
+                            <FormLabel>Tahun *</FormLabel>
+                            <input type="number" min={2000} max={2100} value={jabatanForm.data.tahun} onChange={e => jabatanForm.setData('tahun', e.target.value)} className="glass-input w-full text-sm" />
+                            {jabatanForm.errors.tahun && <p className="text-xs text-rose-500 mt-1">{jabatanForm.errors.tahun}</p>}
                         </div>
-                        <div className="p-6 space-y-4">
-                            <div>
-                                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1.5 block">Tahun *</label>
-                                <input type="number" min={2000} max={2100} value={jabatanForm.data.tahun} onChange={e => jabatanForm.setData('tahun', e.target.value)} className="glass-input w-full text-sm" placeholder="cth. 2024" />
-                                {jabatanForm.errors.tahun && <p className="text-xs text-rose-500 mt-1">{jabatanForm.errors.tahun}</p>}
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1.5 block">Direktur</label>
-                                <input value={jabatanForm.data.direktur} onChange={e => jabatanForm.setData('direktur', e.target.value)} className="glass-input w-full text-sm" placeholder="Nama direktur" />
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1.5 block">Ketua Asrama</label>
-                                <input value={jabatanForm.data.ketua} onChange={e => jabatanForm.setData('ketua', e.target.value)} className="glass-input w-full text-sm" placeholder="Nama ketua asrama" />
-                            </div>
+                        <div>
+                            <FormLabel>Direktur</FormLabel>
+                            <input value={jabatanForm.data.direktur} onChange={e => jabatanForm.setData('direktur', e.target.value)} className="glass-input w-full text-sm" placeholder="Nama direktur" />
                         </div>
-                        <div className="p-6 pt-0 flex gap-3">
-                            <button onClick={submitJabatan} disabled={jabatanForm.processing} className="btn-primary flex-1 py-3 rounded-xl font-bold text-sm">
-                                {jabatanForm.processing ? 'Menyimpan...' : (editJabatan ? 'Simpan Perubahan' : 'Tambah Jabatan')}
-                            </button>
-                            <button onClick={() => setShowJabatanModal(false)} className="px-6 py-3 rounded-xl font-bold text-sm bg-zinc-100 text-on-surface-variant hover:bg-zinc-200">
-                                Batal
-                            </button>
+                        <div>
+                            <FormLabel>Ketua Asrama</FormLabel>
+                            <input value={jabatanForm.data.ketua} onChange={e => jabatanForm.setData('ketua', e.target.value)} className="glass-input w-full text-sm" placeholder="Nama ketua asrama" />
                         </div>
                     </div>
-                </div>
+                    <div className="p-6 pt-0 flex gap-3">
+                        <button onClick={submitJabatan} disabled={jabatanForm.processing} className="btn-primary flex-1 py-3 rounded-xl font-bold text-sm">
+                            {jabatanForm.processing ? 'Menyimpan...' : (editJabatan ? 'Simpan' : 'Tambah')}
+                        </button>
+                        <button onClick={() => setShowJabatanModal(false)} className="px-6 py-3 rounded-xl font-bold text-sm bg-zinc-100 text-on-surface-variant">Batal</button>
+                    </div>
+                </ModalShell>
+            )}
+
+            {/* ── Point Rule Modal ───────────────────────────────────────────── */}
+            {showRuleModal && (
+                <ModalShell title={editRule ? 'Edit Aturan Poin' : 'Tambah Aturan Poin'} onClose={() => setShowRuleModal(false)}>
+                    <div className="p-6 space-y-4">
+                        <div>
+                            <FormLabel>Label *</FormLabel>
+                            <input value={ruleForm.data.label} onChange={e => ruleForm.setData('label', e.target.value)} className="glass-input w-full text-sm" placeholder="cth. Shalat Wajib" />
+                            {ruleForm.errors.label && <p className="text-xs text-rose-500 mt-1">{ruleForm.errors.label}</p>}
+                        </div>
+                        <div>
+                            <FormLabel>Jenis Aktivitas *</FormLabel>
+                            <select value={ruleForm.data.activity_type} onChange={e => ruleForm.setData('activity_type', e.target.value)} className="glass-input w-full text-sm py-2">
+                                {Object.entries(activityTypes).map(([k, v]) => (
+                                    <option key={k} value={k}>{v}</option>
+                                ))}
+                            </select>
+                            <p className="text-[10px] text-on-surface-variant mt-1">Menentukan data mana yang dihitung untuk aturan ini.</p>
+                            {ruleForm.errors.activity_type && <p className="text-xs text-rose-500 mt-1">{ruleForm.errors.activity_type}</p>}
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <FormLabel>Poin per Unit *</FormLabel>
+                                <input type="number" min={0} value={ruleForm.data.poin} onChange={e => ruleForm.setData('poin', e.target.value)} className="glass-input w-full text-sm text-center" placeholder="0" />
+                                {ruleForm.errors.poin && <p className="text-xs text-rose-500 mt-1">{ruleForm.errors.poin}</p>}
+                            </div>
+                            <div>
+                                <FormLabel>Satuan</FormLabel>
+                                <input value={ruleForm.data.unit} onChange={e => ruleForm.setData('unit', e.target.value)} className="glass-input w-full text-sm" placeholder="per aktivitas" />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-6 pt-0 flex gap-3">
+                        <button onClick={submitRule} disabled={ruleForm.processing} className="btn-primary flex-1 py-3 rounded-xl font-bold text-sm">
+                            {ruleForm.processing ? 'Menyimpan...' : (editRule ? 'Simpan' : 'Tambah')}
+                        </button>
+                        <button onClick={() => setShowRuleModal(false)} className="px-6 py-3 rounded-xl font-bold text-sm bg-zinc-100 text-on-surface-variant">Batal</button>
+                    </div>
+                </ModalShell>
+            )}
+
+            {/* ── Daily Target Modal ─────────────────────────────────────────── */}
+            {showTargetModal && (
+                <ModalShell title={editTarget ? 'Edit Target' : 'Tambah Target'} onClose={() => setShowTargetModal(false)}>
+                    <div className="p-6 space-y-4">
+                        <div>
+                            <FormLabel>Label *</FormLabel>
+                            <input value={targetForm.data.label} onChange={e => targetForm.setData('label', e.target.value)} className="glass-input w-full text-sm" placeholder="cth. Target Shalat" />
+                            {targetForm.errors.label && <p className="text-xs text-rose-500 mt-1">{targetForm.errors.label}</p>}
+                        </div>
+                        {!editTarget && (
+                            <div>
+                                <FormLabel>Key (kode unik) *</FormLabel>
+                                <input value={targetForm.data.key} onChange={e => targetForm.setData('key', e.target.value)} className="glass-input w-full text-sm font-mono" placeholder="cth. shalat_target" />
+                                <p className="text-[10px] text-on-surface-variant mt-1">Huruf kecil, angka, dan underscore. Tidak bisa diubah setelah disimpan.</p>
+                                {targetForm.errors.key && <p className="text-xs text-rose-500 mt-1">{targetForm.errors.key}</p>}
+                            </div>
+                        )}
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <FormLabel>Nilai Target *</FormLabel>
+                                <input type="number" min={0} value={targetForm.data.value} onChange={e => targetForm.setData('value', e.target.value)} className="glass-input w-full text-sm text-center" placeholder="0" />
+                                {targetForm.errors.value && <p className="text-xs text-rose-500 mt-1">{targetForm.errors.value}</p>}
+                            </div>
+                            <div>
+                                <FormLabel>Satuan</FormLabel>
+                                <input value={targetForm.data.unit} onChange={e => targetForm.setData('unit', e.target.value)} className="glass-input w-full text-sm" placeholder="cth. waktu / hari" />
+                            </div>
+                        </div>
+                        <div>
+                            <FormLabel>Keterangan</FormLabel>
+                            <input value={targetForm.data.description} onChange={e => targetForm.setData('description', e.target.value)} className="glass-input w-full text-sm" placeholder="Penjelasan singkat tentang target ini" />
+                        </div>
+                    </div>
+                    <div className="p-6 pt-0 flex gap-3">
+                        <button onClick={submitTarget} disabled={targetForm.processing} className="btn-primary flex-1 py-3 rounded-xl font-bold text-sm">
+                            {targetForm.processing ? 'Menyimpan...' : (editTarget ? 'Simpan' : 'Tambah')}
+                        </button>
+                        <button onClick={() => setShowTargetModal(false)} className="px-6 py-3 rounded-xl font-bold text-sm bg-zinc-100 text-on-surface-variant">Batal</button>
+                    </div>
+                </ModalShell>
             )}
         </AppLayout>
     );

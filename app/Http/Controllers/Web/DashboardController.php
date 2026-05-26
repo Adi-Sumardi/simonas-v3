@@ -106,7 +106,7 @@ class DashboardController extends Controller
                 ->count();
         }
 
-        $logTarget = (int) \App\Models\AppSetting::val('study_hour_target', 23);
+        $logTarget = (int) \App\Models\DailyTarget::val('study_hour_target', 23);
         $totalPoints = $user->calculatePoints();
 
         // 1. Real Hafalan Data
