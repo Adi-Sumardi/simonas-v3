@@ -289,7 +289,7 @@ class DashboardController extends Controller
             ];
         });
 
-        $asramas = $students->pluck('asrama')->unique()->sort()->values();
+        $asramas = \App\Models\Asrama::orderBy('nama_asrama')->pluck('nama_asrama');
 
         $asramaStats = \App\Models\Asrama::all()->map(function($a) {
             return [

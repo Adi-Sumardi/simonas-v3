@@ -26,6 +26,7 @@ interface ProfileProps extends PageProps {
     user: UserInfo;
     mentor: MentorInfo | null;
     riwayats: Record<Tipe, Riwayat[]>;
+    asramas: string[];
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -203,12 +204,13 @@ function RiwayatCard({ item, onEdit, onDelete }: { item: Riwayat; onEdit: () => 
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────────
-export default function Profile({ user, mentor, riwayats }: ProfileProps) {
+export default function Profile({ user, mentor, riwayats, asramas }: ProfileProps) {
     const [activeTab, setActiveTab] = useState<Tipe>('pendidikan');
     const [modalTipe, setModalTipe] = useState<Tipe | null>(null);
     const [editItem, setEditItem] = useState<Riwayat | null>(null);
     const [editBio, setEditBio] = useState(false);
     const [bioVal, setBioVal] = useState(user.bio ?? '');
+    const [asramaVal, setAsramaVal] = useState(user.asrama ?? '');
     const [updatingAvatar, setUpdatingAvatar] = useState(false);
 
     function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -231,7 +233,7 @@ export default function Profile({ user, mentor, riwayats }: ProfileProps) {
     }
 
     function saveBio() {
-        router.put('/mahasiswa/profil', { name: user.name, bio: bioVal, no_hp: user.no_hp, angkatan: user.angkatan }, {
+        router.put('/mahasiswa/profil', { name: user.name, bio: bioVal, no_hp: user.no_hp, angkatan: user.angkatan, asrama: asramaVal }, {
             preserveState: true, preserveScroll: true,
             onSuccess: () => setEditBio(false),
         });
@@ -304,8 +306,21 @@ export default function Profile({ user, mentor, riwayats }: ProfileProps) {
                         <div className="text-left">
                             {editBio ? (
                                 <div className="space-y-2">
-                                    <textarea value={bioVal} onChange={e => setBioVal(e.target.value)}
-                                        rows={3} className="glass-input w-full text-sm resize-none" placeholder="Tulis bio singkat..." />
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1 block">Asrama</label>
+                                        <select value={asramaVal} onChange={e => setAsramaVal(e.target.value)}
+                                            className="glass-input w-full text-sm py-1.5">
+                                            <option value="">— Pilih Asrama —</option>
+                                            {asramas.map(a => (
+                                                <option key={a} value={a}>{a}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1 block">Bio</label>
+                                        <textarea value={bioVal} onChange={e => setBioVal(e.target.value)}
+                                            rows={3} className="glass-input w-full text-sm resize-none" placeholder="Tulis bio singkat..." />
+                                    </div>
                                     <div className="flex gap-2">
                                         <button onClick={() => setEditBio(false)} className="flex-1 py-1.5 rounded-xl text-xs font-bold bg-surface-container text-on-surface-variant">Batal</button>
                                         <button onClick={saveBio} className="flex-1 py-1.5 rounded-xl text-xs font-bold bg-primary-container text-white">Simpan</button>

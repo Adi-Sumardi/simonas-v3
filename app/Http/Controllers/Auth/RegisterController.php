@@ -16,13 +16,13 @@ class RegisterController extends Controller
 {
     public function showRegistrationForm(): InertiaResponse
     {
+        $asramas = \App\Models\Asrama::orderBy('nama_asrama')
+            ->pluck('nama_asrama')
+            ->map(fn($name) => ['value' => $name, 'label' => $name])
+            ->values();
+
         return Inertia::render('Auth/Register', [
-            'asramas' => [
-                ['value' => 'ASGJ', 'label' => 'Asrama Sukma Gemilang Jakarta'],
-                ['value' => 'ASG', 'label' => 'Asrama Sukma Gemilang'],
-                ['value' => 'AWS', 'label' => 'Asrama Wanita Sukma'],
-                ['value' => 'ASPURI', 'label' => 'Asrama Sukma Putri'],
-            ],
+            'asramas' => $asramas,
         ]);
     }
 
@@ -101,7 +101,7 @@ class RegisterController extends Controller
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
             'no_induk' => ['required', 'string', 'max:50'],
-            'asrama' => ['required', 'string'],
+            'asrama' => ['required', 'string', 'exists:asramas,nama_asrama'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
         ]);

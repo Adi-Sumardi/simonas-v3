@@ -37,7 +37,7 @@ class SuperController extends Controller
 
         return Inertia::render('Super/Warga', [
             'warga'   => $warga,
-            'asramas' => ['Al-Farabi', 'Al-Ghazali', 'Ibnu Sina', 'Al-Kindi'],
+            'asramas' => \App\Models\Asrama::orderBy('nama_asrama')->pluck('nama_asrama'),
             'stats'   => [
                 'total'   => User::where('role', 'mahasiswa')->count(),
                 'aktif'   => User::where('role', 'mahasiswa')->where('status_warga', 'aktif')->count(),
@@ -245,7 +245,7 @@ class SuperController extends Controller
 
         return Inertia::render('Super/Alumni', [
             'alumni'      => $users,
-            'asrama_list' => ['Al-Farabi', 'Al-Ghazali', 'Ibnu Sina', 'Al-Kindi'],
+            'asrama_list' => \App\Models\Asrama::orderBy('nama_asrama')->pluck('nama_asrama'),
             'stats'       => [
                 'total'         => User::where('role', 'alumni')->count(),
                 'hafidz'        => 0, // Placeholder
@@ -366,11 +366,13 @@ class SuperController extends Controller
             'badge'  => $i === 1 ? '🥇' : ($i === 2 ? '🥈' : ($i === 3 ? '🥉' : null)),
         ]);
 
+        $asramaNames = \App\Models\Asrama::orderBy('nama_asrama')->pluck('nama_asrama');
+
         return Inertia::render('Super/Leaderboard', [
             'entries' => $entries->values(),
-            'asramas' => ['Al-Farabi','Al-Ghazali','Ibnu Sina','Al-Kindi'],
+            'asramas' => $asramaNames,
             'stats'   => [
-                'top_asrama' => 'Al-Ghazali',
+                'top_asrama' => $asramaNames->first() ?? '-',
                 'avg_points' => round($entries->avg('points')),
                 'total'      => $entries->count(),
             ],
@@ -389,12 +391,14 @@ class SuperController extends Controller
             'kegiatan'=> rand(65, 85),
         ]);
 
-        $asramaPerf = [
-            ['asrama'=>'Al-Farabi',  'avg'=>82, 'warga'=>6],
-            ['asrama'=>'Al-Ghazali', 'avg'=>88, 'warga'=>5],
-            ['asrama'=>'Ibnu Sina',  'avg'=>79, 'warga'=>5],
-            ['asrama'=>'Al-Kindi',   'avg'=>85, 'warga'=>5],
-        ];
+        $asramaPerf = \App\Models\Asrama::orderBy('nama_asrama')->get()->map(function($a) {
+            $warga = \App\Models\User::where('role', 'mahasiswa')->where('asrama', $a->nama_asrama)->count();
+            return [
+                'asrama' => $a->nama_asrama,
+                'avg'    => 80, // placeholder until real scoring is wired
+                'warga'  => $warga,
+            ];
+        })->values()->toArray();
 
         return Inertia::render('Super/Laporan', [
             'trend'       => $trendData->values(),
@@ -471,7 +475,14 @@ class SuperController extends Controller
             'direktur'    => 'nullable|string|max:100',
             'ketua'       => 'nullable|string|max:100',
         ]);
+
+        $oldName = $asrama->nama_asrama;
         $asrama->update($data);
+
+        if ($oldName !== $data['nama_asrama']) {
+            \App\Models\User::where('asrama', $oldName)->update(['asrama' => $data['nama_asrama']]);
+        }
+
         return back()->with('success', 'Asrama berhasil diperbarui.');
     }
 

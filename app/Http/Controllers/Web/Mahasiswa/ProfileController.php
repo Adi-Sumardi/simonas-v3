@@ -54,6 +54,7 @@ class ProfileController extends Controller
             ],
             'mentor'   => $mentor,
             'riwayats' => $riwayats,
+            'asramas'  => \App\Models\Asrama::orderBy('nama_asrama')->pluck('nama_asrama'),
         ]);
     }
 
@@ -64,6 +65,7 @@ class ProfileController extends Controller
             'bio'      => 'nullable|string|max:500',
             'no_hp'    => 'nullable|string|max:20',
             'angkatan' => 'nullable|string|max:10',
+            'asrama'   => 'nullable|string|exists:asramas,nama_asrama',
         ]);
 
         Auth::user()->update($data);
