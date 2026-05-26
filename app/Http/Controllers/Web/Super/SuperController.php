@@ -414,6 +414,7 @@ class SuperController extends Controller
         $s = \App\Models\AppSetting::allValues();
 
         return Inertia::render('Super/Pengaturan', [
+            'asramas' => \App\Models\Asrama::orderBy('nama_asrama')->get(),
             'settings' => [
                 'app_name'         => config('app.name', 'SIMONAS'),
                 'app_url'          => config('app.url'),
@@ -447,5 +448,36 @@ class SuperController extends Controller
         \App\Models\AppSetting::setMany($data);
 
         return back()->with('success', 'Pengaturan berhasil disimpan.');
+    }
+
+    // ── Asrama CRUD ───────────────────────────────────────────
+    public function storeAsrama(Request $request)
+    {
+        $data = $request->validate([
+            'nama_asrama'    => 'required|string|max:100|unique:asramas,nama_asrama',
+            'kapasitas'      => 'nullable|integer|min:1',
+            'direktur'       => 'nullable|string|max:100',
+            'ketua'          => 'nullable|string|max:100',
+        ]);
+        \App\Models\Asrama::create($data);
+        return back()->with('success', 'Asrama berhasil ditambahkan.');
+    }
+
+    public function updateAsrama(Request $request, \App\Models\Asrama $asrama)
+    {
+        $data = $request->validate([
+            'nama_asrama' => 'required|string|max:100|unique:asramas,nama_asrama,' . $asrama->id,
+            'kapasitas'   => 'nullable|integer|min:1',
+            'direktur'    => 'nullable|string|max:100',
+            'ketua'       => 'nullable|string|max:100',
+        ]);
+        $asrama->update($data);
+        return back()->with('success', 'Asrama berhasil diperbarui.');
+    }
+
+    public function destroyAsrama(\App\Models\Asrama $asrama)
+    {
+        $asrama->delete();
+        return back()->with('success', 'Asrama berhasil dihapus.');
     }
 }

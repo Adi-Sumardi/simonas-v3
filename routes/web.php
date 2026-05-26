@@ -165,6 +165,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/laporan',    [App\Http\Controllers\Web\Super\SuperController::class, 'laporan'])->name('laporan.index');
         Route::get('/pengaturan', [App\Http\Controllers\Web\Super\SuperController::class, 'pengaturan'])->name('pengaturan.index');
         Route::post('/pengaturan', [App\Http\Controllers\Web\Super\SuperController::class, 'updatePengaturan'])->name('pengaturan.update');
+        Route::post('/asrama',             [App\Http\Controllers\Web\Super\SuperController::class, 'storeAsrama'])  ->name('asrama.store');
+        Route::put('/asrama/{asrama}',     [App\Http\Controllers\Web\Super\SuperController::class, 'updateAsrama']) ->name('asrama.update');
+        Route::delete('/asrama/{asrama}',  [App\Http\Controllers\Web\Super\SuperController::class, 'destroyAsrama'])->name('asrama.destroy');
     });
 
 });
