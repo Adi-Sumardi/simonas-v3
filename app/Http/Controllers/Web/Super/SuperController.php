@@ -185,8 +185,12 @@ class SuperController extends Controller
             $query->where('asrama', $request->asrama);
         }
 
-        if ($request->angkatan) {
-            $query->where('angkatan', $request->angkatan);
+        if ($request->tahun_dari) {
+            $query->where('angkatan', '>=', $request->tahun_dari);
+        }
+
+        if ($request->tahun_sampai) {
+            $query->where('angkatan', '<=', $request->tahun_sampai);
         }
 
         $users = $query->paginate($request->per_page ?? 12)->withQueryString();
@@ -243,15 +247,27 @@ class SuperController extends Controller
 
         $users->setCollection($mappedData);
 
+        $angkatanList = User::where('role', 'alumni')
+            ->whereNotNull('angkatan')
+            ->select('angkatan')
+            ->distinct()
+            ->orderBy('angkatan')
+            ->pluck('angkatan')
+            ->map(fn($a) => (int) $a)
+            ->filter()
+            ->values();
+
         return Inertia::render('Super/Alumni', [
             'alumni'      => $users,
             'asrama_list' => \App\Models\Asrama::orderBy('nama_asrama')->pluck('nama_asrama'),
             'stats'       => [
                 'total'         => User::where('role', 'alumni')->count(),
-                'hafidz'        => 0, // Placeholder
-                'angkatan_list' => User::where('role', 'alumni')->whereNotNull('angkatan')->select('angkatan')->distinct()->orderBy('angkatan', 'desc')->pluck('angkatan'),
+                'hafidz'        => 0,
+                'angkatan_list' => $angkatanList,
+                'tahun_min'     => $angkatanList->first() ?? (int) now()->year,
+                'tahun_max'     => $angkatanList->last()  ?? (int) now()->year,
             ],
-            'filters' => $request->only(['search', 'asrama', 'angkatan', 'per_page']),
+            'filters' => $request->only(['search', 'asrama', 'tahun_dari', 'tahun_sampai', 'per_page']),
         ]);
     }
 

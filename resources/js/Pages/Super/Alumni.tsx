@@ -37,8 +37,8 @@ interface Props {
         per_page: number;
     };
     asrama_list: string[];
-    stats: { total: number; hafidz: number; angkatan_list: number[] };
-    filters: any;
+    stats: { total: number; hafidz: number; angkatan_list: number[]; tahun_min: number; tahun_max: number };
+    filters: { search?: string; asrama?: string; tahun_dari?: string; tahun_sampai?: string; per_page?: number };
 }
 
 const ASRAMA_COLOR: Record<string, { gradient: string; badge: string; text: string }> = {
@@ -53,25 +53,31 @@ function initials(name: string) {
 }
 
 export default function Alumni({ alumni, asrama_list, stats, filters }: Props) {
-    const [search, setSearch]      = useState(filters.search || '');
-    const [angkatan, setAngkatan]  = useState(filters.angkatan || '');
-    const [asrama, setAsrama]      = useState(filters.asrama || '');
+    const [search, setSearch]           = useState(filters.search || '');
+    const [asrama, setAsrama]           = useState(filters.asrama || '');
+    const [tahunDari, setTahunDari]     = useState(filters.tahun_dari || '');
+    const [tahunSampai, setTahunSampai] = useState(filters.tahun_sampai || '');
     const [selectedAlumni, setSelectedAlumni] = useState<AlumniData | null>(null);
     const [activeTab, setActiveTab] = useState('biodata');
 
     const debouncedSearch = useDebounce(search, 500);
 
+    const hasYearFilter = tahunDari !== '' || tahunSampai !== '';
+
     useEffect(() => {
         router.get('/super/alumni', {
             search: debouncedSearch,
-            angkatan,
             asrama,
-            per_page: alumni.per_page
-        }, {
-            preserveState: true,
-            replace: true
-        });
-    }, [debouncedSearch, angkatan, asrama]);
+            tahun_dari:   tahunDari,
+            tahun_sampai: tahunSampai,
+            per_page: alumni.per_page,
+        }, { preserveState: true, replace: true });
+    }, [debouncedSearch, asrama, tahunDari, tahunSampai]);
+
+    function clearYearFilter() {
+        setTahunDari('');
+        setTahunSampai('');
+    }
 
     const handlePageChange = (page: number) => {
         router.get('/super/alumni', { ...filters, page }, { preserveState: true });
@@ -94,43 +100,112 @@ export default function Alumni({ alumni, asrama_list, stats, filters }: Props) {
 
             {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                {[
-                    { label:'Total Alumni',  value: stats.total,                icon:'school',        bg:'bg-blue-100',    text:'text-blue-600' },
-                    { label:'Hafidz Qur\'an', value: stats.hafidz,               icon:'auto_stories',  bg:'bg-emerald-100', text:'text-emerald-600' },
-                    { label:'Angkatan',      value: stats.angkatan_list.length,  icon:'calendar_today',bg:'bg-violet-100',  text:'text-violet-600' },
-                ].map(s => (
-                    <div key={s.label} className="glass-card rounded-2xl p-5 flex items-center gap-4">
-                        <div className={`w-12 h-12 ${s.bg} rounded-2xl flex items-center justify-center flex-shrink-0`}>
-                            <Icon name={s.icon} className={`text-2xl ${s.text}`} filled />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{s.label}</p>
-                            <p className="font-display text-2xl font-bold text-on-surface">{s.value}</p>
-                        </div>
+                <div className="glass-card rounded-2xl p-5 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <Icon name="school" className="text-2xl text-blue-600" filled />
                     </div>
-                ))}
+                    <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Total Alumni</p>
+                        <p className="font-display text-2xl font-bold text-on-surface">{stats.total}</p>
+                    </div>
+                </div>
+                <div className="glass-card rounded-2xl p-5 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <Icon name="auto_stories" className="text-2xl text-emerald-600" filled />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Hafidz Qur'an</p>
+                        <p className="font-display text-2xl font-bold text-on-surface">{stats.hafidz}</p>
+                    </div>
+                </div>
+                {/* Year range result card */}
+                <div className={`glass-card rounded-2xl p-5 flex items-center gap-4 transition-all ${hasYearFilter ? 'ring-2 ring-primary-container/40' : ''}`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${hasYearFilter ? 'bg-primary-container/20' : 'bg-violet-100'}`}>
+                        <Icon name="calendar_today" className={`text-2xl ${hasYearFilter ? 'text-primary-container' : 'text-violet-600'}`} filled />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
+                            {hasYearFilter ? 'Hasil Filter Tahun' : 'Rentang Angkatan'}
+                        </p>
+                        <p className="font-display text-2xl font-bold text-on-surface">{alumni.total}</p>
+                        {hasYearFilter ? (
+                            <p className="text-[10px] text-primary-container font-bold">
+                                {tahunDari || stats.tahun_min} — {tahunSampai || stats.tahun_max}
+                            </p>
+                        ) : (
+                            <p className="text-[10px] text-on-surface-variant">
+                                {stats.tahun_min > 0 ? `${stats.tahun_min} — ${stats.tahun_max}` : `${stats.angkatan_list.length} angkatan`}
+                            </p>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                <div className="flex-1 flex items-center gap-2 glass-card rounded-xl px-3 py-2.5">
-                    <Icon name="search" className="text-on-surface-variant text-lg flex-shrink-0" />
-                    <input value={search} onChange={e => setSearch(e.target.value)}
-                        placeholder="Cari nama atau profesi..." className="bg-transparent outline-none text-sm flex-1" />
-                    {search && <button onClick={() => setSearch('')} className="flex-shrink-0"><Icon name="close" className="text-sm text-outline" /></button>}
+            <div className="glass-card rounded-2xl p-4 mb-4 space-y-3">
+                {/* Row 1: search + asrama */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex-1 flex items-center gap-2 glass-input px-3 py-2.5 rounded-xl">
+                        <Icon name="search" className="text-on-surface-variant text-lg flex-shrink-0" />
+                        <input value={search} onChange={e => setSearch(e.target.value)}
+                            placeholder="Cari nama atau profesi..." className="bg-transparent outline-none text-sm flex-1" />
+                        {search && <button onClick={() => setSearch('')} className="flex-shrink-0"><Icon name="close" className="text-sm text-outline" /></button>}
+                    </div>
+                    <select value={asrama} onChange={e => setAsrama(e.target.value)} className="glass-input text-sm py-2.5 min-w-[160px]">
+                        <option value="">Semua Asrama</option>
+                        {asrama_list.map(a => <option key={a} value={a}>{a}</option>)}
+                    </select>
                 </div>
-                <select value={asrama} onChange={e => setAsrama(e.target.value)} className="glass-input text-sm py-2.5 min-w-[150px]">
-                    <option value="">Semua Asrama</option>
-                    {asrama_list.map(a => <option key={a} value={a}>{a}</option>)}
-                </select>
-                <select value={angkatan} onChange={e => setAngkatan(e.target.value)} className="glass-input text-sm py-2.5 min-w-[145px]">
-                    <option value="">Semua Angkatan</option>
-                    {stats.angkatan_list.map(a => <option key={a} value={String(a)}>{a}</option>)}
-                </select>
+
+                {/* Row 2: year range */}
+                <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-2">
+                        <Icon name="date_range" className="text-on-surface-variant text-lg flex-shrink-0" />
+                        <span className="text-xs font-bold text-on-surface-variant whitespace-nowrap">Filter Tahun Masuk:</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-1 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-on-surface-variant">Dari</span>
+                            <input
+                                type="number" min={1990} max={2099}
+                                value={tahunDari}
+                                onChange={e => setTahunDari(e.target.value)}
+                                placeholder={String(stats.tahun_min || new Date().getFullYear())}
+                                className="glass-input w-24 text-sm text-center py-2"
+                            />
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-on-surface-variant">s.d.</span>
+                            <input
+                                type="number" min={1990} max={2099}
+                                value={tahunSampai}
+                                onChange={e => setTahunSampai(e.target.value)}
+                                placeholder={String(stats.tahun_max || new Date().getFullYear())}
+                                className="glass-input w-24 text-sm text-center py-2"
+                            />
+                        </div>
+                        {hasYearFilter && (
+                            <button onClick={clearYearFilter}
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 hover:bg-rose-100 transition-colors">
+                                <Icon name="close" className="text-xs" /> Reset
+                            </button>
+                        )}
+                        {hasYearFilter && (
+                            <span className="text-xs font-bold text-primary-container bg-primary-container/10 px-2.5 py-1.5 rounded-xl">
+                                {alumni.total} alumni ditemukan
+                            </span>
+                        )}
+                    </div>
+                </div>
             </div>
 
             <p className="text-xs text-on-surface-variant mb-4 font-semibold">
                 Menampilkan <span className="text-on-surface font-black">{alumni.total}</span> alumni
+                {hasYearFilter && (
+                    <span className="ml-1 text-primary-container">
+                        · tahun {tahunDari || stats.tahun_min} s.d. {tahunSampai || stats.tahun_max}
+                    </span>
+                )}
             </p>
 
             {/* Card Grid */}
