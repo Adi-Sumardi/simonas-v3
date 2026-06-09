@@ -7,7 +7,12 @@ import { createRoot, hydrateRoot } from 'react-dom/client';
 router.on('invalid', (e) => {
     if (e.detail.response.status === 419) {
         e.preventDefault();
-        window.location.reload();
+        const url = e.detail.response.url ?? '';
+        if (url.includes('/logout')) {
+            window.location.href = '/login';
+        } else {
+            window.location.reload();
+        }
     }
 });
 
