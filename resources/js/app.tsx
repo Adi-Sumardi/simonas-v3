@@ -3,14 +3,18 @@ import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 
-// Auto-reload on 419 (CSRF token expired) without logging out
+// Auto-reload on 419 (CSRF expired). Guard against infinite loop:
+// if a reload already happened within the last 5s, go to login instead.
 router.on('invalid', (e) => {
     if (e.detail.response.status === 419) {
         e.preventDefault();
-        if (window.location.pathname.includes('/logout')) {
-            window.location.href = '/login';
-        } else {
+        const last = parseInt(sessionStorage.getItem('_csrf_reload') ?? '0');
+        if (Date.now() - last > 5000) {
+            sessionStorage.setItem('_csrf_reload', String(Date.now()));
             window.location.reload();
+        } else {
+            sessionStorage.removeItem('_csrf_reload');
+            window.location.href = '/login';
         }
     }
 });
