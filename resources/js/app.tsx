@@ -1,7 +1,15 @@
 import '../css/app.css';
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot, hydrateRoot } from 'react-dom/client';
+
+// Auto-reload on 419 (CSRF token expired) without logging out
+router.on('invalid', (e) => {
+    if (e.detail.response.status === 419) {
+        e.preventDefault();
+        window.location.reload();
+    }
+});
 
 const appName = import.meta.env.VITE_APP_NAME ?? 'SIMONAS';
 
