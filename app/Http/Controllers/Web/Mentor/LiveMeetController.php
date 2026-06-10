@@ -1,0 +1,119 @@
+<?php
+
+namespace App\Http\Controllers\Web\Mentor;
+
+use App\Http\Controllers\Controller;
+use App\Models\HafalanLog;
+use App\Models\User;
+use App\Models\LiveMeeting;
+use App\Services\LiveKitTokenService;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class LiveMeetController extends Controller
+{
+    /**
+     * Start a new live meeting session for the mentor.
+     */
+    public function start(Request $request, LiveKitTokenService $tokenService)
+    {
+        $mentor = $request->user();
+        $roomName = "meet_mentor_" . $mentor->id;
+
+        // Close any old active meetings for this mentor
+        LiveMeeting::where('mentor_id', $mentor->id)
+            ->where('is_active', true)
+            ->update([
+                'is_active' => false,
+                'ended_at' => now(),
+            ]);
+
+        // Create new active meeting
+        LiveMeeting::create([
+            'mentor_id'  => $mentor->id,
+            'room_name'  => $roomName,
+            'is_active'  => true,
+            'started_at' => now(),
+        ]);
+
+        return redirect()->route('mentor.live-meet.view');
+    }
+
+    /**
+     * View the live meeting room.
+     */
+    public function view(Request $request, LiveKitTokenService $tokenService)
+    {
+        $mentor = $request->user();
+        
+        $meeting = LiveMeeting::where('mentor_id', $mentor->id)
+            ->where('is_active', true)
+            ->first();
+
+        // If no active meeting, redirect to pending page with error
+        if (!$meeting) {
+            return redirect()->route('mentor.hafalan.pending')
+                ->with('error', 'Tidak ada sesi Live Meet yang sedang aktif.');
+        }
+
+        // Generate token for the mentor
+        $token = $tokenService->generateToken(
+            $meeting->room_name,
+            "mentor_" . $mentor->id,
+            $mentor->name,
+            true
+        );
+
+        $wsUrl = config('livekit.host');
+
+        // Fetch pending logs for the mentor's mentees
+        $menteeIds = User::where('mentor_id', $mentor->id)
+            ->where('role', 'mahasiswa')
+            ->pluck('id');
+
+        $pending_logs = HafalanLog::whereIn('user_id', $menteeIds)
+            ->where('score', 'pending')
+            ->with('user')
+            ->latest()
+            ->get()
+            ->map(fn($log) => [
+                'id'              => $log->id,
+                'surah'           => $log->surah,
+                'ayat_start'      => $log->ayat_start,
+                'ayat_end'        => $log->ayat_end,
+                'halaman_start'   => $log->halaman_start,
+                'halaman_end'     => $log->halaman_end,
+                'score'           => $log->score,
+                'notes'           => $log->notes,
+                'submitted_at'    => $log->created_at->diffForHumans(),
+                'mahasiswa_name'  => $log->user->name,
+                'mahasiswa_nim'   => $log->user->nim ?? $log->user->no_induk ?? '-',
+                'mahasiswa_avatar'=> $log->user->avatar,
+            ]);
+
+        return Inertia::render('Mentor/HafalanLiveMeet', [
+            'token'        => $token,
+            'wsUrl'        => $wsUrl,
+            'roomName'     => $meeting->room_name,
+            'pending_logs' => $pending_logs,
+        ]);
+    }
+
+    /**
+     * Stop/end the current live meeting session.
+     */
+    public function stop(Request $request)
+    {
+        $mentor = $request->user();
+
+        LiveMeeting::where('mentor_id', $mentor->id)
+            ->where('is_active', true)
+            ->update([
+                'is_active' => false,
+                'ended_at'  => now(),
+            ]);
+
+        return redirect()->route('mentor.hafalan.pending')
+            ->with('success', 'Pertemuan Live Meet telah diakhiri.');
+    }
+}

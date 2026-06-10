@@ -43,6 +43,7 @@ export interface HafalanData {
     last_tasmi_at: string | null;
     progress_percent: number;
     current_surah?: string;
+    current_page?: number;
 }
 
 export interface HafalanLog {
@@ -51,6 +52,8 @@ export interface HafalanLog {
     surah: string;
     ayat_start: number;
     ayat_end: number;
+    halaman_start?: number;
+    halaman_end?: number;
     score: 'memtas' | 'layak_ulang' | 'perlu_perbaikan';
     notes: string | null;
     tested_at: string;

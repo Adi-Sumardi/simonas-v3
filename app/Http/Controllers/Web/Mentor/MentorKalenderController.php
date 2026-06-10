@@ -24,12 +24,12 @@ class MentorKalenderController extends Controller
             ->get()
             ->map(fn($log) => [
                 'id'     => 'hafalan-' . $log->id,
-                'title'  => 'Setoran Hafalan — ' . ($log->user->name ?? 'Santri'),
+                'title'  => 'Setoran Hafalan — ' . ($log->user->name ?? 'Warga'),
                 'date'   => $log->tested_at?->format('Y-m-d') ?? $log->created_at->format('Y-m-d'),
                 'time'   => $log->tested_at?->format('H:i') ?? '08:00',
                 'type'   => 'hafalan',
                 'color'  => $log->score === 'pending' ? '#f59e0b' : '#10b981',
-                'santri' => $log->user->name ?? null,
+                'warga' => $log->user->name ?? null,
                 'asrama' => $log->user->asrama ?? null,
             ]);
 
@@ -44,7 +44,7 @@ class MentorKalenderController extends Controller
                 'time'   => $k->waktu ? (new \DateTime($k->waktu))->format('H:i') : '10:00',
                 'type'   => 'kegiatan',
                 'color'  => '#8b5cf6',
-                'santri' => null,
+                'warga' => null,
                 'asrama' => null,
             ]);
 
@@ -59,7 +59,7 @@ class MentorKalenderController extends Controller
             ->select('id', 'name', 'asrama')
             ->get()
             ->map(fn($m) => [
-                'santri' => $m->name,
+                'warga'  => $m->name,
                 'hari'   => 'Setiap hari',
                 'waktu'  => '08:00-09:00',
                 'asrama' => $m->asrama ?? '-',

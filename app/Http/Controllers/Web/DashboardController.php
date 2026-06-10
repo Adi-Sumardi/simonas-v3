@@ -171,6 +171,7 @@ class DashboardController extends Controller
                     'progress_percent' => $hafalanRecord ? $hafalanRecord->progress_percent : 0,
                     'current_surah'    => $hafalanRecord ? $hafalanRecord->current_surah_nama : 'Belum Mulai',
                     'juz'              => $hafalanRecord ? $hafalanRecord->current_juz : 0,
+                    'current_page'     => $hafalanRecord ? $hafalanRecord->current_page : null,
                 ],
                 'points' => [
                     'total'   => $totalPoints,
@@ -179,6 +180,24 @@ class DashboardController extends Controller
                 ],
             ],
             'recent_activities' => $recentActivities,
+            'latest_jobs' => \App\Models\AlumniJob::with('user:id,name,avatar')
+                ->where('is_active', true)
+                ->latest()
+                ->take(3)
+                ->get()
+                ->map(fn($job) => [
+                    'id'           => $job->id,
+                    'title'        => $job->title,
+                    'company'      => $job->company,
+                    'location'     => $job->location ?? 'Remote',
+                    'work_type'    => $job->work_type ?? 'onsite',
+                    'salary_range' => $job->salary_range ?? 'Kompetitif',
+                    'description'  => $job->description,
+                    'requirements' => $job->requirements,
+                    'contact_info' => $job->contact_info,
+                    'posted_by'    => $job->user->name ?? 'Alumni',
+                    'posted_at'    => $job->created_at->diffForHumans(),
+                ]),
         ];
     }
 

@@ -21,6 +21,8 @@ class HafalanLog extends Model
         'surah',
         'ayat_start',
         'ayat_end',
+        'halaman_start',
+        'halaman_end',
         'score',
         'notes',
         'tested_at',
@@ -33,6 +35,8 @@ class HafalanLog extends Model
         'reviewed_at' => 'datetime',
         'ayat_start' => 'integer',
         'ayat_end' => 'integer',
+        'halaman_start' => 'integer',
+        'halaman_end' => 'integer',
     ];
 
     public function user(): BelongsTo

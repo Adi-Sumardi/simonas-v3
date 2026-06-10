@@ -25,8 +25,8 @@ class PenilaianController extends Controller
             ->get()
             ->map(fn($log) => [
                 'id'          => $log->id,
-                'santri_id'   => $log->user_id,
-                'santri_name' => $log->user->name,
+                'warga_id'   => $log->user_id,
+                'warga_name' => $log->user->name,
                 'asrama'      => $log->user->asrama ?? '-',
                 'surah'       => $log->surah,
                 'ayat_dari'   => $log->ayat_start,

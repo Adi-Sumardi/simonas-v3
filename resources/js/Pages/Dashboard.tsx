@@ -1,7 +1,9 @@
 import { Head, router } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
+import { Modal } from '@/Components/ui/Modal';
 import { 
     ResponsiveContainer, 
     AreaChart, 
@@ -35,7 +37,7 @@ interface MahasiswaStats {
         }[];
     };
     activity_logs: { count: number; target: number };
-    hafalan: { progress_percent: number; current_surah: string; juz: number };
+    hafalan: { progress_percent: number; current_surah: string; juz: number; current_page?: number | null };
     points: { total: number; rank: number; to_next: number };
 }
 
@@ -93,11 +95,26 @@ interface AsramaStat {
     current: number;
 }
 
+interface AlumniJobItem {
+    id: number;
+    title: string;
+    company: string;
+    location: string;
+    work_type: string;
+    salary_range: string;
+    description?: string;
+    requirements?: string;
+    contact_info?: string;
+    posted_by: string;
+    posted_at: string;
+}
+
 interface DashboardProps extends PageProps {
     role: string;
     permissions: string[];
     stats: MahasiswaStats | MentorStats | SuperStats | AlumniStats | Record<string, unknown>;
     recent_activities?: AktivitasItem[];
+    latest_jobs?: AlumniJobItem[];
     students?: StudentData[];
     asramas?: string[];
     asrama_stats?: AsramaStat[];
@@ -105,10 +122,22 @@ interface DashboardProps extends PageProps {
 
 // ─── Sub-dashboards per role ──────────────────────────────────
 
-function MahasiswaDashboard({ stats, permissions, recent_activities = [] }: { stats: MahasiswaStats; permissions: string[]; recent_activities?: AktivitasItem[] }) {
+function MahasiswaDashboard({ 
+    stats, 
+    permissions, 
+    recent_activities = [], 
+    latest_jobs = [] 
+}: { 
+    stats: MahasiswaStats; 
+    permissions: string[]; 
+    recent_activities?: AktivitasItem[]; 
+    latest_jobs?: AlumniJobItem[];
+}) {
     const s = stats;
     const shalatPct = Math.round((s.shalat.visual_done / s.shalat.total) * 100);
     const activityPct = Math.round((s.activity_logs.count / s.activity_logs.target) * 100);
+
+    const [selectedJob, setSelectedJob] = useState<AlumniJobItem | null>(null);
 
     function toggleShalat(id: number) {
         const today = new Date().toISOString().split('T')[0];
@@ -123,7 +152,7 @@ function MahasiswaDashboard({ stats, permissions, recent_activities = [] }: { st
             <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
                 <StatCard icon="mosque" label="SKOR DISIPLIN" value={`${s.shalat.completed}/${s.shalat.total}`} badge="Tepat Waktu" badgeColor="blue" />
                 <StatCard icon="assignment" label="LOG AKTIVITAS" value={`${s.activity_logs.count}`} badge={`Target ${s.activity_logs.target}`} badgeColor="purple" />
-                <StatCard icon="auto_stories" label="HAFALAN" value={`Juz ${s.hafalan.juz}`} badge={s.hafalan.current_surah} badgeColor="emerald" />
+                <StatCard icon="auto_stories" label="HAFALAN" value={`Juz ${s.hafalan.juz}`} badge={s.hafalan.current_page ? `${s.hafalan.current_surah} (Hal. ${s.hafalan.current_page})` : s.hafalan.current_surah} badgeColor="emerald" />
                 <StatCard icon="emoji_events" label="POIN SAYA" value={`${s.points.total}`} badge={`Rank #${s.points.rank}`} badgeColor="amber" />
             </div>
 
@@ -135,6 +164,9 @@ function MahasiswaDashboard({ stats, permissions, recent_activities = [] }: { st
                         <ProgressDonut value={s.hafalan.progress_percent} size={130} label={`${s.hafalan.progress_percent}%`} />
                         <p className="text-body-sm text-on-surface-variant text-center px-4">
                             <strong>Juz {s.hafalan.juz}</strong> · {s.hafalan.current_surah}
+                            {s.hafalan.current_page && (
+                                <span className="block mt-1 text-xs text-emerald-600 font-semibold">Halaman {s.hafalan.current_page}</span>
+                            )}
                         </p>
                     </div>
                     {permissions.includes('log-hafalan') && (
@@ -264,6 +296,137 @@ function MahasiswaDashboard({ stats, permissions, recent_activities = [] }: { st
                     </div>
                 </div>
             </div>
+
+            {/* Peluang Karir & Magang dari Alumni */}
+            <div className="glass-card p-6 rounded-2xl">
+                <div className="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 className="font-display text-headline-md flex items-center gap-2">
+                            <Icon name="work" className="text-blue-500" />
+                            Peluang Karir & Magang dari Alumni
+                        </h3>
+                        <p className="text-[10px] text-on-surface-variant font-black uppercase tracking-widest mt-1">
+                            Rekomendasi lowongan pekerjaan dan program magang yang diposting oleh alumni
+                        </p>
+                    </div>
+                </div>
+
+                {latest_jobs.length === 0 ? (
+                    <div className="flex flex-col items-center py-10 text-on-surface-variant gap-2 bg-surface-container/20 rounded-xl border border-dashed border-white/20">
+                        <Icon name="work_outline" className="text-4xl opacity-35" />
+                        <p className="text-xs font-bold">Belum ada lowongan aktif</p>
+                        <p className="text-[10px] opacity-75">Cek kembali nanti untuk melihat peluang karir baru.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        {latest_jobs.map((job) => (
+                            <div key={job.id} className="bg-white/40 hover:bg-white/70 border border-white/60 p-5 rounded-2xl transition-all hover:shadow-md flex flex-col justify-between group">
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-start gap-2">
+                                        <div className="min-w-0">
+                                            <h4 className="font-bold text-sm text-on-surface group-hover:text-primary-container transition-colors truncate">{job.title}</h4>
+                                            <p className="text-xs text-on-surface-variant font-medium truncate">{job.company}</p>
+                                        </div>
+                                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full flex-shrink-0 ${
+                                            job.work_type === 'remote' ? 'bg-emerald-100 text-emerald-700' :
+                                            job.work_type === 'hybrid' ? 'bg-blue-100 text-blue-700' :
+                                            'bg-purple-100 text-purple-700'
+                                        }`}>
+                                            {job.work_type}
+                                        </span>
+                                    </div>
+                                    
+                                    <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[10px] text-on-surface-variant">
+                                        <span className="flex items-center gap-1">
+                                            <Icon name="location_on" className="text-xs" />
+                                            {job.location}
+                                        </span>
+                                        <span className="flex items-center gap-1">
+                                            <Icon name="payments" className="text-xs text-emerald-600" />
+                                            {job.salary_range}
+                                        </span>
+                                    </div>
+                                    
+                                    {job.description && (
+                                        <p className="text-[11px] text-on-surface-variant line-clamp-2 leading-relaxed">
+                                            {job.description}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="mt-4 pt-3 border-t border-white/40 flex items-center justify-between">
+                                    <span className="text-[9px] text-outline">Diposting {job.posted_at} oleh <strong className="text-on-surface-variant">{job.posted_by}</strong></span>
+                                    <button 
+                                        onClick={() => setSelectedJob(job)}
+                                        className="text-xs font-bold text-primary-container hover:underline flex items-center gap-1 bg-transparent border-0 p-0 cursor-pointer"
+                                    >
+                                        Detail <Icon name="arrow_forward" className="text-[10px]" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Modal Detail Lowongan */}
+            {selectedJob && (
+                <Modal 
+                    open={true} 
+                    onClose={() => setSelectedJob(null)} 
+                    title="Detail Peluang Karir" 
+                    icon="work"
+                    size="md"
+                    footer={
+                        <button 
+                            onClick={() => setSelectedJob(null)}
+                            className="px-5 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-black/10 transition-colors"
+                        >
+                            Tutup
+                        </button>
+                    }
+                >
+                    <div className="space-y-4">
+                        <div className="border-b border-white/20 pb-3">
+                            <h4 className="font-display text-lg font-black text-on-surface">{selectedJob.title}</h4>
+                            <p className="text-sm text-primary-container font-semibold">{selectedJob.company}</p>
+                            <div className="flex flex-wrap gap-3 mt-2 text-xs text-on-surface-variant">
+                                <span className="flex items-center gap-1">
+                                    <Icon name="location_on" className="text-sm" />
+                                    {selectedJob.location}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <Icon name="work_outline" className="text-sm" />
+                                    Tipe: <span className="font-bold uppercase">{selectedJob.work_type}</span>
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <Icon name="payments" className="text-sm text-emerald-600" />
+                                    Gaji: {selectedJob.salary_range}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h5 className="text-xs font-black uppercase tracking-widest text-on-surface-variant mb-1">Deskripsi Pekerjaan</h5>
+                            <p className="text-xs text-on-surface leading-relaxed whitespace-pre-line">{selectedJob.description}</p>
+                        </div>
+
+                        {selectedJob.requirements && (
+                            <div>
+                                <h5 className="text-xs font-black uppercase tracking-widest text-on-surface-variant mb-1">Persyaratan</h5>
+                                <p className="text-xs text-on-surface leading-relaxed whitespace-pre-line">{selectedJob.requirements}</p>
+                            </div>
+                        )}
+
+                        <div className="bg-surface-container/30 rounded-xl p-3 border border-white/25">
+                            <h5 className="text-xs font-black uppercase tracking-widest text-on-surface-variant mb-1">Informasi Kontak & Cara Melamar</h5>
+                            <p className="text-xs text-on-surface font-semibold leading-relaxed whitespace-pre-line">{selectedJob.contact_info}</p>
+                        </div>
+
+                        <p className="text-[10px] text-outline">Diposting oleh {selectedJob.posted_by} · {selectedJob.posted_at}</p>
+                    </div>
+                </Modal>
+            )}
         </div>
     );
 }
@@ -272,7 +435,7 @@ function MentorDashboard({ stats, permissions }: { stats: MentorStats; permissio
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5">
-                <StatCard icon="group" label="TOTAL MENTEES" value={`${stats.total_mentees}`} badge="Santri" badgeColor="blue" />
+                <StatCard icon="group" label="TOTAL MENTEES" value={`${stats.total_mentees}`} badge="Warga" badgeColor="blue" />
                 <StatCard icon="trending_up" label="AVG. PERFORMA" value={`${stats.avg_performance}%`} badge="Avg" badgeColor="emerald" />
                 <StatCard icon="rate_review" label="PENDING NILAI" value={`${stats.pending_nilai}`} badge="Setoran" badgeColor="amber" />
                 <StatCard icon="auto_stories" label="PROGRESS QURAN" value={`${stats.quran_target_percent}%`} badge="Avg" badgeColor="purple" />
@@ -390,7 +553,7 @@ function MentorDashboard({ stats, permissions }: { stats: MentorStats; permissio
                         <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
                             <Icon name="star" className="text-[100px] sm:text-[120px]" />
                         </div>
-                        <h3 className="font-display text-headline-md mb-1">Santri Teraktif</h3>
+                        <h3 className="font-display text-headline-md mb-1">Warga Teraktif</h3>
                         <p className="text-[10px] text-on-surface-variant font-black uppercase tracking-widest mb-6 sm:mb-8">Pencapaian Pekan Ini</p>
 
                         {stats.featured_mentee ? (
@@ -623,7 +786,7 @@ function AlumniDashboard({ stats }: { stats: AlumniStats }) {
 
 // ─── Main unified Dashboard ───────────────────────────────────
 
-export default function Dashboard({ role, permissions, stats, students = [], asramas = [], recent_activities = [], asrama_stats = [] }: DashboardProps) {
+export default function Dashboard({ role, permissions, stats, students = [], asramas = [], recent_activities = [], latest_jobs = [], asrama_stats = [] }: DashboardProps) {
     const greeting = (() => {
         const h = new Date().getHours();
         if (h < 12) return 'Selamat Pagi';
@@ -648,6 +811,7 @@ export default function Dashboard({ role, permissions, stats, students = [], asr
                     stats={stats as MahasiswaStats} 
                     permissions={permissions} 
                     recent_activities={recent_activities}
+                    latest_jobs={latest_jobs}
                 />
             )}
             {role === 'mentor' && (

@@ -1,11 +1,13 @@
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import axios from 'axios';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { Icon } from '@/Components/ui/Icon';
 import { Modal } from '@/Components/ui/Modal';
 import { PageProps } from '@/types';
 import { QuranReader } from '@/Components/QuranReader';
+import { getJuzNumber } from '@/lib/quranJuzMap';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Score = 'memtas' | 'layak_ulang' | 'perlu_perbaikan' | 'pending';
@@ -13,6 +15,7 @@ type ActiveTab = 'baca' | 'log' | 'riwayat';
 
 interface HafalanLog {
     id: number; surah: string; ayat_start: number; ayat_end: number;
+    halaman_start?: number; halaman_end?: number;
     score: Score; notes?: string; mentor_notes?: string;
     tested_at?: string; reviewed_at?: string;
     mentor?: { name: string; avatar?: string };
@@ -25,6 +28,7 @@ interface HafalanData {
     current_surah_nomor: number;
     current_surah_nama: string;
     current_ayat: number;
+    current_page?: number;
 }
 
 interface HafalanPageProps extends PageProps {
@@ -61,16 +65,49 @@ const SURAHS = [
     'Al-Falaq','An-Nas',
 ];
 
+const SURAH_START_PAGES: Record<number, number> = {
+    1: 1, 2: 2, 3: 50, 4: 77, 5: 106, 6: 128, 7: 151, 8: 177, 9: 187, 10: 208,
+    11: 221, 12: 235, 13: 249, 14: 255, 15: 262, 16: 267, 17: 282, 18: 293, 19: 305, 20: 312,
+    21: 322, 22: 332, 23: 342, 24: 350, 25: 359, 26: 367, 27: 377, 28: 385, 29: 396, 30: 404,
+    31: 411, 32: 415, 33: 418, 34: 428, 35: 434, 36: 440, 37: 446, 38: 453, 39: 458, 40: 467,
+    41: 477, 42: 483, 43: 489, 44: 496, 45: 499, 46: 502, 47: 507, 48: 511, 49: 515, 50: 518,
+    51: 520, 52: 526, 53: 528, 54: 531, 55: 534, 56: 537, 57: 542, 58: 545, 59: 549, 60: 551,
+    61: 553, 62: 554, 63: 556, 64: 558, 65: 560, 66: 562, 67: 564, 68: 566, 69: 568, 70: 570,
+    71: 572, 72: 574, 73: 575, 74: 577, 75: 578, 76: 580, 77: 582, 78: 583, 79: 585, 80: 586,
+    81: 587, 82: 589, 83: 590, 84: 591, 85: 592, 86: 593, 87: 594, 88: 595, 89: 596, 90: 597,
+    91: 597, 92: 598, 93: 599, 94: 600, 95: 601, 96: 601, 97: 602, 98: 602, 99: 603, 100: 603,
+    101: 604, 102: 604, 103: 604, 104: 604, 105: 604, 106: 604, 107: 604, 108: 604, 109: 604, 110: 604,
+    111: 604, 112: 604, 113: 604, 114: 604
+};
+
 // ─── Log Form Modal ───────────────────────────────────────────────────────────
 function LogModal({ editItem, onClose }: { editItem: HafalanLog | null; onClose: () => void }) {
     const [form, setForm] = useState({
-        surah:      editItem?.surah      ?? '',
-        ayat_start: editItem?.ayat_start ?? 1,
-        ayat_end:   editItem?.ayat_end   ?? 1,
-        notes:      editItem?.notes      ?? '',
-        tested_at:  editItem?.tested_at  ?? new Date().toISOString().slice(0, 10),
+        surah:         editItem?.surah         ?? '',
+        ayat_start:    editItem?.ayat_start    ?? 1,
+        ayat_end:      editItem?.ayat_end      ?? 1,
+        halaman_start: editItem?.halaman_start ?? '',
+        halaman_end:   editItem?.halaman_end   ?? '',
+        notes:         editItem?.notes         ?? '',
+        tested_at:     editItem?.tested_at     ?? new Date().toISOString().slice(0, 10),
     });
     const [saving, setSaving] = useState(false);
+
+    function handleSurahChange(val: string) {
+        set('surah', val);
+        const idx = SURAHS.indexOf(val);
+        if (idx !== -1) {
+            const page = SURAH_START_PAGES[idx + 1];
+            if (page) {
+                setForm(p => ({
+                    ...p,
+                    surah: val,
+                    halaman_start: page,
+                    halaman_end: page,
+                }));
+            }
+        }
+    }
 
     function set(f: string, v: string | number) { setForm(p => ({ ...p, [f]: v })); }
 
@@ -104,7 +141,7 @@ function LogModal({ editItem, onClose }: { editItem: HafalanLog | null; onClose:
             <form id="hafalan-form" onSubmit={submit} className="space-y-4">
                 <div>
                     <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Surah *</label>
-                    <select value={form.surah} onChange={e => set('surah', e.target.value)} className="glass-input w-full text-sm" required>
+                    <select value={form.surah} onChange={e => handleSurahChange(e.target.value)} className="glass-input w-full text-sm" required>
                         <option value="">— Pilih Surah —</option>
                         {SURAHS.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
@@ -121,6 +158,20 @@ function LogModal({ editItem, onClose }: { editItem: HafalanLog | null; onClose:
                         <input type="number" min={form.ayat_start} value={form.ayat_end}
                             onChange={e => set('ayat_end', parseInt(e.target.value))}
                             className="glass-input w-full text-sm" required />
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Halaman Mulai (opsional)</label>
+                        <input type="number" min={1} max={604} value={form.halaman_start}
+                            onChange={e => set('halaman_start', e.target.value ? parseInt(e.target.value) : '')}
+                            className="glass-input w-full text-sm" placeholder="Contoh: 152" />
+                    </div>
+                    <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Halaman Selesai (opsional)</label>
+                        <input type="number" min={form.halaman_start || 1} max={604} value={form.halaman_end}
+                            onChange={e => set('halaman_end', e.target.value ? parseInt(e.target.value) : '')}
+                            className="glass-input w-full text-sm" placeholder="Contoh: 153" />
                     </div>
                 </div>
                 <div>
@@ -157,7 +208,11 @@ function LogCard({ log, onEdit, onDelete }: { log: HafalanLog; onEdit: () => voi
                     </div>
                     <div>
                         <p className="font-bold text-on-surface text-sm">{log.surah}</p>
-                        <p className="text-xs text-on-surface-variant">Ayat {log.ayat_start}–{log.ayat_end} · {log.tested_at}</p>
+                        <p className="text-xs text-on-surface-variant">
+                            Ayat {log.ayat_start}–{log.ayat_end}
+                            {log.halaman_start ? ` (Hal. ${log.halaman_start}${log.halaman_end && log.halaman_end !== log.halaman_start ? `–${log.halaman_end}` : ''})` : ''}
+                            · {log.tested_at}
+                        </p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -204,6 +259,87 @@ export default function Hafalan({ hafalan, logs, weekly, quality }: HafalanPageP
     const [showModal, setShowModal] = useState(false);
     const [editItem,  setEditItem]  = useState<HafalanLog | null>(null);
     const [activeFilter, setFilter] = useState<Score | 'all'>('all');
+    const [liveMeetActive, setLiveMeetActive] = useState(false);
+    const [liveMentorName, setLiveMentorName] = useState('');
+
+    const [readerCoords, setReaderCoords] = useState({
+        surahNomor: hafalan.current_surah_nomor || 1,
+        surahNama:  hafalan.current_surah_nama  || 'Al-Fatihah',
+        ayat:       hafalan.current_ayat        || 1,
+        juz:        hafalan.current_juz         || 1,
+    });
+
+    const pageLogs = useMemo(() => {
+        const map: Record<number, HafalanLog[]> = {};
+        logs.forEach(log => {
+            if (log.halaman_start && log.halaman_end) {
+                for (let p = log.halaman_start; p <= log.halaman_end; p++) {
+                    if (p >= 1 && p <= 604) {
+                        if (!map[p]) map[p] = [];
+                        map[p].push(log);
+                    }
+                }
+            }
+        });
+        return map;
+    }, [logs]);
+
+    function handlePageClick(pageNum: number) {
+        const pLogs = pageLogs[pageNum];
+        let surahNomor = 1;
+        let surahNama = 'Al-Fatihah';
+        let ayat = 1;
+
+        if (pLogs && pLogs.length > 0) {
+            const latestLog = pLogs[0];
+            const idx = SURAHS.indexOf(latestLog.surah);
+            if (idx !== -1) {
+                surahNomor = idx + 1;
+                surahNama = latestLog.surah;
+                ayat = latestLog.ayat_start;
+            }
+        } else {
+            let bestSurahIdx = 0;
+            let maxStartPage = -1;
+            for (let idx = 0; idx < SURAHS.length; idx++) {
+                const startPage = SURAH_START_PAGES[idx + 1];
+                if (startPage !== undefined && startPage <= pageNum && startPage > maxStartPage) {
+                    maxStartPage = startPage;
+                    bestSurahIdx = idx;
+                }
+            }
+            surahNomor = bestSurahIdx + 1;
+            surahNama = SURAHS[bestSurahIdx];
+            ayat = 1;
+        }
+
+        setReaderCoords({
+            surahNomor,
+            surahNama,
+            ayat,
+            juz: getJuzNumber(surahNomor, ayat)
+        });
+        setActiveTab('baca');
+    }
+
+    useEffect(() => {
+        function checkLiveStatus() {
+            axios.get('/mahasiswa/live-meet/status')
+                .then(res => {
+                    if (res.data && res.data.active) {
+                        setLiveMeetActive(true);
+                        setLiveMentorName(res.data.mentor_name || '');
+                    } else {
+                        setLiveMeetActive(false);
+                    }
+                })
+                .catch(err => console.error('Gagal mengecek status Live Meet:', err));
+        }
+
+        checkLiveStatus();
+        const interval = setInterval(checkLiveStatus, 10000);
+        return () => clearInterval(interval);
+    }, []);
 
     function openAdd()  { setEditItem(null); setShowModal(true); }
     function openEdit(log: HafalanLog) { setEditItem(log); setShowModal(true); }
@@ -242,6 +378,28 @@ export default function Hafalan({ hafalan, logs, weekly, quality }: HafalanPageP
                 }
             />
 
+            {/* ── Banner Live Meet Mentor ── */}
+            {liveMeetActive && (
+                <div className="mb-6 px-5 py-4 bg-emerald-500/10 border border-emerald-500/30 backdrop-blur-md rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-[0_8px_30px_rgba(16,185,129,0.05)] animate-pulse">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center flex-shrink-0 animate-bounce">
+                            <Icon name="videocam" className="text-xl" filled />
+                        </div>
+                        <div>
+                            <p className="text-sm font-bold text-emerald-800">Ustadz/Mentor {liveMentorName} sedang aktif di Live Meet!</p>
+                            <p className="text-xs text-emerald-700">Silakan bergabung sekarang untuk menyetorkan hafalan Anda secara tatap muka.</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => router.visit('/mahasiswa/live-meet/join')}
+                        className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs px-5 py-3 rounded-xl transition-all shadow-md shadow-emerald-200 hover:scale-[1.02] flex items-center gap-1.5 flex-shrink-0 justify-center"
+                    >
+                        <Icon name="video_call" className="text-lg" />
+                        Gabung Live Meet
+                    </button>
+                </div>
+            )}
+
             {/* ── Tab bar ── */}
             <div className="glass-card rounded-2xl p-1.5 flex gap-1 mb-6">
                 {tabs.map(tab => (
@@ -263,10 +421,11 @@ export default function Hafalan({ hafalan, logs, weekly, quality }: HafalanPageP
             {/* ── TAB: Baca Al-Quran ── */}
             {activeTab === 'baca' && (
                 <QuranReader
-                    initialSurahNomor={hafalan.current_surah_nomor || 1}
-                    initialSurahNama={hafalan.current_surah_nama || 'Al-Fatihah'}
-                    initialAyat={hafalan.current_ayat || 1}
-                    initialJuz={hafalan.current_juz || 1}
+                    key={`${readerCoords.surahNomor}-${readerCoords.ayat}`}
+                    initialSurahNomor={readerCoords.surahNomor}
+                    initialSurahNama={readerCoords.surahNama}
+                    initialAyat={readerCoords.ayat}
+                    initialJuz={readerCoords.juz}
                     readOnly={false}
                 />
             )}
@@ -297,6 +456,9 @@ export default function Hafalan({ hafalan, logs, weekly, quality }: HafalanPageP
                                 </div>
                                 <p className="font-bold text-on-surface mt-2">Progress Hafalan</p>
                                 <p className="text-xs text-on-surface-variant">{percent}% dari 30 Juz</p>
+                                {hafalan.current_page && (
+                                    <p className="text-[11px] text-emerald-600 font-semibold mt-1">Halaman Saat Ini: {hafalan.current_page}</p>
+                                )}
                             </div>
                         </div>
 
@@ -353,14 +515,9 @@ export default function Hafalan({ hafalan, logs, weekly, quality }: HafalanPageP
                         </button>
                     </div>
 
-                    {/* Right: empty state or recent logs preview */}
+                    {/* Right: Al-Quran Page Progress Map */}
                     <div className="lg:col-span-2">
-                        <div className="glass-card rounded-3xl p-8 text-center text-on-surface-variant">
-                            <Icon name="edit_note" className="text-5xl text-emerald-400 opacity-30 mb-3" filled />
-                            <p className="font-bold mb-1">Log Setoran Hafalan</p>
-                            <p className="text-sm mb-4">Klik tombol "Setoran Baru" untuk mencatat setoran ke mentor.</p>
-                            <p className="text-xs">Atau gunakan fitur <strong>Log Cepat</strong> saat membaca di tab Al-Quran.</p>
-                        </div>
+                        <PageProgressMap logs={logs} onNavigatePage={handlePageClick} />
                     </div>
                 </div>
             )}
@@ -406,5 +563,242 @@ export default function Hafalan({ hafalan, logs, weekly, quality }: HafalanPageP
 
             {showModal && <LogModal editItem={editItem} onClose={closeModal} />}
         </AppLayout>
+    );
+}
+
+// ─── PETA PROGRES HALAMAN AL-QUR'AN ──────────────────────────────────────────
+function PageProgressMap({ logs, onNavigatePage }: { logs: HafalanLog[]; onNavigatePage: (p: number) => void }) {
+    const [selectedJuz, setSelectedJuz] = useState<number>(1);
+    const [hoveredPage, setHoveredPage] = useState<number | null>(null);
+
+    const JUZ_PAGE_RANGES: Record<number, { start: number; end: number }> = {
+        1:  { start: 1,   end: 21  },
+        2:  { start: 22,  end: 41  },
+        3:  { start: 42,  end: 61  },
+        4:  { start: 62,  end: 81  },
+        5:  { start: 82,  end: 101 },
+        6:  { start: 102, end: 121 },
+        7:  { start: 122, end: 141 },
+        8:  { start: 142, end: 161 },
+        9:  { start: 162, end: 181 },
+        10: { start: 182, end: 201 },
+        11: { start: 202, end: 221 },
+        12: { start: 222, end: 241 },
+        13: { start: 242, end: 261 },
+        14: { start: 262, end: 281 },
+        15: { start: 282, end: 301 },
+        16: { start: 302, end: 321 },
+        17: { start: 322, end: 341 },
+        18: { start: 342, end: 361 },
+        19: { start: 362, end: 381 },
+        20: { start: 382, end: 401 },
+        21: { start: 402, end: 421 },
+        22: { start: 422, end: 441 },
+        23: { start: 442, end: 461 },
+        24: { start: 462, end: 481 },
+        25: { start: 482, end: 501 },
+        26: { start: 502, end: 521 },
+        27: { start: 522, end: 541 },
+        28: { start: 542, end: 561 },
+        29: { start: 562, end: 581 },
+        30: { start: 582, end: 604 },
+    };
+
+    const pageStatus = useMemo(() => {
+        const status: Record<number, 'memtas' | 'layak_ulang' | 'perlu_perbaikan' | 'pending' | 'none'> = {};
+        for (let i = 1; i <= 604; i++) status[i] = 'none';
+
+        const statusWeight: Record<'memtas' | 'layak_ulang' | 'perlu_perbaikan' | 'pending' | 'none', number> = {
+            memtas: 4,
+            layak_ulang: 3,
+            perlu_perbaikan: 2,
+            pending: 1,
+            none: 0
+        };
+
+        logs.forEach(log => {
+            if (log.halaman_start && log.halaman_end) {
+                for (let p = log.halaman_start; p <= log.halaman_end; p++) {
+                    if (p >= 1 && p <= 604) {
+                        const currentStatus = status[p];
+                        const currentWeight = statusWeight[currentStatus] ?? 0;
+                        const logWeight = statusWeight[log.score] ?? 0;
+                        if (logWeight > currentWeight) {
+                            status[p] = log.score;
+                        }
+                    }
+                }
+            }
+        });
+        return status;
+    }, [logs]);
+
+    const pageLogs = useMemo(() => {
+        const map: Record<number, HafalanLog[]> = {};
+        logs.forEach(log => {
+            if (log.halaman_start && log.halaman_end) {
+                for (let p = log.halaman_start; p <= log.halaman_end; p++) {
+                    if (p >= 1 && p <= 604) {
+                        if (!map[p]) map[p] = [];
+                        map[p].push(log);
+                    }
+                }
+            }
+        });
+        return map;
+    }, [logs]);
+
+    // Count summary stats
+    const stats = useMemo(() => {
+        let memtas = 0;
+        let layakUlang = 0;
+        let pending = 0;
+        let perluPerbaikan = 0;
+        for (let i = 1; i <= 604; i++) {
+            if (pageStatus[i] === 'memtas') memtas++;
+            else if (pageStatus[i] === 'layak_ulang') layakUlang++;
+            else if (pageStatus[i] === 'pending') pending++;
+            else if (pageStatus[i] === 'perlu_perbaikan') perluPerbaikan++;
+        }
+        return { memtas, layakUlang, pending, perluPerbaikan };
+    }, [pageStatus]);
+
+    const currentRange = JUZ_PAGE_RANGES[selectedJuz] ?? JUZ_PAGE_RANGES[1];
+    const pagesToShow: number[] = [];
+    for (let p = currentRange.start; p <= currentRange.end; p++) {
+        pagesToShow.push(p);
+    }
+
+    const STATUS_STYLE: Record<'memtas' | 'layak_ulang' | 'perlu_perbaikan' | 'pending' | 'none', { bg: string; label: string; colorText: string }> = {
+        memtas:          { bg: 'bg-emerald-500 text-white shadow-emerald-200/50 hover:bg-emerald-600', label: 'Memtas (Lancar)', colorText: 'text-emerald-700' },
+        layak_ulang:     { bg: 'bg-blue-500 text-white shadow-blue-200/50 hover:bg-blue-600',          label: 'Layak Ulang',     colorText: 'text-blue-700' },
+        perlu_perbaikan: { bg: 'bg-rose-500 text-white shadow-rose-200/50 hover:bg-rose-600',          label: 'Perlu Perbaikan', colorText: 'text-rose-700' },
+        pending:         { bg: 'bg-amber-500 text-white shadow-amber-200/50 hover:bg-amber-600',        label: 'Menunggu Review', colorText: 'text-amber-700' },
+        none:            { bg: 'bg-white/40 border border-dashed border-outline-variant/30 text-on-surface-variant hover:bg-white/80 hover:border-emerald-300', label: 'Belum Dihafal', colorText: 'text-on-surface-variant' }
+    };
+
+    return (
+        <div className="glass-card rounded-3xl p-6 space-y-6 flex flex-col h-full">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/20 pb-4">
+                <div>
+                    <h3 className="font-display text-lg font-bold text-on-surface flex items-center gap-2">
+                        <Icon name="map" className="text-emerald-600" filled />
+                        Peta Progres Halaman Al-Qur'an
+                    </h3>
+                    <p className="text-xs text-on-surface-variant mt-0.5">Pantau status hafalan berdasarkan nomor halaman (Mushaf Madinah)</p>
+                </div>
+                
+                {/* Juz Selector */}
+                <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-on-surface-variant">Juz:</span>
+                    <select
+                        value={selectedJuz}
+                        onChange={e => setSelectedJuz(parseInt(e.target.value))}
+                        className="glass-input text-xs py-1.5 px-3 min-w-[100px]"
+                    >
+                        {Array.from({ length: 30 }, (_, i) => i + 1).map(j => (
+                            <option key={j} value={j}>Juz {j}</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            {/* Summary statistics */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-center">
+                    <p className="text-xl font-black text-emerald-600">{stats.memtas}</p>
+                    <p className="text-[9px] font-bold text-emerald-700 uppercase tracking-wide">Lancar</p>
+                </div>
+                <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-center">
+                    <p className="text-xl font-black text-blue-600">{stats.layakUlang}</p>
+                    <p className="text-[9px] font-bold text-blue-700 uppercase tracking-wide">Layak Ulang</p>
+                </div>
+                <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl text-center">
+                    <p className="text-xl font-black text-rose-600">{stats.perluPerbaikan}</p>
+                    <p className="text-[9px] font-bold text-rose-700 uppercase tracking-wide">Perbaikan</p>
+                </div>
+                <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-center">
+                    <p className="text-xl font-black text-amber-600">{stats.pending}</p>
+                    <p className="text-[9px] font-bold text-amber-700 uppercase tracking-wide">Pending</p>
+                </div>
+                <div className="p-3 bg-surface-container/30 border border-white/20 rounded-xl text-center col-span-2 sm:col-span-1">
+                    <p className="text-xl font-black text-on-surface">{604 - stats.memtas - stats.layakUlang - stats.perluPerbaikan - stats.pending}</p>
+                    <p className="text-[9px] font-bold text-on-surface-variant uppercase tracking-wide">Belum Dihafal</p>
+                </div>
+            </div>
+
+            {/* Visual Grid for pages in selected Juz */}
+            <div className="flex-1">
+                <p className="text-xs font-bold text-on-surface-variant mb-3">Halaman di Juz {selectedJuz} ({currentRange.start} - {currentRange.end}):</p>
+                <div className="grid grid-cols-4 xs:grid-cols-6 sm:grid-cols-8 md:grid-cols-7 lg:grid-cols-9 gap-2">
+                    {pagesToShow.map(p => {
+                        const status = pageStatus[p] || 'none';
+                        const meta = STATUS_STYLE[status];
+                        const countLogs = pageLogs[p]?.length || 0;
+                        return (
+                            <button
+                                key={p}
+                                onClick={() => onNavigatePage(p)}
+                                onMouseEnter={() => setHoveredPage(p)}
+                                onMouseLeave={() => setHoveredPage(null)}
+                                className={`h-11 rounded-xl font-bold text-xs flex flex-col items-center justify-center transition-all duration-300 relative shadow-sm ${meta.bg}`}
+                                title={`Halaman ${p} (${meta.label})`}
+                            >
+                                <span className="text-[9px] opacity-75 font-normal">Hal</span>
+                                <span className="leading-none text-sm tabular-nums">{p}</span>
+                                {countLogs > 0 && (
+                                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 text-white rounded-full text-[8px] flex items-center justify-center font-black border border-white">
+                                        {countLogs}
+                                    </span>
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Hover details tooltip panel */}
+            <div className="bg-surface-container/30 border border-white/10 rounded-2xl p-4 min-h-[90px] flex flex-col justify-center">
+                {hoveredPage !== null ? (
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-on-surface">Detail Halaman {hoveredPage}:</span>
+                            <span className={`text-[10px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full ${STATUS_STYLE[pageStatus[hoveredPage]].bg}`}>
+                                {pageStatus[hoveredPage] === 'none' ? 'Belum Dihafal' : pageStatus[hoveredPage].toUpperCase()}
+                            </span>
+                        </div>
+                        {pageLogs[hoveredPage] && pageLogs[hoveredPage].length > 0 ? (
+                            <div className="mt-1.5 space-y-1">
+                                {pageLogs[hoveredPage].slice(0, 1).map((log, index) => (
+                                    <p key={index} className="text-xs text-on-surface-variant line-clamp-2">
+                                        Terakhir disetorkan: <strong>{log.surah} (Ayat {log.ayat_start}-{log.ayat_end})</strong> pada tanggal {log.tested_at}.
+                                    </p>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-xs text-on-surface-variant mt-1">Belum ada riwayat setoran untuk halaman ini.</p>
+                        )}
+                        <p className="text-[10px] text-emerald-600 font-bold mt-1.5 flex items-center gap-1">
+                            <Icon name="ads_click" className="text-xs" /> Klik untuk membuka halaman ini di Al-Qur'an
+                        </p>
+                    </div>
+                ) : (
+                    <div className="text-center text-xs text-on-surface-variant py-2 flex flex-col items-center gap-1.5">
+                        <Icon name="mouse" className="text-lg opacity-40" />
+                        <p>Arahkan kursor ke sel halaman untuk melihat detail, atau klik untuk membaca.</p>
+                    </div>
+                )}
+            </div>
+
+            {/* Legend */}
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 pt-4 border-t border-white/40 text-[10px] font-bold text-on-surface-variant">
+                {Object.entries(STATUS_STYLE).map(([status, m]) => (
+                    <div key={status} className="flex items-center gap-1.5">
+                        <span className={`w-2.5 h-2.5 rounded-full ${status === 'none' ? 'bg-slate-200 border border-dashed border-slate-400' : m.bg.split(' ')[0]}`} />
+                        <span>{m.label}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
     );
 }

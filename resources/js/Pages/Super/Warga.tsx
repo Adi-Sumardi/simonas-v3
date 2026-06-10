@@ -65,7 +65,7 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
             <Head title="Manajemen Warga" />
             <PageHeader
                 title="Manajemen Warga"
-                subtitle="Data seluruh santri aktif dan nonaktif di pesantren"
+                subtitle="Data seluruh warga aktif dan nonaktif di pesantren"
                 breadcrumbs={[{ label:'Dashboard', href:'/dashboard' }, { label:'Warga' }]}
                 actions={
                     <button className="btn-primary flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold">

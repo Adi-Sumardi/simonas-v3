@@ -6,9 +6,9 @@ import { Icon } from '@/Components/ui/Icon';
 
 interface CalEvent {
     id: number; title: string; date: string; time: string;
-    type: string; color: string; santri?: string | null; asrama?: string | null;
+    type: string; color: string; warga?: string | null; asrama?: string | null;
 }
-interface JadwalSetoran { santri: string; hari: string; waktu: string; asrama: string }
+interface JadwalSetoran { warga: string; hari: string; waktu: string; asrama: string }
 interface Props { events: CalEvent[]; upcoming: CalEvent[]; jadwal_setoran: JadwalSetoran[]; today: string }
 
 const TYPE_META: Record<string, { label: string; icon: string; bg: string; text: string; border: string }> = {
@@ -152,7 +152,7 @@ export default function MentorKalender({ events, upcoming, jadwal_setoran, today
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className={`text-xs font-bold ${m.text} line-clamp-1`}>{ev.title}</p>
-                                                <p className="text-[10px] text-on-surface-variant">{ev.time}{ev.santri ? ` · ${ev.santri}` : ''}</p>
+                                                <p className="text-[10px] text-on-surface-variant">{ev.time}{ev.warga ? ` · ${ev.warga}` : ''}</p>
                                             </div>
                                         </div>
                                     );
@@ -199,12 +199,12 @@ export default function MentorKalender({ events, upcoming, jadwal_setoran, today
                         </h3>
                         <div className="space-y-2">
                             {jadwal_setoran.map(j => (
-                                <div key={j.santri} className="flex items-center gap-3 p-2.5 rounded-xl bg-emerald-50/50 border border-emerald-100">
+                                <div key={j.warga} className="flex items-center gap-3 p-2.5 rounded-xl bg-emerald-50/50 border border-emerald-100">
                                     <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-black text-emerald-600 flex-shrink-0">
-                                        {j.santri.split(' ').map(n=>n[0]).slice(0,2).join('')}
+                                        {j.warga.split(' ').map(n=>n[0]).slice(0,2).join('')}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs font-bold text-on-surface">{j.santri}</p>
+                                        <p className="text-xs font-bold text-on-surface">{j.warga}</p>
                                         <p className="text-[10px] text-on-surface-variant">{j.hari} · {j.waktu}</p>
                                     </div>
                                 </div>

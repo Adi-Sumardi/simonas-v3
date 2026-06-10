@@ -21,18 +21,60 @@ export function ProgressPanel({
 }: ProgressPanelProps) {
     const [submitting, setSubmitting] = useState(false);
     const [notes, setNotes] = useState('');
+    const [halamanStart, setHalamanStart] = useState<number | ''>('');
+    const [halamanEnd, setHalamanEnd] = useState<number | ''>('');
 
     const hasSelection = selectedRange && selectedRange.dari > 0 && selectedRange.sampai > 0;
+
+    const SURAH_START_PAGES: Record<number, number> = {
+        1: 1, 2: 2, 3: 50, 4: 77, 5: 106, 6: 128, 7: 151, 8: 177, 9: 187, 10: 208,
+        11: 221, 12: 235, 13: 249, 14: 255, 15: 262, 16: 267, 17: 282, 18: 293, 19: 305, 20: 312,
+        21: 322, 22: 332, 23: 342, 24: 350, 25: 359, 26: 367, 27: 377, 28: 385, 29: 396, 30: 404,
+        31: 411, 32: 415, 33: 418, 34: 428, 35: 434, 36: 440, 37: 446, 38: 453, 39: 458, 40: 467,
+        41: 477, 42: 483, 43: 489, 44: 496, 45: 499, 46: 502, 47: 507, 48: 511, 49: 515, 50: 518,
+        51: 520, 52: 526, 53: 528, 54: 531, 55: 534, 56: 537, 57: 542, 58: 545, 59: 549, 60: 551,
+        61: 553, 62: 554, 63: 556, 64: 558, 65: 560, 66: 562, 67: 564, 68: 566, 69: 568, 70: 570,
+        71: 572, 72: 574, 73: 575, 74: 577, 75: 578, 76: 580, 77: 582, 78: 583, 79: 585, 80: 586,
+        81: 587, 82: 589, 83: 590, 84: 591, 85: 592, 86: 593, 87: 594, 88: 595, 89: 596, 90: 597,
+        91: 597, 92: 598, 93: 599, 94: 600, 95: 601, 96: 601, 97: 602, 98: 602, 99: 603, 100: 603,
+        101: 604, 102: 604, 103: 604, 104: 604, 105: 604, 106: 604, 107: 604, 108: 604, 109: 604, 110: 604,
+        111: 604, 112: 604, 113: 604, 114: 604
+    };
+
+    // Auto-fill page numbers when selection changes
+    useState(() => {
+        if (selectedRange && surahDetail) {
+            const defaultPage = SURAH_START_PAGES[surahDetail.nomor] ?? '';
+            setHalamanStart(defaultPage);
+            setHalamanEnd(defaultPage);
+        }
+    });
+
+    // We can also trigger on change explicitly using standard react update pattern
+    const prevSelectionRef = useState(selectedRange);
+    if (selectedRange !== prevSelectionRef[0]) {
+        prevSelectionRef[1](selectedRange);
+        if (selectedRange && surahDetail) {
+            const defaultPage = SURAH_START_PAGES[surahDetail.nomor] ?? '';
+            setHalamanStart(defaultPage);
+            setHalamanEnd(defaultPage);
+        } else {
+            setHalamanStart('');
+            setHalamanEnd('');
+        }
+    }
 
     function submitLog() {
         if (!hasSelection || !surahDetail) return;
         setSubmitting(true);
         router.post('/mahasiswa/hafalan/log', {
-            surah:      surahDetail.namaLatin,
-            ayat_start: Math.min(selectedRange.dari, selectedRange.sampai),
-            ayat_end:   Math.max(selectedRange.dari, selectedRange.sampai),
+            surah:         surahDetail.namaLatin,
+            ayat_start:    Math.min(selectedRange.dari, selectedRange.sampai),
+            ayat_end:      Math.max(selectedRange.dari, selectedRange.sampai),
+            halaman_start: halamanStart || null,
+            halaman_end:   halamanEnd   || null,
             notes,
-            tested_at:  new Date().toISOString().slice(0, 10),
+            tested_at:     new Date().toISOString().slice(0, 10),
         }, {
             preserveScroll: true,
             onSuccess: () => { setNotes(''); onClearSelection(); },
@@ -100,6 +142,37 @@ export function ProgressPanel({
                                     {' – '}
                                     {Math.max(selectedRange.dari, selectedRange.sampai)}
                                 </p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1">
+                                        Halaman Mulai
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        max={604}
+                                        value={halamanStart}
+                                        onChange={e => setHalamanStart(e.target.value ? parseInt(e.target.value) : '')}
+                                        placeholder="Contoh: 152"
+                                        className="glass-input w-full text-xs"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block mb-1">
+                                        Halaman Selesai
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min={halamanStart || 1}
+                                        max={604}
+                                        value={halamanEnd}
+                                        onChange={e => setHalamanEnd(e.target.value ? parseInt(e.target.value) : '')}
+                                        placeholder="Contoh: 153"
+                                        className="glass-input w-full text-xs"
+                                    />
+                                </div>
                             </div>
 
                             <div>

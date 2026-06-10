@@ -23,6 +23,7 @@ class Hafalan extends Model
         'current_surah_nomor',
         'current_surah_nama',
         'current_ayat',
+        'current_page',
     ];
 
     protected $casts = [
@@ -32,6 +33,7 @@ class Hafalan extends Model
         'current_ayah' => 'integer',
         'total_ayah_completed' => 'integer',
         'streak_days' => 'integer',
+        'current_page' => 'integer',
     ];
 
     public function user(): BelongsTo

@@ -27,7 +27,7 @@ export default function Laporan({ trend, asramaPerf, stats }: Props) {
                 <StatCard icon="people"           label="TOTAL WARGA"    value={stats.total_warga}             badgeColor="blue" />
                 <StatCard icon="analytics"        label="AVG. SKOR"      value={`${stats.avg_skor}/100`}       badgeColor="emerald" />
                 <StatCard icon="event"            label="KEGIATAN"       value={stats.total_kegiatan}          badgeColor="amber" />
-                <StatCard icon="check_circle"     label="SANTRI AKTIF"   value={`${stats.persen_aktif}%`}      badge="Aktif" badgeColor="purple" />
+                <StatCard icon="check_circle"     label="WARGA AKTIF"   value={`${stats.persen_aktif}%`}      badge="Aktif" badgeColor="purple" />
             </div>
 
             {/* Line chart — trend */}
@@ -82,7 +82,7 @@ export default function Laporan({ trend, asramaPerf, stats }: Props) {
                                     <div className="h-2 bg-surface-container rounded-full overflow-hidden">
                                         <div className="h-full bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full" style={{ width:`${a.avg}%` }} />
                                     </div>
-                                    <p className="text-[10px] text-on-surface-variant mt-0.5">{a.warga} santri</p>
+                                    <p className="text-[10px] text-on-surface-variant mt-0.5">{a.warga} warga</p>
                                 </div>
                             </div>
                         ))}

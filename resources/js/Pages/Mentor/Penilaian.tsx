@@ -9,8 +9,8 @@ import { Modal } from '@/Components/ui/Modal';
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Submission {
     id: number;
-    santri_id: number;
-    santri_name: string;
+    warga_id: number;
+    warga_name: string;
     asrama: string;
     surah: string;
     ayat_dari: number;
@@ -74,7 +74,7 @@ function ScoringModal({ sub, onClose }: { sub: Submission; onClose: () => void }
                     <h3 className="font-display text-lg font-bold text-on-surface">
                         {sub.status === 'pending' ? 'Beri Penilaian' : 'Edit Penilaian'}
                     </h3>
-                    <p className="text-xs text-on-surface-variant mt-0.5">{sub.santri_name} · {sub.asrama}</p>
+                    <p className="text-xs text-on-surface-variant mt-0.5">{sub.warga_name} · {sub.asrama}</p>
                 </div>
             }
             footer={
@@ -159,7 +159,7 @@ export default function Penilaian({ submissions, stats }: Props) {
             <Head title="Penilaian Hafalan" />
             <PageHeader
                 title="Penilaian Hafalan"
-                subtitle="Kelola dan nilai setoran hafalan santri bimbingan kamu"
+                subtitle="Kelola dan nilai setoran hafalan warga bimbingan kamu"
                 breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Penilaian' }]}
             />
 
@@ -201,10 +201,10 @@ export default function Penilaian({ submissions, stats }: Props) {
                         <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center font-black text-primary-container text-sm">
-                                    {s.santri_name.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
+                                    {s.warga_name.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
                                 </div>
                                 <div>
-                                    <p className="font-bold text-on-surface text-sm">{s.santri_name}</p>
+                                    <p className="font-bold text-on-surface text-sm">{s.warga_name}</p>
                                     <p className="text-[10px] text-on-surface-variant">{s.asrama}</p>
                                 </div>
                             </div>

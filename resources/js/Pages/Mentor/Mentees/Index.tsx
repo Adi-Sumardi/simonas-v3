@@ -57,7 +57,7 @@ export default function MenteesIndex({ mentees, available_students = [] }: Mente
 
             <PageHeader
                 title="Warga Bimbingan"
-                subtitle="Daftar santri yang berada dalam bimbinganmu."
+                subtitle="Daftar warga yang berada dalam bimbinganmu."
                 breadcrumbs={[
                     { label: 'Beranda', href: '/dashboard' },
                     { label: 'Warga Bimbingan' },
@@ -92,14 +92,14 @@ export default function MenteesIndex({ mentees, available_students = [] }: Mente
                     <EmptyState
                         icon="people"
                         title="Belum ada warga bimbingan"
-                        description="Santri akan muncul di sini setelah ditugaskan ke kamu."
+                        description="Warga akan muncul di sini setelah ditugaskan ke kamu."
                         className="py-16"
                     />
                 ) : (
                     <>
                         {/* Table header */}
                         <div className="hidden md:grid grid-cols-6 px-6 py-4 border-b border-white/40 bg-blue-50/20 gap-4">
-                            {['Santri', 'NIM', 'Asrama', 'Prodi', 'Skor', ''].map((h) => (
+                            {['Warga', 'NIM', 'Asrama', 'Prodi', 'Skor', ''].map((h) => (
                                 <div key={h} className="text-label-caps text-on-surface-variant">{h}</div>
                             ))}
                         </div>
@@ -110,7 +110,7 @@ export default function MenteesIndex({ mentees, available_students = [] }: Mente
                                     key={mentee.id}
                                     className="flex flex-col md:grid md:grid-cols-6 gap-4 md:gap-0 items-start md:items-center p-5 hover:bg-white/40 transition-colors group"
                                 >
-                                    {/* Santri */}
+                                    {/* Warga */}
                                     <div className="flex items-center gap-3">
                                         {mentee.avatar ? (
                                             <img src={mentee.avatar} alt={mentee.name} className="w-11 h-11 rounded-full object-cover border-2 border-white shadow-sm" />

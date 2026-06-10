@@ -27,16 +27,18 @@ class HafalanController extends Controller
             ->take(30)
             ->get()
             ->map(fn($l) => [
-                'id'           => $l->id,
-                'surah'        => $l->surah,
-                'ayat_start'   => $l->ayat_start,
-                'ayat_end'     => $l->ayat_end,
-                'score'        => $l->score,
-                'notes'        => $l->notes,
-                'mentor_notes' => $l->mentor_notes,
-                'tested_at'    => $l->tested_at?->format('d M Y'),
-                'reviewed_at'  => $l->reviewed_at?->format('d M Y'),
-                'mentor'       => $l->mentor ? ['name' => $l->mentor->name, 'avatar' => $l->mentor->avatar] : null,
+                'id'            => $l->id,
+                'surah'         => $l->surah,
+                'ayat_start'    => $l->ayat_start,
+                'ayat_end'      => $l->ayat_end,
+                'halaman_start' => $l->halaman_start,
+                'halaman_end'   => $l->halaman_end,
+                'score'         => $l->score,
+                'notes'         => $l->notes,
+                'mentor_notes'  => $l->mentor_notes,
+                'tested_at'     => $l->tested_at?->format('d M Y'),
+                'reviewed_at'   => $l->reviewed_at?->format('d M Y'),
+                'mentor'        => $l->mentor ? ['name' => $l->mentor->name, 'avatar' => $l->mentor->avatar] : null,
             ]);
 
         $weekly = $this->weeklyStats($user->id);
@@ -53,6 +55,7 @@ class HafalanController extends Controller
                 'current_surah_nomor' => $hafalan->current_surah_nomor ?? 1,
                 'current_surah_nama'  => $hafalan->current_surah_nama  ?? 'Al-Fatihah',
                 'current_ayat'        => $hafalan->current_ayat        ?? 1,
+                'current_page'        => $hafalan->current_page        ?? 1,
             ],
             'logs'    => $logs,
             'weekly'  => $weekly,
@@ -67,6 +70,7 @@ class HafalanController extends Controller
             'surah_nama'  => 'required|string|max:100',
             'ayat'        => 'required|integer|min:1',
             'juz'         => 'required|integer|min:1|max:30',
+            'page'        => 'nullable|integer|min:1|max:604',
         ]);
 
         $user    = Auth::user();
@@ -80,6 +84,7 @@ class HafalanController extends Controller
             'current_surah_nama'  => $data['surah_nama'],
             'current_ayat'        => $data['ayat'],
             'current_juz'         => $data['juz'],
+            'current_page'        => $data['page'],
         ]);
 
         return back()->with('success', 'Posisi hafalan berhasil disimpan.');
@@ -88,24 +93,28 @@ class HafalanController extends Controller
     public function storeLog(Request $request)
     {
         $data = $request->validate([
-            'surah'      => 'required|string|max:100',
-            'ayat_start' => 'required|integer|min:1',
-            'ayat_end'   => 'required|integer|gte:ayat_start',
-            'notes'      => 'nullable|string|max:500',
-            'tested_at'  => 'nullable|date',
+            'surah'         => 'required|string|max:100',
+            'ayat_start'    => 'required|integer|min:1',
+            'ayat_end'      => 'required|integer|gte:ayat_start',
+            'halaman_start' => 'nullable|integer|min:1|max:604',
+            'halaman_end'   => 'nullable|integer|gte:halaman_start|max:604',
+            'notes'         => 'nullable|string|max:500',
+            'tested_at'     => 'nullable|date',
         ]);
 
         $user = Auth::user();
 
         HafalanLog::create([
-            'user_id'   => $user->id,
-            'mentor_id' => $user->mentor_id,
-            'surah'     => $data['surah'],
-            'ayat_start'=> $data['ayat_start'],
-            'ayat_end'  => $data['ayat_end'],
-            'score'     => 'pending',
-            'notes'     => $data['notes'],
-            'tested_at' => $data['tested_at'] ?? now(),
+            'user_id'       => $user->id,
+            'mentor_id'     => $user->mentor_id,
+            'surah'         => $data['surah'],
+            'ayat_start'    => $data['ayat_start'],
+            'ayat_end'      => $data['ayat_end'],
+            'halaman_start' => $data['halaman_start'],
+            'halaman_end'   => $data['halaman_end'],
+            'score'         => 'pending',
+            'notes'         => $data['notes'],
+            'tested_at'     => $data['tested_at'] ?? now(),
         ]);
 
         return back()->with('success', 'Setoran hafalan berhasil dikirim ke mentor.');
@@ -117,11 +126,13 @@ class HafalanController extends Controller
         abort_if($log->score !== 'pending', 422, 'Setoran yang sudah dinilai tidak bisa diubah.');
 
         $data = $request->validate([
-            'surah'      => 'required|string|max:100',
-            'ayat_start' => 'required|integer|min:1',
-            'ayat_end'   => 'required|integer|gte:ayat_start',
-            'notes'      => 'nullable|string|max:500',
-            'tested_at'  => 'nullable|date',
+            'surah'         => 'required|string|max:100',
+            'ayat_start'    => 'required|integer|min:1',
+            'ayat_end'      => 'required|integer|gte:ayat_start',
+            'halaman_start' => 'nullable|integer|min:1|max:604',
+            'halaman_end'   => 'nullable|integer|gte:halaman_start|max:604',
+            'notes'         => 'nullable|string|max:500',
+            'tested_at'     => 'nullable|date',
         ]);
 
         $log->update($data);

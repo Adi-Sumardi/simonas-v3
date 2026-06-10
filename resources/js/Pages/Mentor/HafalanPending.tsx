@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
@@ -88,6 +88,12 @@ function ScoringModal({ log, onClose }: { log: PendingLog; onClose: () => void }
                             <Icon name="format_list_numbered" className="text-sm" />
                             Ayat {log.ayat_start}–{log.ayat_end}
                         </span>
+                        {log.halaman_start && (
+                            <span className="flex items-center gap-1">
+                                <Icon name="menu_book" className="text-sm text-blue-600" />
+                                Hal. {log.halaman_start}{log.halaman_end && log.halaman_end !== log.halaman_start ? `–${log.halaman_end}` : ''}
+                            </span>
+                        )}
                         <span className="flex items-center gap-1">
                             <Icon name="schedule" className="text-sm" />
                             {log.submitted_at}
@@ -173,6 +179,15 @@ export default function HafalanPending({ pending_logs }: HafalanPendingProps) {
                     { label: 'Beranda', href: '/dashboard' },
                     { label: 'Hafalan Pending' },
                 ]}
+                actions={
+                    <button
+                        onClick={() => router.post('/mentor/live-meet/start')}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl font-bold transition-all shadow-md shadow-emerald-200 hover:scale-[1.02] active:scale-95"
+                    >
+                        <Icon name="video_call" className="text-xl" />
+                        Mulai Live Meet
+                    </button>
+                }
             />
 
             {pending_logs.length > 0 && (
@@ -200,7 +215,7 @@ export default function HafalanPending({ pending_logs }: HafalanPendingProps) {
                             return (
                                 <div key={log.id} className="p-5 hover:bg-white/40 transition-colors">
                                     <div className="flex items-center justify-between gap-4">
-                                        {/* Santri info */}
+                                        {/* Warga info */}
                                         <div className="flex items-center gap-4 min-w-0">
                                             {log.mahasiswa_avatar ? (
                                                 <img
@@ -223,7 +238,10 @@ export default function HafalanPending({ pending_logs }: HafalanPendingProps) {
                                         <div className="hidden sm:flex items-center gap-6 flex-shrink-0">
                                             <div className="text-center">
                                                 <p className="font-bold text-on-surface text-sm">{log.surah}</p>
-                                                <p className="text-[10px] text-on-surface-variant">Ayat {log.ayat_start}–{log.ayat_end}</p>
+                                                <p className="text-[10px] text-on-surface-variant">
+                                                    Ayat {log.ayat_start}–{log.ayat_end}
+                                                    {log.halaman_start ? ` (Hal. ${log.halaman_start}${log.halaman_end && log.halaman_end !== log.halaman_start ? `–${log.halaman_end}` : ''})` : ''}
+                                                </p>
                                             </div>
                                             <p className="text-xs text-outline">{log.submitted_at}</p>
                                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-100 text-amber-700 border border-amber-200">
@@ -245,7 +263,10 @@ export default function HafalanPending({ pending_logs }: HafalanPendingProps) {
                                     {/* Mobile hafalan info */}
                                     <div className="sm:hidden mt-3 flex items-center gap-4 pl-16">
                                         <span className="text-xs text-on-surface font-bold">{log.surah}</span>
-                                        <span className="text-[10px] text-on-surface-variant">Ayat {log.ayat_start}–{log.ayat_end}</span>
+                                        <span className="text-[10px] text-on-surface-variant font-medium">
+                                            Ayat {log.ayat_start}–{log.ayat_end}
+                                            {log.halaman_start ? ` (Hal. ${log.halaman_start}${log.halaman_end && log.halaman_end !== log.halaman_start ? `–${log.halaman_end}` : ''})` : ''}
+                                        </span>
                                         <span className="text-[10px] text-outline">{log.submitted_at}</span>
                                     </div>
                                 </div>

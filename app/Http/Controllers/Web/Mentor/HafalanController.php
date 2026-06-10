@@ -32,6 +32,8 @@ class HafalanController extends Controller
                 'surah'           => $log->surah,
                 'ayat_start'      => $log->ayat_start,
                 'ayat_end'        => $log->ayat_end,
+                'halaman_start'   => $log->halaman_start,
+                'halaman_end'     => $log->halaman_end,
                 'score'           => $log->score,
                 'notes'           => $log->notes,
                 'submitted_at'    => $log->created_at->diffForHumans(),
@@ -70,7 +72,7 @@ class HafalanController extends Controller
             'reviewed_at'  => now(),
         ]);
 
-        return redirect()->route('mentor.hafalan.pending')
+        return redirect()->back()
             ->with('success', 'Penilaian hafalan berhasil disimpan.');
     }
 }

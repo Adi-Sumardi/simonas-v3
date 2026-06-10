@@ -42,11 +42,11 @@ export default function Hafalan({ hafalan, juzDist, stats }: Props) {
     return (
         <AppLayout>
             <Head title="Monitoring Hafalan" />
-            <PageHeader title="Monitoring Hafalan" subtitle="Perkembangan hafalan Al-Qur'an seluruh santri"
+            <PageHeader title="Monitoring Hafalan" subtitle="Perkembangan hafalan Al-Qur'an seluruh warga"
                 breadcrumbs={[{ label:'Dashboard', href:'/dashboard' }, { label:'Hafalan' }]} />
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <StatCard icon="people"            label="TOTAL SANTRI"     value={stats.total}            badgeColor="blue" />
+                <StatCard icon="people"            label="TOTAL WARGA"     value={stats.total}            badgeColor="blue" />
                 <StatCard icon="auto_stories"      label="RATA-RATA JUZ"    value={`${stats.avg_juz} Juz`} badgeColor="emerald" />
                 <StatCard icon="workspace_premium" label="HAFIDZ 30 JUZ"    value={stats.hafidz}           badge="🏆" badgeColor="amber" />
                 <StatCard icon="warning"           label="PERLU PERHATIAN"  value={stats.perlu_perhatian}  badgeColor="rose" />
@@ -61,7 +61,7 @@ export default function Hafalan({ hafalan, juzDist, stats }: Props) {
                             <XAxis dataKey="juz" tick={{ fontSize:9, fill:'#94a3b8' }} />
                             <YAxis tick={{ fontSize:9, fill:'#94a3b8' }} />
                             <Tooltip contentStyle={{ borderRadius:10, fontSize:11 }} />
-                            <Bar dataKey="count" fill="#10b981" radius={[4,4,0,0]} name="Santri" />
+                            <Bar dataKey="count" fill="#10b981" radius={[4,4,0,0]} name="Warga" />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

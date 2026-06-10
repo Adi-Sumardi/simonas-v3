@@ -1,183 +1,197 @@
 {
-  "_ActionButtons-Tm9E7eHG.js": {
-    "file": "assets/ActionButtons-Tm9E7eHG.js",
+  "_ActionButtons-CG5KdjiR.js": {
+    "file": "assets/ActionButtons-CG5KdjiR.js",
     "name": "ActionButtons",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js"
+      "_Icon-Bd_CrcMX.js"
     ]
   },
-  "_AlumniSidebar-DDd891_d.js": {
-    "file": "assets/AlumniSidebar-DDd891_d.js",
+  "_AlumniSidebar-CO_5HJOg.js": {
+    "file": "assets/AlumniSidebar-CO_5HJOg.js",
     "name": "AlumniSidebar",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js"
+      "_Icon-Bd_CrcMX.js"
     ]
   },
-  "_AppLayout-BQAfTU4j.js": {
-    "file": "assets/AppLayout-BQAfTU4j.js",
+  "_AppLayout-jdTeY1vV.js": {
+    "file": "assets/AppLayout-jdTeY1vV.js",
     "name": "AppLayout",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js",
-      "_Toast-D1ebrapk.js"
+      "_Icon-Bd_CrcMX.js",
+      "_Toast-Cg0JJ-Ah.js"
     ]
   },
-  "_AreaChart-EOr8Efu9.js": {
-    "file": "assets/AreaChart-EOr8Efu9.js",
+  "_AreaChart-DQdR4Tmn.js": {
+    "file": "assets/AreaChart-DQdR4Tmn.js",
     "name": "AreaChart",
     "imports": [
-      "_Icon-B8OfWfKH.js",
+      "_Icon-Bd_CrcMX.js",
       "resources/js/app.tsx",
-      "_CartesianChart-DKe0SNno.js",
-      "_getRadiusAndStrokeWidthFromDot-xrxobzxz.js"
+      "_CartesianChart-DjyOnlMP.js",
+      "_getRadiusAndStrokeWidthFromDot-BocnOe5f.js"
     ]
   },
-  "_BarChart-CcQ535Sr.js": {
-    "file": "assets/BarChart-CcQ535Sr.js",
+  "_BarChart-C9tjO8Et.js": {
+    "file": "assets/BarChart-C9tjO8Et.js",
     "name": "BarChart",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js",
-      "_CartesianChart-DKe0SNno.js",
-      "_Symbols-BWquljR8.js"
+      "_Icon-Bd_CrcMX.js",
+      "_CartesianChart-DjyOnlMP.js",
+      "_Symbols-DeBtocSx.js"
     ]
   },
-  "_Button-DR2S7WJU.js": {
-    "file": "assets/Button-DR2S7WJU.js",
+  "_Button-DOPduqY9.js": {
+    "file": "assets/Button-DOPduqY9.js",
     "name": "Button",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js"
+      "_Icon-Bd_CrcMX.js"
     ]
   },
-  "_CartesianChart-DKe0SNno.js": {
-    "file": "assets/CartesianChart-DKe0SNno.js",
+  "_CartesianChart-DjyOnlMP.js": {
+    "file": "assets/CartesianChart-DjyOnlMP.js",
     "name": "CartesianChart",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js"
+      "_Icon-Bd_CrcMX.js"
     ]
   },
-  "_ConfirmDialog-DOBMf5G8.js": {
-    "file": "assets/ConfirmDialog-DOBMf5G8.js",
+  "_ConfirmDialog-BTJ3BM9S.js": {
+    "file": "assets/ConfirmDialog-BTJ3BM9S.js",
     "name": "ConfirmDialog",
     "imports": [
       "resources/js/app.tsx",
-      "_Modal-Pe94245G.js",
-      "_Icon-B8OfWfKH.js"
+      "_Modal-CaA4rZuq.js",
+      "_Icon-Bd_CrcMX.js"
     ]
   },
-  "_EmptyState-Bcu7oxJ5.js": {
-    "file": "assets/EmptyState-Bcu7oxJ5.js",
+  "_EmptyState-0u65YxdW.js": {
+    "file": "assets/EmptyState-0u65YxdW.js",
     "name": "EmptyState",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js"
+      "_Icon-Bd_CrcMX.js"
     ]
   },
-  "_Icon-B8OfWfKH.js": {
-    "file": "assets/Icon-B8OfWfKH.js",
+  "_Icon-Bd_CrcMX.js": {
+    "file": "assets/Icon-Bd_CrcMX.js",
     "name": "Icon",
     "imports": [
       "resources/js/app.tsx"
     ]
   },
-  "_Label-CPXw4mkS.js": {
-    "file": "assets/Label-CPXw4mkS.js",
+  "_Label-CxnpybmY.js": {
+    "file": "assets/Label-CxnpybmY.js",
     "name": "Label",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js",
-      "_Toast-D1ebrapk.js"
+      "_Icon-Bd_CrcMX.js",
+      "_Toast-Cg0JJ-Ah.js"
     ]
   },
-  "_Legend-CfTx313j.js": {
-    "file": "assets/Legend-CfTx313j.js",
+  "_Legend-D_aBW8a6.js": {
+    "file": "assets/Legend-D_aBW8a6.js",
     "name": "Legend",
     "imports": [
       "resources/js/app.tsx",
-      "_CartesianChart-DKe0SNno.js",
-      "_Icon-B8OfWfKH.js",
-      "_Symbols-BWquljR8.js"
+      "_CartesianChart-DjyOnlMP.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Symbols-DeBtocSx.js"
     ]
   },
-  "_Modal-Pe94245G.js": {
-    "file": "assets/Modal-Pe94245G.js",
+  "_Modal-CaA4rZuq.js": {
+    "file": "assets/Modal-CaA4rZuq.js",
     "name": "Modal",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js"
+      "_Icon-Bd_CrcMX.js"
     ]
   },
-  "_PageHeader-BFReyJuw.js": {
-    "file": "assets/PageHeader-BFReyJuw.js",
+  "_PageHeader-ysON7EEQ.js": {
+    "file": "assets/PageHeader-ysON7EEQ.js",
     "name": "PageHeader",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js"
+      "_Icon-Bd_CrcMX.js"
     ]
   },
-  "_Pagination-DKGtvlgD.js": {
-    "file": "assets/Pagination-DKGtvlgD.js",
+  "_Pagination-02-r9Iko.js": {
+    "file": "assets/Pagination-02-r9Iko.js",
     "name": "Pagination",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js"
+      "_Icon-Bd_CrcMX.js"
     ]
   },
-  "_ProgressDonut-0iwlALzF.js": {
-    "file": "assets/ProgressDonut-0iwlALzF.js",
+  "_ProgressDonut-BjcT6Duj.js": {
+    "file": "assets/ProgressDonut-BjcT6Duj.js",
     "name": "ProgressDonut",
     "imports": [
       "resources/js/app.tsx"
     ]
   },
-  "_QuranReader-UQpnrBp3.js": {
-    "file": "assets/QuranReader-UQpnrBp3.js",
+  "_QuranReader-b1d_gIL_.js": {
+    "file": "assets/QuranReader-b1d_gIL_.js",
     "name": "QuranReader",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js"
+      "_Icon-Bd_CrcMX.js"
     ]
   },
-  "_StatCard-BOWsAGHl.js": {
-    "file": "assets/StatCard-BOWsAGHl.js",
+  "_StatCard-D7tsI0kT.js": {
+    "file": "assets/StatCard-D7tsI0kT.js",
     "name": "StatCard",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js"
+      "_Icon-Bd_CrcMX.js"
     ]
   },
-  "_Symbols-BWquljR8.js": {
-    "file": "assets/Symbols-BWquljR8.js",
+  "_Symbols-DeBtocSx.js": {
+    "file": "assets/Symbols-DeBtocSx.js",
     "name": "Symbols",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js",
-      "_CartesianChart-DKe0SNno.js"
+      "_Icon-Bd_CrcMX.js",
+      "_CartesianChart-DjyOnlMP.js"
     ]
   },
-  "_Toast-D1ebrapk.js": {
-    "file": "assets/Toast-D1ebrapk.js",
+  "_Toast-Cg0JJ-Ah.js": {
+    "file": "assets/Toast-Cg0JJ-Ah.js",
     "name": "Toast",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js"
+      "_Icon-Bd_CrcMX.js"
     ]
   },
-  "_getRadiusAndStrokeWidthFromDot-xrxobzxz.js": {
-    "file": "assets/getRadiusAndStrokeWidthFromDot-xrxobzxz.js",
+  "_getRadiusAndStrokeWidthFromDot-BocnOe5f.js": {
+    "file": "assets/getRadiusAndStrokeWidthFromDot-BocnOe5f.js",
     "name": "getRadiusAndStrokeWidthFromDot",
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js",
-      "_CartesianChart-DKe0SNno.js"
+      "_Icon-Bd_CrcMX.js",
+      "_CartesianChart-DjyOnlMP.js"
     ]
   },
-  "_useDebounce-B7POsADq.js": {
-    "file": "assets/useDebounce-B7POsADq.js",
+  "_index-!~{00Y}~.js": {
+    "file": "assets/index-DlEZDDdR.css",
+    "src": "_index-!~{00Y}~.js"
+  },
+  "_index-DMh_zrpf.js": {
+    "file": "assets/index-DMh_zrpf.js",
+    "name": "index",
+    "imports": [
+      "resources/js/app.tsx"
+    ],
+    "css": [
+      "assets/index-DlEZDDdR.css"
+    ]
+  },
+  "_useDebounce-DObrVxkc.js": {
+    "file": "assets/useDebounce-DObrVxkc.js",
     "name": "useDebounce",
     "imports": [
       "resources/js/app.tsx"
@@ -572,26 +586,26 @@
     "src": "node_modules/material-symbols/material-symbols-outlined.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-Pkuf7oD7.css",
+    "file": "assets/app-CO0D9cIb.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/Pages/Alumni/Bisnis.tsx": {
-    "file": "assets/Bisnis-ly3xQfQP.js",
+    "file": "assets/Bisnis-CFyDmK6x.js",
     "name": "Bisnis",
     "src": "resources/js/Pages/Alumni/Bisnis.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Icon-B8OfWfKH.js",
-      "_Modal-Pe94245G.js",
-      "_AlumniSidebar-DDd891_d.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Modal-CaA4rZuq.js",
+      "_AlumniSidebar-CO_5HJOg.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -694,21 +708,21 @@
     ]
   },
   "resources/js/Pages/Alumni/Database.tsx": {
-    "file": "assets/Database-KB_B453j.js",
+    "file": "assets/Database-D8f2CX7T.js",
     "name": "Database",
     "src": "resources/js/Pages/Alumni/Database.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Icon-B8OfWfKH.js",
-      "_Pagination-DKGtvlgD.js",
-      "_Modal-Pe94245G.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Pagination-02-r9Iko.js",
+      "_Modal-CaA4rZuq.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -811,23 +825,23 @@
     ]
   },
   "resources/js/Pages/Alumni/Hub.tsx": {
-    "file": "assets/Hub-0UTuLe_s.js",
+    "file": "assets/Hub-DvDjFBoU.js",
     "name": "Hub",
     "src": "resources/js/Pages/Alumni/Hub.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Icon-B8OfWfKH.js",
-      "_Modal-Pe94245G.js",
-      "_ConfirmDialog-DOBMf5G8.js",
-      "_ActionButtons-Tm9E7eHG.js",
-      "_Toast-D1ebrapk.js",
-      "_AlumniSidebar-DDd891_d.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Modal-CaA4rZuq.js",
+      "_ConfirmDialog-BTJ3BM9S.js",
+      "_ActionButtons-CG5KdjiR.js",
+      "_Toast-Cg0JJ-Ah.js",
+      "_AlumniSidebar-CO_5HJOg.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -930,21 +944,21 @@
     ]
   },
   "resources/js/Pages/Alumni/Jobs.tsx": {
-    "file": "assets/Jobs-DBeo-6S1.js",
+    "file": "assets/Jobs-BuDtR8Li.js",
     "name": "Jobs",
     "src": "resources/js/Pages/Alumni/Jobs.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Icon-B8OfWfKH.js",
-      "_Modal-Pe94245G.js",
-      "_AlumniSidebar-DDd891_d.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Modal-CaA4rZuq.js",
+      "_AlumniSidebar-CO_5HJOg.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -1047,20 +1061,20 @@
     ]
   },
   "resources/js/Pages/Alumni/Profil.tsx": {
-    "file": "assets/Profil-Oz7Pmu5T.js",
+    "file": "assets/Profil-Deo_-nWb.js",
     "name": "Profil",
     "src": "resources/js/Pages/Alumni/Profil.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Icon-B8OfWfKH.js",
-      "_Modal-Pe94245G.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Modal-CaA4rZuq.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -1163,19 +1177,19 @@
     ]
   },
   "resources/js/Pages/Auth/Login.tsx": {
-    "file": "assets/Login-Dar5sDDv.js",
+    "file": "assets/Login-Csjlo_3b.js",
     "name": "Login",
     "src": "resources/js/Pages/Auth/Login.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_Label-CPXw4mkS.js",
-      "_Button-DR2S7WJU.js",
-      "_Icon-B8OfWfKH.js",
-      "_Toast-D1ebrapk.js"
+      "_Label-CxnpybmY.js",
+      "_Button-DOPduqY9.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -1278,19 +1292,19 @@
     ]
   },
   "resources/js/Pages/Auth/Register.tsx": {
-    "file": "assets/Register-Dxj4xPXO.js",
+    "file": "assets/Register-B7nyWaln.js",
     "name": "Register",
     "src": "resources/js/Pages/Auth/Register.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_Label-CPXw4mkS.js",
-      "_Button-DR2S7WJU.js",
-      "_Icon-B8OfWfKH.js",
-      "_Toast-D1ebrapk.js"
+      "_Label-CxnpybmY.js",
+      "_Button-DOPduqY9.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -1393,16 +1407,16 @@
     ]
   },
   "resources/js/Pages/ComingSoon.tsx": {
-    "file": "assets/ComingSoon-CA8ZZ-70.js",
+    "file": "assets/ComingSoon-ds2AO-am.js",
     "name": "ComingSoon",
     "src": "resources/js/Pages/ComingSoon.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js"
+      "_Icon-Bd_CrcMX.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -1505,26 +1519,27 @@
     ]
   },
   "resources/js/Pages/Dashboard.tsx": {
-    "file": "assets/Dashboard-WqzYct6p.js",
+    "file": "assets/Dashboard-DtCzDzJQ.js",
     "name": "Dashboard",
     "src": "resources/js/Pages/Dashboard.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_StatCard-BOWsAGHl.js",
-      "_ProgressDonut-0iwlALzF.js",
-      "_Icon-B8OfWfKH.js",
-      "_CartesianChart-DKe0SNno.js",
-      "_AreaChart-EOr8Efu9.js",
-      "_Legend-CfTx313j.js",
-      "_Toast-D1ebrapk.js",
-      "_getRadiusAndStrokeWidthFromDot-xrxobzxz.js",
-      "_Symbols-BWquljR8.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Modal-CaA4rZuq.js",
+      "_StatCard-D7tsI0kT.js",
+      "_ProgressDonut-BjcT6Duj.js",
+      "_Icon-Bd_CrcMX.js",
+      "_CartesianChart-DjyOnlMP.js",
+      "_AreaChart-DQdR4Tmn.js",
+      "_Legend-D_aBW8a6.js",
+      "_Toast-Cg0JJ-Ah.js",
+      "_getRadiusAndStrokeWidthFromDot-BocnOe5f.js",
+      "_Symbols-DeBtocSx.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -1627,17 +1642,17 @@
     ]
   },
   "resources/js/Pages/Errors/Error404.tsx": {
-    "file": "assets/Error404-D0Unm5h5.js",
+    "file": "assets/Error404-26WKjcFR.js",
     "name": "Error404",
     "src": "resources/js/Pages/Errors/Error404.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_Button-DR2S7WJU.js",
-      "_Icon-B8OfWfKH.js"
+      "_Button-DOPduqY9.js",
+      "_Icon-Bd_CrcMX.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -1740,19 +1755,19 @@
     ]
   },
   "resources/js/Pages/Mahasiswa/Aktivitas/Form.tsx": {
-    "file": "assets/Form-BIdN1-5W.js",
+    "file": "assets/Form-v0KSAXjW.js",
     "name": "Form",
     "src": "resources/js/Pages/Mahasiswa/Aktivitas/Form.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Icon-B8OfWfKH.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -1855,23 +1870,23 @@
     ]
   },
   "resources/js/Pages/Mahasiswa/Aktivitas/Index.tsx": {
-    "file": "assets/Index-CvDeT58W.js",
+    "file": "assets/Index-vA9PDaf5.js",
     "name": "Index",
     "src": "resources/js/Pages/Mahasiswa/Aktivitas/Index.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Icon-B8OfWfKH.js",
-      "_Modal-Pe94245G.js",
-      "_ConfirmDialog-DOBMf5G8.js",
-      "_ActionButtons-Tm9E7eHG.js",
-      "_Pagination-DKGtvlgD.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Modal-CaA4rZuq.js",
+      "_ConfirmDialog-BTJ3BM9S.js",
+      "_ActionButtons-CG5KdjiR.js",
+      "_Pagination-02-r9Iko.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -1974,20 +1989,20 @@
     ]
   },
   "resources/js/Pages/Mahasiswa/Dashboard.tsx": {
-    "file": "assets/Dashboard-qQx3L6kl.js",
+    "file": "assets/Dashboard-C52WiEc8.js",
     "name": "Dashboard",
     "src": "resources/js/Pages/Mahasiswa/Dashboard.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_ProgressDonut-0iwlALzF.js",
-      "_Icon-B8OfWfKH.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_ProgressDonut-BjcT6Duj.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -2090,21 +2105,137 @@
     ]
   },
   "resources/js/Pages/Mahasiswa/Hafalan.tsx": {
-    "file": "assets/Hafalan-Cnju-H3O.js",
+    "file": "assets/Hafalan-oAN9E2wR.js",
     "name": "Hafalan",
     "src": "resources/js/Pages/Mahasiswa/Hafalan.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Icon-B8OfWfKH.js",
-      "_Modal-Pe94245G.js",
-      "_QuranReader-UQpnrBp3.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Modal-CaA4rZuq.js",
+      "_QuranReader-b1d_gIL_.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
+    ],
+    "assets": [
+      "assets/material-symbols-outlined-NzYEeyps.woff2",
+      "assets/lexend-vietnamese-300-normal-BkyiKD57.woff2",
+      "assets/lexend-vietnamese-300-normal-Bvq1pCw4.woff",
+      "assets/lexend-latin-ext-300-normal-DZKhWvmP.woff2",
+      "assets/lexend-latin-ext-300-normal-DJx7rAFT.woff",
+      "assets/lexend-latin-300-normal-pH_8eE6B.woff2",
+      "assets/lexend-latin-300-normal-DghY_3bB.woff",
+      "assets/lexend-vietnamese-400-normal-DoLa7jNB.woff2",
+      "assets/lexend-vietnamese-400-normal-mPlHoWg5.woff",
+      "assets/lexend-latin-ext-400-normal-D38JI5AK.woff2",
+      "assets/lexend-latin-ext-400-normal-D9P7pMo-.woff",
+      "assets/lexend-latin-400-normal-CwRJVcUA.woff2",
+      "assets/lexend-latin-400-normal-CHypAkT3.woff",
+      "assets/lexend-vietnamese-500-normal-Bos7Oy9U.woff2",
+      "assets/lexend-vietnamese-500-normal-EFAPmUTE.woff",
+      "assets/lexend-latin-ext-500-normal-Bo17xs96.woff2",
+      "assets/lexend-latin-ext-500-normal-DbCmXT_D.woff",
+      "assets/lexend-latin-500-normal-Dl-X5nog.woff2",
+      "assets/lexend-latin-500-normal-D9x1QWTH.woff",
+      "assets/lexend-vietnamese-600-normal-Cr1ePs6O.woff2",
+      "assets/lexend-vietnamese-600-normal-BxEVPgxw.woff",
+      "assets/lexend-latin-ext-600-normal-hDcqLAH9.woff2",
+      "assets/lexend-latin-ext-600-normal-BXtyp5LP.woff",
+      "assets/lexend-latin-600-normal-DdvlkEkX.woff2",
+      "assets/lexend-latin-600-normal-DSBzZxpA.woff",
+      "assets/lexend-vietnamese-700-normal-BrGlFDtO.woff2",
+      "assets/lexend-vietnamese-700-normal-NEp7hM5T.woff",
+      "assets/lexend-latin-ext-700-normal-CcWyeg4T.woff2",
+      "assets/lexend-latin-ext-700-normal-iR1cPiNX.woff",
+      "assets/lexend-latin-700-normal-DqO8md6r.woff2",
+      "assets/lexend-latin-700-normal-DVyJlN8t.woff",
+      "assets/lexend-vietnamese-800-normal-B27Hd6aN.woff2",
+      "assets/lexend-vietnamese-800-normal-DLOhWP8n.woff",
+      "assets/lexend-latin-ext-800-normal-B0JWHALI.woff2",
+      "assets/lexend-latin-ext-800-normal-r3QZLne4.woff",
+      "assets/lexend-latin-800-normal-sVzxf3WX.woff2",
+      "assets/lexend-latin-800-normal-BcJVUnx_.woff",
+      "assets/manrope-cyrillic-ext-400-normal-CRdE35mU.woff2",
+      "assets/manrope-cyrillic-ext-400-normal-Djnz4Wsr.woff",
+      "assets/manrope-cyrillic-400-normal-BMzJvInZ.woff2",
+      "assets/manrope-cyrillic-400-normal-Dvx59UGC.woff",
+      "assets/manrope-greek-400-normal-CM4qok81.woff2",
+      "assets/manrope-greek-400-normal-DuX9RsAR.woff",
+      "assets/manrope-vietnamese-400-normal-DHb3EETF.woff2",
+      "assets/manrope-vietnamese-400-normal-D7E_mLGF.woff",
+      "assets/manrope-latin-ext-400-normal-CMDvPJRp.woff2",
+      "assets/manrope-latin-ext-400-normal-C-X6QNXX.woff",
+      "assets/manrope-latin-400-normal-PaqtzbVb.woff2",
+      "assets/manrope-latin-400-normal-8tf8FM3T.woff",
+      "assets/manrope-cyrillic-ext-500-normal-Dz8SjJZ9.woff2",
+      "assets/manrope-cyrillic-ext-500-normal-PaLk8PaH.woff",
+      "assets/manrope-cyrillic-500-normal-B1OEZity.woff2",
+      "assets/manrope-cyrillic-500-normal-CNwnNrRC.woff",
+      "assets/manrope-greek-500-normal-GeMIHyWm.woff2",
+      "assets/manrope-greek-500-normal-DyxYGEtJ.woff",
+      "assets/manrope-vietnamese-500-normal-DCXiE_xi.woff2",
+      "assets/manrope-vietnamese-500-normal-DaZ8i3XM.woff",
+      "assets/manrope-latin-ext-500-normal-dm74KBQw.woff2",
+      "assets/manrope-latin-ext-500-normal-EtoS1VaI.woff",
+      "assets/manrope-latin-500-normal-BYYD-dBL.woff2",
+      "assets/manrope-latin-500-normal-DMZssgOp.woff",
+      "assets/manrope-cyrillic-ext-600-normal-Dk-u7o-5.woff2",
+      "assets/manrope-cyrillic-ext-600-normal-DjQx9_jq.woff",
+      "assets/manrope-cyrillic-600-normal-DvRl3Mj-.woff2",
+      "assets/manrope-cyrillic-600-normal-It4mZcQk.woff",
+      "assets/manrope-greek-600-normal-BoRV6lzK.woff2",
+      "assets/manrope-greek-600-normal-CF2i9ZRY.woff",
+      "assets/manrope-vietnamese-600-normal-C1J5PCl_.woff2",
+      "assets/manrope-vietnamese-600-normal-lA7a_7Ok.woff",
+      "assets/manrope-latin-ext-600-normal-_gBojHdJ.woff2",
+      "assets/manrope-latin-ext-600-normal-u5Pl7hTU.woff",
+      "assets/manrope-latin-600-normal-4f0koTD-.woff2",
+      "assets/manrope-latin-600-normal-BqgrALkZ.woff",
+      "assets/manrope-cyrillic-ext-700-normal-cq7F7ESW.woff2",
+      "assets/manrope-cyrillic-ext-700-normal-ezu7N0xg.woff",
+      "assets/manrope-cyrillic-700-normal-Dw_fZAg2.woff2",
+      "assets/manrope-cyrillic-700-normal-7JNVKxyl.woff",
+      "assets/manrope-greek-700-normal-CHUG9PD8.woff2",
+      "assets/manrope-greek-700-normal-DyfsrCpP.woff",
+      "assets/manrope-vietnamese-700-normal-CUqMx5-1.woff2",
+      "assets/manrope-vietnamese-700-normal-pt65Fn2Z.woff",
+      "assets/manrope-latin-ext-700-normal-DYOwVNan.woff2",
+      "assets/manrope-latin-ext-700-normal-eVCcYqtJ.woff",
+      "assets/manrope-latin-700-normal-BZp_XxE4.woff2",
+      "assets/manrope-latin-700-normal-DGRFkw-m.woff",
+      "assets/manrope-cyrillic-ext-800-normal-By7E3MqD.woff2",
+      "assets/manrope-cyrillic-ext-800-normal-Dlsls8yD.woff",
+      "assets/manrope-cyrillic-800-normal-AvdZ5mAV.woff2",
+      "assets/manrope-cyrillic-800-normal-BuEMjQU-.woff",
+      "assets/manrope-greek-800-normal-CDvU698_.woff2",
+      "assets/manrope-greek-800-normal-Bw-67qu9.woff",
+      "assets/manrope-vietnamese-800-normal-ClPWri-A.woff2",
+      "assets/manrope-vietnamese-800-normal-bvg7iBCV.woff",
+      "assets/manrope-latin-ext-800-normal-DdFx7KEb.woff2",
+      "assets/manrope-latin-ext-800-normal-BQAQsuQc.woff",
+      "assets/manrope-latin-800-normal-BfWYOv1c.woff2",
+      "assets/manrope-latin-800-normal-uHUdIJgA.woff"
+    ]
+  },
+  "resources/js/Pages/Mahasiswa/HafalanLiveMeet.tsx": {
+    "file": "assets/HafalanLiveMeet-EFqPJxjo.js",
+    "name": "HafalanLiveMeet",
+    "src": "resources/js/Pages/Mahasiswa/HafalanLiveMeet.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.tsx",
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_index-DMh_zrpf.js",
+      "_Toast-Cg0JJ-Ah.js"
+    ],
+    "css": [
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -2207,21 +2338,21 @@
     ]
   },
   "resources/js/Pages/Mahasiswa/Kalender.tsx": {
-    "file": "assets/Kalender-DNT0LhMq.js",
+    "file": "assets/Kalender-enT0u3VX.js",
     "name": "Kalender",
     "src": "resources/js/Pages/Mahasiswa/Kalender.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Icon-B8OfWfKH.js",
-      "_Modal-Pe94245G.js",
-      "_ConfirmDialog-DOBMf5G8.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Modal-CaA4rZuq.js",
+      "_ConfirmDialog-BTJ3BM9S.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -2324,19 +2455,19 @@
     ]
   },
   "resources/js/Pages/Mahasiswa/Leaderboard.tsx": {
-    "file": "assets/Leaderboard-DT-xZ0Qg.js",
+    "file": "assets/Leaderboard-BbCVUNR4.js",
     "name": "Leaderboard",
     "src": "resources/js/Pages/Mahasiswa/Leaderboard.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_Icon-B8OfWfKH.js",
-      "_EmptyState-Bcu7oxJ5.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_Icon-Bd_CrcMX.js",
+      "_EmptyState-0u65YxdW.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -2439,16 +2570,16 @@
     ]
   },
   "resources/js/Pages/Mahasiswa/Portfolio.tsx": {
-    "file": "assets/Portfolio-BtrJzsdh.js",
+    "file": "assets/Portfolio-mrBcvnOm.js",
     "name": "Portfolio",
     "src": "resources/js/Pages/Mahasiswa/Portfolio.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js"
+      "_Icon-Bd_CrcMX.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -2551,20 +2682,20 @@
     ]
   },
   "resources/js/Pages/Mahasiswa/Profile.tsx": {
-    "file": "assets/Profile-EplHdYkn.js",
+    "file": "assets/Profile-BM0cFizP.js",
     "name": "Profile",
     "src": "resources/js/Pages/Mahasiswa/Profile.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Icon-B8OfWfKH.js",
-      "_Modal-Pe94245G.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Modal-CaA4rZuq.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -2667,17 +2798,17 @@
     ]
   },
   "resources/js/Pages/Maintenance.tsx": {
-    "file": "assets/Maintenance-C5FakV5o.js",
+    "file": "assets/Maintenance-D6Em0xj0.js",
     "name": "Maintenance",
     "src": "resources/js/Pages/Maintenance.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_Button-DR2S7WJU.js",
-      "_Icon-B8OfWfKH.js"
+      "_Button-DOPduqY9.js",
+      "_Icon-Bd_CrcMX.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -2780,20 +2911,136 @@
     ]
   },
   "resources/js/Pages/Mentor/Dashboard.tsx": {
-    "file": "assets/Dashboard-B9sca5VZ.js",
+    "file": "assets/Dashboard-DqlD9CHH.js",
     "name": "Dashboard",
     "src": "resources/js/Pages/Mentor/Dashboard.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_StatCard-BOWsAGHl.js",
-      "_Icon-B8OfWfKH.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_StatCard-D7tsI0kT.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
+    ],
+    "assets": [
+      "assets/material-symbols-outlined-NzYEeyps.woff2",
+      "assets/lexend-vietnamese-300-normal-BkyiKD57.woff2",
+      "assets/lexend-vietnamese-300-normal-Bvq1pCw4.woff",
+      "assets/lexend-latin-ext-300-normal-DZKhWvmP.woff2",
+      "assets/lexend-latin-ext-300-normal-DJx7rAFT.woff",
+      "assets/lexend-latin-300-normal-pH_8eE6B.woff2",
+      "assets/lexend-latin-300-normal-DghY_3bB.woff",
+      "assets/lexend-vietnamese-400-normal-DoLa7jNB.woff2",
+      "assets/lexend-vietnamese-400-normal-mPlHoWg5.woff",
+      "assets/lexend-latin-ext-400-normal-D38JI5AK.woff2",
+      "assets/lexend-latin-ext-400-normal-D9P7pMo-.woff",
+      "assets/lexend-latin-400-normal-CwRJVcUA.woff2",
+      "assets/lexend-latin-400-normal-CHypAkT3.woff",
+      "assets/lexend-vietnamese-500-normal-Bos7Oy9U.woff2",
+      "assets/lexend-vietnamese-500-normal-EFAPmUTE.woff",
+      "assets/lexend-latin-ext-500-normal-Bo17xs96.woff2",
+      "assets/lexend-latin-ext-500-normal-DbCmXT_D.woff",
+      "assets/lexend-latin-500-normal-Dl-X5nog.woff2",
+      "assets/lexend-latin-500-normal-D9x1QWTH.woff",
+      "assets/lexend-vietnamese-600-normal-Cr1ePs6O.woff2",
+      "assets/lexend-vietnamese-600-normal-BxEVPgxw.woff",
+      "assets/lexend-latin-ext-600-normal-hDcqLAH9.woff2",
+      "assets/lexend-latin-ext-600-normal-BXtyp5LP.woff",
+      "assets/lexend-latin-600-normal-DdvlkEkX.woff2",
+      "assets/lexend-latin-600-normal-DSBzZxpA.woff",
+      "assets/lexend-vietnamese-700-normal-BrGlFDtO.woff2",
+      "assets/lexend-vietnamese-700-normal-NEp7hM5T.woff",
+      "assets/lexend-latin-ext-700-normal-CcWyeg4T.woff2",
+      "assets/lexend-latin-ext-700-normal-iR1cPiNX.woff",
+      "assets/lexend-latin-700-normal-DqO8md6r.woff2",
+      "assets/lexend-latin-700-normal-DVyJlN8t.woff",
+      "assets/lexend-vietnamese-800-normal-B27Hd6aN.woff2",
+      "assets/lexend-vietnamese-800-normal-DLOhWP8n.woff",
+      "assets/lexend-latin-ext-800-normal-B0JWHALI.woff2",
+      "assets/lexend-latin-ext-800-normal-r3QZLne4.woff",
+      "assets/lexend-latin-800-normal-sVzxf3WX.woff2",
+      "assets/lexend-latin-800-normal-BcJVUnx_.woff",
+      "assets/manrope-cyrillic-ext-400-normal-CRdE35mU.woff2",
+      "assets/manrope-cyrillic-ext-400-normal-Djnz4Wsr.woff",
+      "assets/manrope-cyrillic-400-normal-BMzJvInZ.woff2",
+      "assets/manrope-cyrillic-400-normal-Dvx59UGC.woff",
+      "assets/manrope-greek-400-normal-CM4qok81.woff2",
+      "assets/manrope-greek-400-normal-DuX9RsAR.woff",
+      "assets/manrope-vietnamese-400-normal-DHb3EETF.woff2",
+      "assets/manrope-vietnamese-400-normal-D7E_mLGF.woff",
+      "assets/manrope-latin-ext-400-normal-CMDvPJRp.woff2",
+      "assets/manrope-latin-ext-400-normal-C-X6QNXX.woff",
+      "assets/manrope-latin-400-normal-PaqtzbVb.woff2",
+      "assets/manrope-latin-400-normal-8tf8FM3T.woff",
+      "assets/manrope-cyrillic-ext-500-normal-Dz8SjJZ9.woff2",
+      "assets/manrope-cyrillic-ext-500-normal-PaLk8PaH.woff",
+      "assets/manrope-cyrillic-500-normal-B1OEZity.woff2",
+      "assets/manrope-cyrillic-500-normal-CNwnNrRC.woff",
+      "assets/manrope-greek-500-normal-GeMIHyWm.woff2",
+      "assets/manrope-greek-500-normal-DyxYGEtJ.woff",
+      "assets/manrope-vietnamese-500-normal-DCXiE_xi.woff2",
+      "assets/manrope-vietnamese-500-normal-DaZ8i3XM.woff",
+      "assets/manrope-latin-ext-500-normal-dm74KBQw.woff2",
+      "assets/manrope-latin-ext-500-normal-EtoS1VaI.woff",
+      "assets/manrope-latin-500-normal-BYYD-dBL.woff2",
+      "assets/manrope-latin-500-normal-DMZssgOp.woff",
+      "assets/manrope-cyrillic-ext-600-normal-Dk-u7o-5.woff2",
+      "assets/manrope-cyrillic-ext-600-normal-DjQx9_jq.woff",
+      "assets/manrope-cyrillic-600-normal-DvRl3Mj-.woff2",
+      "assets/manrope-cyrillic-600-normal-It4mZcQk.woff",
+      "assets/manrope-greek-600-normal-BoRV6lzK.woff2",
+      "assets/manrope-greek-600-normal-CF2i9ZRY.woff",
+      "assets/manrope-vietnamese-600-normal-C1J5PCl_.woff2",
+      "assets/manrope-vietnamese-600-normal-lA7a_7Ok.woff",
+      "assets/manrope-latin-ext-600-normal-_gBojHdJ.woff2",
+      "assets/manrope-latin-ext-600-normal-u5Pl7hTU.woff",
+      "assets/manrope-latin-600-normal-4f0koTD-.woff2",
+      "assets/manrope-latin-600-normal-BqgrALkZ.woff",
+      "assets/manrope-cyrillic-ext-700-normal-cq7F7ESW.woff2",
+      "assets/manrope-cyrillic-ext-700-normal-ezu7N0xg.woff",
+      "assets/manrope-cyrillic-700-normal-Dw_fZAg2.woff2",
+      "assets/manrope-cyrillic-700-normal-7JNVKxyl.woff",
+      "assets/manrope-greek-700-normal-CHUG9PD8.woff2",
+      "assets/manrope-greek-700-normal-DyfsrCpP.woff",
+      "assets/manrope-vietnamese-700-normal-CUqMx5-1.woff2",
+      "assets/manrope-vietnamese-700-normal-pt65Fn2Z.woff",
+      "assets/manrope-latin-ext-700-normal-DYOwVNan.woff2",
+      "assets/manrope-latin-ext-700-normal-eVCcYqtJ.woff",
+      "assets/manrope-latin-700-normal-BZp_XxE4.woff2",
+      "assets/manrope-latin-700-normal-DGRFkw-m.woff",
+      "assets/manrope-cyrillic-ext-800-normal-By7E3MqD.woff2",
+      "assets/manrope-cyrillic-ext-800-normal-Dlsls8yD.woff",
+      "assets/manrope-cyrillic-800-normal-AvdZ5mAV.woff2",
+      "assets/manrope-cyrillic-800-normal-BuEMjQU-.woff",
+      "assets/manrope-greek-800-normal-CDvU698_.woff2",
+      "assets/manrope-greek-800-normal-Bw-67qu9.woff",
+      "assets/manrope-vietnamese-800-normal-ClPWri-A.woff2",
+      "assets/manrope-vietnamese-800-normal-bvg7iBCV.woff",
+      "assets/manrope-latin-ext-800-normal-DdFx7KEb.woff2",
+      "assets/manrope-latin-ext-800-normal-BQAQsuQc.woff",
+      "assets/manrope-latin-800-normal-BfWYOv1c.woff2",
+      "assets/manrope-latin-800-normal-uHUdIJgA.woff"
+    ]
+  },
+  "resources/js/Pages/Mentor/HafalanLiveMeet.tsx": {
+    "file": "assets/HafalanLiveMeet-CpWW5j4M.js",
+    "name": "HafalanLiveMeet",
+    "src": "resources/js/Pages/Mentor/HafalanLiveMeet.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.tsx",
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_index-DMh_zrpf.js",
+      "_Toast-Cg0JJ-Ah.js"
+    ],
+    "css": [
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -2896,20 +3143,20 @@
     ]
   },
   "resources/js/Pages/Mentor/HafalanPending.tsx": {
-    "file": "assets/HafalanPending-BuAe7nY5.js",
+    "file": "assets/HafalanPending-DgR_LPKG.js",
     "name": "HafalanPending",
     "src": "resources/js/Pages/Mentor/HafalanPending.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Icon-B8OfWfKH.js",
-      "_EmptyState-Bcu7oxJ5.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_EmptyState-0u65YxdW.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -3012,19 +3259,19 @@
     ]
   },
   "resources/js/Pages/Mentor/Kalender.tsx": {
-    "file": "assets/Kalender-Dph_cm0z.js",
+    "file": "assets/Kalender-DsP8B8l0.js",
     "name": "Kalender",
     "src": "resources/js/Pages/Mentor/Kalender.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Icon-B8OfWfKH.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -3127,21 +3374,21 @@
     ]
   },
   "resources/js/Pages/Mentor/Mentees/Index.tsx": {
-    "file": "assets/Index-DsN8jxBU.js",
+    "file": "assets/Index-AViokWfF.js",
     "name": "Index",
     "src": "resources/js/Pages/Mentor/Mentees/Index.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Modal-Pe94245G.js",
-      "_Icon-B8OfWfKH.js",
-      "_EmptyState-Bcu7oxJ5.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Modal-CaA4rZuq.js",
+      "_Icon-Bd_CrcMX.js",
+      "_EmptyState-0u65YxdW.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -3244,20 +3491,20 @@
     ]
   },
   "resources/js/Pages/Mentor/Mentees/Show.tsx": {
-    "file": "assets/Show-mdtBK-Rx.js",
+    "file": "assets/Show-C7xaCBKa.js",
     "name": "Show",
     "src": "resources/js/Pages/Mentor/Mentees/Show.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Icon-B8OfWfKH.js",
-      "_QuranReader-UQpnrBp3.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_QuranReader-b1d_gIL_.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -3360,21 +3607,21 @@
     ]
   },
   "resources/js/Pages/Mentor/Penilaian.tsx": {
-    "file": "assets/Penilaian-iy79iFEz.js",
+    "file": "assets/Penilaian-C4mhHCPZ.js",
     "name": "Penilaian",
     "src": "resources/js/Pages/Mentor/Penilaian.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_StatCard-BOWsAGHl.js",
-      "_Icon-B8OfWfKH.js",
-      "_Modal-Pe94245G.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_StatCard-D7tsI0kT.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Modal-CaA4rZuq.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -3477,22 +3724,22 @@
     ]
   },
   "resources/js/Pages/Super/Alumni.tsx": {
-    "file": "assets/Alumni-DZ9KR2vn.js",
+    "file": "assets/Alumni-xQb_qq7E.js",
     "name": "Alumni",
     "src": "resources/js/Pages/Super/Alumni.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Pagination-DKGtvlgD.js",
-      "_Icon-B8OfWfKH.js",
-      "_Modal-Pe94245G.js",
-      "_useDebounce-B7POsADq.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Pagination-02-r9Iko.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Modal-CaA4rZuq.js",
+      "_useDebounce-DObrVxkc.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -3595,24 +3842,24 @@
     ]
   },
   "resources/js/Pages/Super/Hafalan.tsx": {
-    "file": "assets/Hafalan-BPQnkcP2.js",
+    "file": "assets/Hafalan-BIEhbGDQ.js",
     "name": "Hafalan",
     "src": "resources/js/Pages/Super/Hafalan.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_StatCard-BOWsAGHl.js",
-      "_Pagination-DKGtvlgD.js",
-      "_Icon-B8OfWfKH.js",
-      "_CartesianChart-DKe0SNno.js",
-      "_BarChart-CcQ535Sr.js",
-      "_Toast-D1ebrapk.js",
-      "_Symbols-BWquljR8.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_StatCard-D7tsI0kT.js",
+      "_Pagination-02-r9Iko.js",
+      "_Icon-Bd_CrcMX.js",
+      "_CartesianChart-DjyOnlMP.js",
+      "_BarChart-C9tjO8Et.js",
+      "_Toast-Cg0JJ-Ah.js",
+      "_Symbols-DeBtocSx.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -3715,21 +3962,21 @@
     ]
   },
   "resources/js/Pages/Super/Kegiatan.tsx": {
-    "file": "assets/Kegiatan-Bo6mq1Pb.js",
+    "file": "assets/Kegiatan-BJ80VsId.js",
     "name": "Kegiatan",
     "src": "resources/js/Pages/Super/Kegiatan.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Pagination-DKGtvlgD.js",
-      "_Icon-B8OfWfKH.js",
-      "_Modal-Pe94245G.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Pagination-02-r9Iko.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Modal-CaA4rZuq.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -3832,25 +4079,25 @@
     ]
   },
   "resources/js/Pages/Super/Laporan.tsx": {
-    "file": "assets/Laporan-Cn818SOM.js",
+    "file": "assets/Laporan-DejinIDM.js",
     "name": "Laporan",
     "src": "resources/js/Pages/Super/Laporan.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_StatCard-BOWsAGHl.js",
-      "_Icon-B8OfWfKH.js",
-      "_CartesianChart-DKe0SNno.js",
-      "_Legend-CfTx313j.js",
-      "_getRadiusAndStrokeWidthFromDot-xrxobzxz.js",
-      "_BarChart-CcQ535Sr.js",
-      "_Toast-D1ebrapk.js",
-      "_Symbols-BWquljR8.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_StatCard-D7tsI0kT.js",
+      "_Icon-Bd_CrcMX.js",
+      "_CartesianChart-DjyOnlMP.js",
+      "_Legend-D_aBW8a6.js",
+      "_getRadiusAndStrokeWidthFromDot-BocnOe5f.js",
+      "_BarChart-C9tjO8Et.js",
+      "_Toast-Cg0JJ-Ah.js",
+      "_Symbols-DeBtocSx.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -3953,20 +4200,20 @@
     ]
   },
   "resources/js/Pages/Super/Leaderboard.tsx": {
-    "file": "assets/Leaderboard-DcgdqZoK.js",
+    "file": "assets/Leaderboard-CiDxeQ60.js",
     "name": "Leaderboard",
     "src": "resources/js/Pages/Super/Leaderboard.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Pagination-DKGtvlgD.js",
-      "_Icon-B8OfWfKH.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Pagination-02-r9Iko.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -4069,20 +4316,20 @@
     ]
   },
   "resources/js/Pages/Super/Mentor.tsx": {
-    "file": "assets/Mentor-CIw2Lfhp.js",
+    "file": "assets/Mentor-C8OebdbQ.js",
     "name": "Mentor",
     "src": "resources/js/Pages/Super/Mentor.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_Icon-B8OfWfKH.js",
-      "_PageHeader-BFReyJuw.js",
-      "_useDebounce-B7POsADq.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_Icon-Bd_CrcMX.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_useDebounce-DObrVxkc.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -4185,22 +4432,22 @@
     ]
   },
   "resources/js/Pages/Super/MentorAnalysis.tsx": {
-    "file": "assets/MentorAnalysis-FQskwK_A.js",
+    "file": "assets/MentorAnalysis-5I3ZHlAZ.js",
     "name": "MentorAnalysis",
     "src": "resources/js/Pages/Super/MentorAnalysis.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_Icon-B8OfWfKH.js",
-      "_PageHeader-BFReyJuw.js",
-      "_CartesianChart-DKe0SNno.js",
-      "_AreaChart-EOr8Efu9.js",
-      "_Toast-D1ebrapk.js",
-      "_getRadiusAndStrokeWidthFromDot-xrxobzxz.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_Icon-Bd_CrcMX.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_CartesianChart-DjyOnlMP.js",
+      "_AreaChart-DQdR4Tmn.js",
+      "_Toast-Cg0JJ-Ah.js",
+      "_getRadiusAndStrokeWidthFromDot-BocnOe5f.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -4303,19 +4550,19 @@
     ]
   },
   "resources/js/Pages/Super/Pengaturan.tsx": {
-    "file": "assets/Pengaturan-TU0kM6Np.js",
+    "file": "assets/Pengaturan-C82uVNLi.js",
     "name": "Pengaturan",
     "src": "resources/js/Pages/Super/Pengaturan.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Icon-B8OfWfKH.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -4418,19 +4665,19 @@
     ]
   },
   "resources/js/Pages/Super/RolePermission.tsx": {
-    "file": "assets/RolePermission-C6njY82T.js",
+    "file": "assets/RolePermission-BY8ISOfl.js",
     "name": "RolePermission",
     "src": "resources/js/Pages/Super/RolePermission.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_Icon-B8OfWfKH.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_Icon-Bd_CrcMX.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -4533,22 +4780,22 @@
     ]
   },
   "resources/js/Pages/Super/Warga.tsx": {
-    "file": "assets/Warga-DTFbPTk6.js",
+    "file": "assets/Warga-Ct2B-dET.js",
     "name": "Warga",
     "src": "resources/js/Pages/Super/Warga.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_AppLayout-BQAfTU4j.js",
-      "_PageHeader-BFReyJuw.js",
-      "_StatCard-BOWsAGHl.js",
-      "_Pagination-DKGtvlgD.js",
-      "_Icon-B8OfWfKH.js",
-      "_useDebounce-B7POsADq.js",
-      "_Toast-D1ebrapk.js"
+      "_AppLayout-jdTeY1vV.js",
+      "_PageHeader-ysON7EEQ.js",
+      "_StatCard-D7tsI0kT.js",
+      "_Pagination-02-r9Iko.js",
+      "_Icon-Bd_CrcMX.js",
+      "_useDebounce-DObrVxkc.js",
+      "_Toast-Cg0JJ-Ah.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -4651,16 +4898,16 @@
     ]
   },
   "resources/js/Pages/Welcome.tsx": {
-    "file": "assets/Welcome-BAnpd_I2.js",
+    "file": "assets/Welcome-D5feHpSh.js",
     "name": "Welcome",
     "src": "resources/js/Pages/Welcome.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_Icon-B8OfWfKH.js"
+      "_Icon-Bd_CrcMX.js"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",
@@ -4763,7 +5010,7 @@
     ]
   },
   "resources/js/app.tsx": {
-    "file": "assets/app-DKCyNJAf.js",
+    "file": "assets/app-DzBk6IBy.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
@@ -4782,12 +5029,14 @@
       "resources/js/Pages/Mahasiswa/Aktivitas/Index.tsx",
       "resources/js/Pages/Mahasiswa/Dashboard.tsx",
       "resources/js/Pages/Mahasiswa/Hafalan.tsx",
+      "resources/js/Pages/Mahasiswa/HafalanLiveMeet.tsx",
       "resources/js/Pages/Mahasiswa/Kalender.tsx",
       "resources/js/Pages/Mahasiswa/Leaderboard.tsx",
       "resources/js/Pages/Mahasiswa/Portfolio.tsx",
       "resources/js/Pages/Mahasiswa/Profile.tsx",
       "resources/js/Pages/Maintenance.tsx",
       "resources/js/Pages/Mentor/Dashboard.tsx",
+      "resources/js/Pages/Mentor/HafalanLiveMeet.tsx",
       "resources/js/Pages/Mentor/HafalanPending.tsx",
       "resources/js/Pages/Mentor/Kalender.tsx",
       "resources/js/Pages/Mentor/Mentees/Index.tsx",
@@ -4806,7 +5055,7 @@
       "resources/js/Pages/Welcome.tsx"
     ],
     "css": [
-      "assets/app-Pkuf7oD7.css"
+      "assets/app-CO0D9cIb.css"
     ],
     "assets": [
       "assets/material-symbols-outlined-NzYEeyps.woff2",

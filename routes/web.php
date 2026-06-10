@@ -77,6 +77,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/kalender/{event}',         [\App\Http\Controllers\Web\Mahasiswa\MahasiswaKalenderController::class, 'update'])->name('kalender.update');
         Route::delete('/kalender/{event}',      [\App\Http\Controllers\Web\Mahasiswa\MahasiswaKalenderController::class, 'destroy'])->name('kalender.destroy');
         Route::patch('/kalender/{event}/toggle', [\App\Http\Controllers\Web\Mahasiswa\MahasiswaKalenderController::class, 'toggleComplete'])->name('kalender.toggle');
+        Route::get('/live-meet/status', [\App\Http\Controllers\Web\Mahasiswa\LiveMeetController::class, 'checkStatus'])->name('live-meet.status');
+        Route::get('/live-meet/join',   [\App\Http\Controllers\Web\Mahasiswa\LiveMeetController::class, 'join'])->name('live-meet.join');
     });
 
     // ── Alumni (permission-gated) ─────────────────────────────
@@ -136,6 +138,11 @@ Route::middleware('auth')->group(function () {
 
         // Kalender
         Route::get('/kalender', [\App\Http\Controllers\Web\Mentor\MentorKalenderController::class, 'index'])->name('kalender.index');
+
+        // Live Meet
+        Route::post('/live-meet/start', [\App\Http\Controllers\Web\Mentor\LiveMeetController::class, 'start'])->name('live-meet.start');
+        Route::get('/live-meet',        [\App\Http\Controllers\Web\Mentor\LiveMeetController::class, 'view'])->name('live-meet.view');
+        Route::post('/live-meet/stop',  [\App\Http\Controllers\Web\Mentor\LiveMeetController::class, 'stop'])->name('live-meet.stop');
     });
 
     // ── Super Admin (permission-gated) ────────────────────────

@@ -412,7 +412,7 @@ export default function MenteeShow({ mentee, hafalan_logs, trend }: Props) {
                             <div>
                                 <p className="text-sm font-bold text-emerald-700">Posisi hafalan {mentee.name}</p>
                                 <p className="text-xs text-emerald-600">
-                                    Juz {mentee.hafalan_progress.current_juz} · Read-only — mentor tidak bisa ubah posisi santri
+                                    Juz {mentee.hafalan_progress.current_juz} · Read-only — mentor tidak bisa ubah posisi warga
                                 </p>
                             </div>
                         </div>

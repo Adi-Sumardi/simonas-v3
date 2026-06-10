@@ -33,7 +33,7 @@ export default function Leaderboard({ entries, asramas, stats }: Props) {
     return (
         <AppLayout>
             <Head title="Leaderboard" />
-            <PageHeader title="Leaderboard Santri" subtitle="Peringkat berdasarkan akumulasi poin dari semua dimensi"
+            <PageHeader title="Leaderboard Warga" subtitle="Peringkat berdasarkan akumulasi poin dari semua dimensi"
                 breadcrumbs={[{ label:'Dashboard', href:'/dashboard' }, { label:'Leaderboard' }]} />
 
             {/* Podium top 3 */}
@@ -87,7 +87,7 @@ export default function Leaderboard({ entries, asramas, stats }: Props) {
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead className="border-b border-white/40 bg-surface-container/30">
-                            <tr>{['#','Rank','Santri','Asrama','Poin','Shalat','Hafalan','Akademik'].map(h=>(
+                            <tr>{['#','Rank','Warga','Asrama','Poin','Shalat','Hafalan','Akademik'].map(h=>(
                                 <th key={h} className="text-left py-3 px-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{h}</th>
                             ))}</tr>
                         </thead>

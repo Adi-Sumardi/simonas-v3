@@ -157,6 +157,8 @@ export function Sidebar({ user, drawerOpen = false, onClose, onOpen }: SidebarPr
 
     function handleLogout() { router.post('/logout'); }
 
+    const isLiveMeet = url.includes('/live-meet');
+
     function NavItem({ item, mobile = false }: { item: MenuItem; mobile?: boolean }) {
         const active = isActive(item.href);
 
@@ -179,10 +181,11 @@ export function Sidebar({ user, drawerOpen = false, onClose, onOpen }: SidebarPr
         if (item.href === 'drawer-toggle') {
             return (
                 <button
-                    onClick={onOpen || (() => {})}
+                    onClick={isLiveMeet ? undefined : (onOpen || (() => {}))}
+                    disabled={isLiveMeet}
                     className={`flex flex-col items-center justify-center gap-0.5 transition-all ${
                         active ? 'text-primary-container scale-110' : 'text-secondary/70'
-                    }`}
+                    } ${isLiveMeet ? 'pointer-events-none opacity-40 cursor-not-allowed' : ''}`}
                 >
                     <Icon name={item.icon} className="text-2xl" filled={active} />
                     <span className="font-display text-[9px] uppercase tracking-wider leading-tight text-center">{item.label}</span>
@@ -192,22 +195,24 @@ export function Sidebar({ user, drawerOpen = false, onClose, onOpen }: SidebarPr
 
         return mobile ? (
             <Link
-                href={item.href}
+                href={isLiveMeet ? '#' : item.href}
+                onClick={isLiveMeet ? (e) => e.preventDefault() : undefined}
                 className={`flex flex-col items-center justify-center gap-0.5 transition-all ${
                     active ? 'text-primary-container scale-110' : 'text-secondary/70'
-                }`}
+                } ${isLiveMeet ? 'pointer-events-none opacity-40 cursor-not-allowed' : ''}`}
             >
                 <Icon name={item.icon} className="text-2xl" filled={active} />
                 <span className="font-display text-[9px] uppercase tracking-wider leading-tight text-center">{item.label}</span>
             </Link>
         ) : (
             <Link
-                href={item.href}
+                href={isLiveMeet ? '#' : item.href}
+                onClick={isLiveMeet ? (e) => e.preventDefault() : undefined}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
                     active
                         ? 'bg-primary-container text-on-primary shadow-md shadow-blue-500/20'
                         : 'text-secondary hover:bg-white/40 hover:translate-x-0.5'
-                }`}
+                } ${isLiveMeet ? 'pointer-events-none opacity-40 cursor-not-allowed' : ''}`}
             >
                 <Icon name={item.icon} className="text-xl" filled={active} />
                 {item.label}
@@ -278,8 +283,11 @@ export function Sidebar({ user, drawerOpen = false, onClose, onOpen }: SidebarPr
                 {fab && (
                     <div className="pt-2">
                         <Link
-                            href={fab.href}
-                            className="w-full py-3.5 bg-primary text-on-primary rounded-xl shadow-lg shadow-blue-500/20 font-bold text-sm flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all"
+                            href={isLiveMeet ? '#' : fab.href}
+                            onClick={isLiveMeet ? (e) => e.preventDefault() : undefined}
+                            className={`w-full py-3.5 bg-primary text-on-primary rounded-xl shadow-lg shadow-blue-500/20 font-bold text-sm flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all ${
+                                isLiveMeet ? 'pointer-events-none opacity-40 cursor-not-allowed' : ''
+                            }`}
                         >
                             <Icon name={fab.icon} className="text-xl" filled />
                             {fab.label}
@@ -290,7 +298,10 @@ export function Sidebar({ user, drawerOpen = false, onClose, onOpen }: SidebarPr
                 {/* Logout */}
                 <button
                     onClick={handleLogout}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-error hover:bg-error/10 transition-colors mt-2"
+                    disabled={isLiveMeet}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-error hover:bg-error/10 transition-colors mt-2 ${
+                        isLiveMeet ? 'pointer-events-none opacity-40 cursor-not-allowed' : ''
+                    }`}
                 >
                     <Icon name="logout" className="text-xl" />
                     Keluar
@@ -305,8 +316,11 @@ export function Sidebar({ user, drawerOpen = false, onClose, onOpen }: SidebarPr
             {/* Mobile FAB */}
             {fab && (
                 <Link
-                    href={fab.href}
-                    className="lg:hidden fixed bottom-20 right-5 w-14 h-14 bg-primary text-on-primary rounded-full shadow-[0_12px_24px_rgba(37,99,235,0.3)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40"
+                    href={isLiveMeet ? '#' : fab.href}
+                    onClick={isLiveMeet ? (e) => e.preventDefault() : undefined}
+                    className={`lg:hidden fixed bottom-20 right-5 w-14 h-14 bg-primary text-on-primary rounded-full shadow-[0_12px_24px_rgba(37,99,235,0.3)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 ${
+                        isLiveMeet ? 'pointer-events-none opacity-40 cursor-not-allowed' : ''
+                    }`}
                     aria-label={fab.label}
                 >
                     <Icon name="add" className="text-3xl" />
