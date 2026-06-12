@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') { ?>
     .btn-all  { background: #2563eb; color: white; }
     .btn-mig  { background: #0891b2; color: white; }
     .btn-cache{ background: #7c3aed; color: white; }
+    .btn-seed { background: #059669; color: white; }
     button:hover { opacity: .88; }
 </style>
 </head>
@@ -36,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') { ?>
             <button class="btn-all"   name="action" value="all">   Migrate + Clear Cache</button>
             <button class="btn-mig"   name="action" value="migrate">Migrate saja</button>
             <button class="btn-cache" name="action" value="cache">  Clear Cache saja</button>
+            <button class="btn-seed"  name="action" value="seed">   Role &amp; Permission Seeder</button>
         </div>
     </form>
 </div>
@@ -71,6 +73,11 @@ if ($action === 'cache' || $action === 'all') {
         Artisan::call($cmd);
         $log[] = ['cmd' => $cmd, 'out' => Artisan::output()];
     }
+}
+
+if ($action === 'seed') {
+    Artisan::call('db:seed', ['--class' => 'RolePermissionSeeder', '--force' => true]);
+    $log[] = ['cmd' => 'db:seed --class=RolePermissionSeeder', 'out' => Artisan::output()];
 }
 
 ?>
