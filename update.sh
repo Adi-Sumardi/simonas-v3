@@ -8,10 +8,15 @@ set -e  # stop on first error
 
 BRANCH="upgrade/laravel-10"
 
-# ── Detect PHP 8.x binary (shared hosting often keeps it at a custom path) ──
+# ── Detect PHP 8.x binary ────────────────────────────────────────────────────
 PHP=""
-for candidate in php8.3 php8.2 php8.1 /usr/local/php83/bin/php /usr/local/php82/bin/php /opt/php83/bin/php php; do
-    if command -v "$candidate" &>/dev/null; then
+for candidate in \
+    /opt/cpanel/ea-php83/root/usr/bin/php \
+    /opt/cpanel/ea-php82/root/usr/bin/php \
+    /usr/local/lsws/lsphp83/bin/php \
+    /usr/local/php83/bin/php \
+    php8.3 php8.2 php8.1 php; do
+    if [ -x "$candidate" ] || command -v "$candidate" &>/dev/null; then
         version=$("$candidate" -r "echo PHP_MAJOR_VERSION;" 2>/dev/null)
         if [ "$version" -ge 8 ] 2>/dev/null; then
             PHP="$candidate"
