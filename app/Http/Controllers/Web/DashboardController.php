@@ -22,11 +22,12 @@ class DashboardController extends Controller
         $role = $user->role ?? 'mahasiswa';
 
         $payload = match ($role) {
-            'super'     => $this->superPayload($user),
-            'admin'     => $this->adminPayload($user),
-            'mentor'    => $this->mentorPayload($user),
-            'alumni'    => $this->alumniPayload($user),
-            default     => $this->mahasiswaPayload($user),
+            'super'            => $this->superPayload($user),
+            'admin'            => $this->adminPayload($user),
+            'mentor'           => $this->mentorPayload($user),
+            'alumni'           => $this->alumniPayload($user),
+            'pengurus_asrama'  => $this->mahasiswaPayload($user),
+            default            => $this->mahasiswaPayload($user),
         };
 
         return Inertia::render('Dashboard', array_merge([

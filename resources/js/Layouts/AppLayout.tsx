@@ -18,10 +18,11 @@ export function AppLayout({ children, searchPlaceholder }: AppLayoutProps) {
     const [drawerOpen, setDrawerOpen] = useState(false);
 
     const role = user.role ?? 'mahasiswa';
-    const profileHref = role === 'mahasiswa' ? '/mahasiswa/profil'
-        : role === 'mentor'    ? '/mentor'
-        : role === 'super'     ? '/super/role-permission'
-        : role === 'alumni'    ? '/alumni/profil'
+    const profileHref = role === 'mahasiswa'       ? '/mahasiswa/profil'
+        : role === 'mentor'          ? '/mentor'
+        : role === 'super'           ? '/super/role-permission'
+        : role === 'alumni'          ? '/alumni/profil'
+        : role === 'pengurus_asrama' ? '/mahasiswa/profil'
         : '/dashboard';
 
     const dropdownItems = [

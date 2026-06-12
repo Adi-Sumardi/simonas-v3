@@ -22,6 +22,7 @@ class RolePermissionSeeder extends Seeder
             'access-super',
             'access-admin',
             'access-alumni',
+            'access-pengurus-asrama',
 
             // Granular permissions
             'view-dashboard',
@@ -32,6 +33,8 @@ class RolePermissionSeeder extends Seeder
             'view-warga',
             'manage-warga',
             'manage-kegiatan',
+            'manage-kegiatan-asrama',
+            'manage-program-kerja',
             'manage-akun',
             'view-laporan',
             'export-data',
@@ -70,8 +73,20 @@ class RolePermissionSeeder extends Seeder
             'access-alumni', 'view-dashboard',
         ]);
 
+        $pengurusAsrama = Role::firstOrCreate(['name' => 'pengurus_asrama', 'guard_name' => 'web']);
+        $pengurusAsrama->syncPermissions([
+            'access-mahasiswa',
+            'access-pengurus-asrama',
+            'view-dashboard',
+            'log-aktivitas',
+            'log-hafalan',
+            'view-leaderboard',
+            'manage-kegiatan-asrama',
+            'manage-program-kerja',
+        ]);
+
         // ── Sync existing users' role column → Spatie role ───────
-        $roleMap = ['mahasiswa', 'mentor', 'admin', 'super', 'alumni'];
+        $roleMap = ['mahasiswa', 'mentor', 'admin', 'super', 'alumni', 'pengurus_asrama'];
         User::whereIn('role', $roleMap)->each(function (User $user) {
             if ($user->role) {
                 $user->syncRoles([$user->role]);

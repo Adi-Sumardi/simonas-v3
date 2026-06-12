@@ -13,6 +13,15 @@ interface Reminder {
 
 export function ReminderManager() {
     useEffect(() => {
+        // Request permission on first mount if not yet decided
+        if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }, []);
+
+    useEffect(() => {
+        if (typeof Notification === 'undefined') return;
+
         const checkReminders = () => {
             const data = localStorage.getItem('simonas_reminders');
             if (!data) return;
@@ -66,12 +75,14 @@ export function ReminderManager() {
                     }
                 }
 
-                // 2. Logic for REGULAR reminders (once at start)
+                // 2. Logic for REGULAR reminders (once, up to 10 min after start)
                 if (r.type !== 'shalat') {
-                    if (diff <= 0 && diff > -30000 && !r.lastRemindedAt) {
+                    const tenMin = 10 * 60 * 1000;
+                    if (diff <= 0 && diff > -tenMin && !r.lastRemindedAt) {
                         if (Notification.permission === 'granted') {
-                            new Notification('Pengingat Kegiatan', {
-                                body: `Kegiatan "${r.title}" dimulai sekarang!`,
+                            const label = r.type === 'hafalan' ? 'Pengingat Hafalan' : 'Pengingat Kegiatan';
+                            new Notification(label, {
+                                body: `"${r.title}" dimulai sekarang!`,
                                 icon: '/favicon.ico',
                             });
                             changed = true;

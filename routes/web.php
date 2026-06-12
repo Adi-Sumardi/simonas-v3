@@ -145,6 +145,19 @@ Route::middleware('auth')->group(function () {
         Route::post('/live-meet/stop',  [\App\Http\Controllers\Web\Mentor\LiveMeetController::class, 'stop'])->name('live-meet.stop');
     });
 
+    // ── Pengurus Asrama (permission-gated) ───────────────────
+    Route::middleware('can:access-pengurus-asrama')->prefix('pengurus-asrama')->name('pengurus-asrama.')->group(function () {
+        Route::get('/kegiatan',                    [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'kegiatanIndex'])    ->name('kegiatan.index');
+        Route::post('/kegiatan',                   [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'kegiatanStore'])    ->name('kegiatan.store');
+        Route::put('/kegiatan/{kegiatan}',         [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'kegiatanUpdate'])   ->name('kegiatan.update');
+        Route::delete('/kegiatan/{kegiatan}',      [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'kegiatanDestroy'])  ->name('kegiatan.destroy');
+
+        Route::get('/program-kerja',               [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'programKerjaIndex'])   ->name('program-kerja.index');
+        Route::post('/program-kerja',              [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'programKerjaStore'])   ->name('program-kerja.store');
+        Route::put('/program-kerja/{programKerja}',[\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'programKerjaUpdate'])  ->name('program-kerja.update');
+        Route::delete('/program-kerja/{programKerja}',[\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'programKerjaDestroy'])->name('program-kerja.destroy');
+    });
+
     // ── Super Admin (permission-gated) ────────────────────────
     Route::middleware('can:access-super')->prefix('super')->name('super.')->group(function () {
         // Role & Permission management

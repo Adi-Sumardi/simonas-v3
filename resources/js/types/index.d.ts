@@ -1,4 +1,4 @@
-export type RoleName = 'super' | 'admin' | 'mentor' | 'mahasiswa' | 'alumni';
+export type RoleName = 'super' | 'admin' | 'mentor' | 'mahasiswa' | 'alumni' | 'pengurus_asrama';
 
 export interface User {
     id: number;

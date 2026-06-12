@@ -2,7 +2,7 @@ import { Link, usePage, router } from '@inertiajs/react';
 import { Icon } from '@/Components/ui/Icon';
 import { PageProps, User } from '@/types';
 
-type Role = 'super' | 'admin' | 'mentor' | 'mahasiswa' | 'alumni';
+type Role = 'super' | 'admin' | 'mentor' | 'mahasiswa' | 'alumni' | 'pengurus_asrama';
 
 interface MenuItem {
     label: string;
@@ -24,7 +24,7 @@ interface MenuGroup {
 const MENU_GROUPS: MenuGroup[] = [
     {
         section: '',  // no section label for the shared entry
-        forRoles: ['super','admin','mentor','mahasiswa','alumni'],
+        forRoles: ['super','admin','mentor','mahasiswa','alumni','pengurus_asrama'],
         items: [
             { label: 'Dashboard', icon: 'dashboard', href: '/dashboard' },
         ],
@@ -87,23 +87,33 @@ const MENU_GROUPS: MenuGroup[] = [
             { label: 'Lowongan',        icon: 'work',        href: '/alumni/jobs' },
         ],
     },
+    {
+        section: 'Pengurus Asrama',
+        forRoles: ['pengurus_asrama'],
+        items: [
+            { label: 'Kegiatan Asrama', icon: 'event',           href: '/pengurus-asrama/kegiatan',     permission: 'manage-kegiatan-asrama' },
+            { label: 'Program Kerja',   icon: 'assignment_turned_in', href: '/pengurus-asrama/program-kerja', permission: 'manage-program-kerja' },
+        ],
+    },
 ];
 
 // Mobile bottom nav hrefs per role
 const BOTTOM_NAV: Record<string, string[]> = {
-    mahasiswa: ['/dashboard', '/mahasiswa/aktivitas', '/mahasiswa/hafalan', '/mahasiswa/leaderboard', '/mahasiswa/profil'],
-    mentor:    ['/dashboard', '/mentor/penilaian', '/mentor/kalender', 'drawer-toggle'],
-    super:     ['/dashboard', '/super/warga', '/super/alumni', 'drawer-toggle'],
-    admin:     ['/dashboard', '/super/role-permission'],
-    alumni:    ['/dashboard', '/alumni/hub', '/alumni/jobs', '/alumni/bisnis', '/alumni/profil'],
+    mahasiswa:        ['/dashboard', '/mahasiswa/aktivitas', '/mahasiswa/hafalan', '/mahasiswa/leaderboard', '/mahasiswa/profil'],
+    mentor:           ['/dashboard', '/mentor/penilaian', '/mentor/kalender', 'drawer-toggle'],
+    super:            ['/dashboard', '/super/warga', '/super/alumni', 'drawer-toggle'],
+    admin:            ['/dashboard', '/super/role-permission'],
+    alumni:           ['/dashboard', '/alumni/hub', '/alumni/jobs', '/alumni/bisnis', '/alumni/profil'],
+    pengurus_asrama:  ['/pengurus-asrama/kegiatan', '/pengurus-asrama/program-kerja'],
 };
 
 const FAB_BY_ROLE: Record<string, { label: string; href: string; icon: string } | null> = {
-    mahasiswa: { label: 'Log Aktivitas', href: '/mahasiswa/aktivitas?action=create', icon: 'add_circle' },
-    mentor:    null,
-    super:     null,
-    admin:     null,
-    alumni:    null,
+    mahasiswa:       { label: 'Log Aktivitas', href: '/mahasiswa/aktivitas?action=create', icon: 'add_circle' },
+    mentor:          null,
+    super:           null,
+    admin:           null,
+    alumni:          null,
+    pengurus_asrama: null,
 };
 
 interface SidebarProps { 
@@ -263,10 +273,11 @@ export function Sidebar({ user, drawerOpen = false, onClose, onOpen }: SidebarPr
                             {/* Section header — only shown when user has multiple roles */}
                             {group.showHeader && (
                                 <p className={`text-[9px] font-black uppercase tracking-widest px-2 mb-1 ${gi > 0 ? 'mt-4' : 'mt-2'} ${
-                                    group.section === 'Mahasiswa' ? 'text-blue-500' :
-                                    group.section === 'Mentor'    ? 'text-emerald-600' :
-                                    group.section === 'Alumni'    ? 'text-violet-600' :
-                                    group.section === 'Admin'     ? 'text-amber-600' :
+                                    group.section === 'Mahasiswa'        ? 'text-blue-500' :
+                                    group.section === 'Mentor'          ? 'text-emerald-600' :
+                                    group.section === 'Alumni'          ? 'text-violet-600' :
+                                    group.section === 'Admin'           ? 'text-amber-600' :
+                                    group.section === 'Pengurus Asrama' ? 'text-orange-600' :
                                     'text-on-surface-variant'
                                 }`}>
                                     {group.section}

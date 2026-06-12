@@ -290,7 +290,13 @@ export default function Kalender({ events, upcoming, today }: KalenderProps) {
         
         const merged = reminders.map(r => {
             const old = existing.find((o: any) => o.id === r.id && o.date === r.date);
-            return old ? { ...r, notified: old.notified } : r;
+            // Preserve all notification-tracking fields so ReminderManager doesn't re-fire
+            return old ? {
+                ...r,
+                lastRemindedAt:  old.lastRemindedAt,
+                missedNotified:  old.missedNotified,
+                notified:        old.notified,
+            } : r;
         });
 
         localStorage.setItem('simonas_reminders', JSON.stringify(merged));
