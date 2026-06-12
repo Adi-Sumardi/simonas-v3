@@ -68,12 +68,12 @@ export default function Pengaturan({ settings, asramas, pointRules, dailyTargets
     // ── Point Rule state ──────────────────────────────────────────────────────
     const [showRuleModal, setShowRuleModal]   = useState(false);
     const [editRule, setEditRule]             = useState<PointRule|null>(null);
-    const ruleForm = useForm({ label: '', activity_type: 'shalat', poin: '', unit: '' });
+    const ruleForm = useForm<{ label:string; activity_type:string; poin:string; unit:string }>({ label: '', activity_type: 'shalat', poin: '', unit: '' });
 
     // ── Daily Target state ────────────────────────────────────────────────────
     const [showTargetModal, setShowTargetModal] = useState(false);
     const [editTarget, setEditTarget]           = useState<DailyTarget|null>(null);
-    const targetForm = useForm({ label: '', key: '', value: '', unit: '', description: '' });
+    const targetForm = useForm<{ label:string; key:string; value:string; unit:string; description:string }>({ label: '', key: '', value: '', unit: '', description: '' });
 
     // ── Asrama handlers ───────────────────────────────────────────────────────
     function openAddAsrama() { asramaForm.reset(); setEditAsrama(null); setShowAsramaModal(true); }
@@ -93,8 +93,18 @@ export default function Pengaturan({ settings, asramas, pointRules, dailyTargets
     function deleteJabatan(asramaId: number, jabatanId: number) { if (confirm('Hapus data jabatan ini?')) router.delete(`/super/asrama/${asramaId}/jabatan/${jabatanId}`, { preserveScroll: true }); }
 
     // ── Point Rule handlers ───────────────────────────────────────────────────
-    function openAddRule() { ruleForm.reset(); ruleForm.setData({ label: '', activity_type: 'shalat', poin: '', unit: '' }); setEditRule(null); setShowRuleModal(true); }
-    function openEditRule(r: PointRule) { ruleForm.setData({ label: r.label, activity_type: r.activity_type, poin: String(r.poin), unit: r.unit ?? '' }); setEditRule(r); setShowRuleModal(true); }
+    function openAddRule() {
+        ruleForm.clearErrors();
+        ruleForm.setData({ label: '', activity_type: 'shalat', poin: '', unit: '' });
+        setEditRule(null);
+        setShowRuleModal(true);
+    }
+    function openEditRule(r: PointRule) {
+        ruleForm.clearErrors();
+        ruleForm.setData({ label: r.label, activity_type: r.activity_type, poin: String(r.poin), unit: r.unit ?? '' });
+        setEditRule(r);
+        setShowRuleModal(true);
+    }
     function submitRule() {
         if (editRule) ruleForm.put(`/super/point-rules/${editRule.id}`, { onSuccess: () => setShowRuleModal(false) });
         else          ruleForm.post('/super/point-rules', { onSuccess: () => setShowRuleModal(false) });
@@ -103,8 +113,18 @@ export default function Pengaturan({ settings, asramas, pointRules, dailyTargets
     function toggleRule(id: number) { router.patch(`/super/point-rules/${id}/toggle`, {}, { preserveScroll: true }); }
 
     // ── Daily Target handlers ─────────────────────────────────────────────────
-    function openAddTarget() { targetForm.reset(); setEditTarget(null); setShowTargetModal(true); }
-    function openEditTarget(t: DailyTarget) { targetForm.setData({ label: t.label, key: t.key, value: String(t.value), unit: t.unit ?? '', description: t.description ?? '' }); setEditTarget(t); setShowTargetModal(true); }
+    function openAddTarget() {
+        targetForm.clearErrors();
+        targetForm.setData({ label: '', key: '', value: '', unit: '', description: '' });
+        setEditTarget(null);
+        setShowTargetModal(true);
+    }
+    function openEditTarget(t: DailyTarget) {
+        targetForm.clearErrors();
+        targetForm.setData({ label: t.label, key: t.key, value: String(t.value), unit: t.unit ?? '', description: t.description ?? '' });
+        setEditTarget(t);
+        setShowTargetModal(true);
+    }
     function submitTarget() {
         if (editTarget) targetForm.put(`/super/daily-targets/${editTarget.id}`, { onSuccess: () => setShowTargetModal(false) });
         else            targetForm.post('/super/daily-targets', { onSuccess: () => setShowTargetModal(false) });
@@ -321,12 +341,13 @@ export default function Pengaturan({ settings, asramas, pointRules, dailyTargets
 
                 {/* ── Integrasi ─────────────────────────────────────────────── */}
                 <Section title="Integrasi" icon="link">
-                    <Field label="Google OAuth" hint="Login dengan akun Google">
+                    <Field label="Google OAuth" hint="Dikonfigurasi via GOOGLE_CLIENT_ID di .env">
                         <div className="flex items-center gap-3">
-                            <Toggle checked={data.google_oauth} onChange={v => setData('google_oauth', v)} />
-                            <span className={`text-xs font-bold ${data.google_oauth ? 'text-emerald-600' : 'text-on-surface-variant'}`}>
-                                {data.google_oauth ? '● Aktif' : '○ Nonaktif'}
+                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${data.google_oauth ? 'bg-emerald-100 text-emerald-700' : 'bg-zinc-100 text-zinc-500'}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${data.google_oauth ? 'bg-emerald-500' : 'bg-zinc-400'}`} />
+                                {data.google_oauth ? 'Aktif' : 'Nonaktif'}
                             </span>
+                            <span className="text-[10px] text-on-surface-variant italic">Ubah via .env</span>
                         </div>
                     </Field>
                     <Field label="Mail Driver" hint="Driver email yang digunakan">
