@@ -16,12 +16,10 @@ for candidate in \
     /usr/local/lsws/lsphp83/bin/php \
     /usr/local/php83/bin/php \
     php8.3 php8.2 php8.1 php; do
-    if [ -x "$candidate" ] || command -v "$candidate" &>/dev/null; then
-        version=$("$candidate" -r "echo PHP_MAJOR_VERSION;" 2>/dev/null)
-        if [ "$version" -ge 8 ] 2>/dev/null; then
-            PHP="$candidate"
-            break
-        fi
+    # Try running it directly — handles cases where file exists but isn't in PATH
+    if "$candidate" -r "exit(PHP_MAJOR_VERSION >= 8 ? 0 : 1);" &>/dev/null 2>&1; then
+        PHP="$candidate"
+        break
     fi
 done
 
