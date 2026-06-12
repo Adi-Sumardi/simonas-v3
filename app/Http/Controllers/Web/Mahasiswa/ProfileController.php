@@ -88,7 +88,7 @@ class ProfileController extends Controller
                 'entries.*.judul'              => 'required|string|max:255',
                 'entries.*.posisi'             => 'nullable|string|max:255',
                 'entries.*.mulai'              => 'nullable|date',
-                'entries.*.selesai'            => 'nullable|date',
+                'entries.*.selesai'            => 'nullable|date|after_or_equal:entries.*.mulai',
                 'entries.*.masih_berlangsung'  => 'boolean',
                 'entries.*.deskripsi'          => 'nullable|string|max:1000',
                 'entries.*.lokasi'             => 'nullable|string|max:255',
@@ -208,7 +208,7 @@ class ProfileController extends Controller
     public function updateAvatar(Request $request)
     {
         $request->validate([
-            'avatar' => 'required|image|max:2048',
+            'avatar' => 'required|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         /** @var User $user */

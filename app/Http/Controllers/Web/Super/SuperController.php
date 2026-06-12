@@ -33,7 +33,9 @@ class SuperController extends Controller
             $query->where('status_warga', $request->status);
         }
 
-        $warga = $query->paginate($request->per_page ?? 10)->withQueryString();
+        $perPage = min((int)($request->per_page ?? 10), 100);
+        $warga = $query->select(['id','name','email','no_induk','asrama','status_warga','role','tgl_masuk','angkatan','avatar','no_telp'])
+            ->paginate($perPage)->withQueryString();
 
         return Inertia::render('Super/Warga', [
             'warga'   => $warga,
@@ -60,29 +62,34 @@ class SuperController extends Controller
             });
         }
 
-        $mentors = $query->paginate($request->per_page ?? 10)->withQueryString();
+        $perPage = min((int)($request->per_page ?? 10), 100);
+        $mentors = $query->paginate($perPage)->withQueryString();
 
-        // Calculate active status and stats
-        $mappedMentors = $mentors->getCollection()->map(function($m) {
-            $lastAkademik = \App\Models\Akademik::where('nama_penilai', $m->name)->latest('updated_at')->first();
-            $lastHafalan = \App\Models\HafalanLog::where('mentor_id', $m->id)->latest('updated_at')->first();
+        // Bulk-compute per-mentor stats to avoid N+1
+        $mentorIds   = $mentors->getCollection()->pluck('id');
+        $mentorNames = $mentors->getCollection()->pluck('name');
 
-            $lastDate = collect([$lastAkademik?->updated_at, $lastHafalan?->updated_at])->filter()->max();
+        $bulkAkademik   = \App\Models\Akademik::whereIn('nama_penilai', $mentorNames)->selectRaw('nama_penilai, COUNT(*) as cnt, MAX(updated_at) as last_at')->groupBy('nama_penilai')->get()->keyBy('nama_penilai');
+        $bulkLeadership = \App\Models\Leadership::whereIn('nama_penilai', $mentorNames)->selectRaw('nama_penilai, COUNT(*) as cnt')->groupBy('nama_penilai')->pluck('cnt', 'nama_penilai');
+        $bulkKarakter   = \App\Models\Karakter::whereIn('nama_penilai', $mentorNames)->selectRaw('nama_penilai, COUNT(*) as cnt')->groupBy('nama_penilai')->pluck('cnt', 'nama_penilai');
+        $bulkKreatif    = \App\Models\Kreatif::whereIn('nama_penilai', $mentorNames)->selectRaw('nama_penilai, COUNT(*) as cnt')->groupBy('nama_penilai')->pluck('cnt', 'nama_penilai');
+        $bulkHafalan    = \App\Models\HafalanLog::whereIn('mentor_id', $mentorIds)->selectRaw('mentor_id, COUNT(*) as cnt, MAX(updated_at) as last_at')->groupBy('mentor_id')->get()->keyBy('mentor_id');
+
+        $mappedMentors = $mentors->getCollection()->map(function($m) use ($bulkAkademik, $bulkLeadership, $bulkKarakter, $bulkKreatif, $bulkHafalan) {
+            $lastAkademikAt = $bulkAkademik[$m->name]?->last_at ? \Carbon\Carbon::parse($bulkAkademik[$m->name]->last_at) : null;
+            $lastHafalanAt  = $bulkHafalan[$m->id]?->last_at ? \Carbon\Carbon::parse($bulkHafalan[$m->id]->last_at) : null;
+            $lastDate = collect([$lastAkademikAt, $lastHafalanAt])->filter()->max();
             $isActive = $lastDate && $lastDate->gt(now()->subDays(30));
 
-            // Count assessments
-            $categories = [];
             $counts = [
-                'akademik'    => \App\Models\Akademik::where('nama_penilai', $m->name)->count(),
-                'leadership'  => \App\Models\Leadership::where('nama_penilai', $m->name)->count(),
-                'karakter'    => \App\Models\Karakter::where('nama_penilai', $m->name)->count(),
-                'kreatif'     => \App\Models\Kreatif::where('nama_penilai', $m->name)->count(),
-                'hafalan'     => \App\Models\HafalanLog::where('mentor_id', $m->id)->count(),
+                'akademik'   => (int)($bulkAkademik[$m->name]?->cnt ?? 0),
+                'leadership' => (int)($bulkLeadership[$m->name] ?? 0),
+                'karakter'   => (int)($bulkKarakter[$m->name] ?? 0),
+                'kreatif'    => (int)($bulkKreatif[$m->name] ?? 0),
+                'hafalan'    => (int)($bulkHafalan[$m->id]?->cnt ?? 0),
             ];
-
-            foreach ($counts as $cat => $count) {
-                if ($count > 0) $categories[] = ucfirst($cat);
-            }
+            $categories = array_keys(array_filter($counts, fn($c) => $c > 0));
+            $categories = array_map('ucfirst', $categories);
 
             return [
                 'id'            => $m->id,
@@ -95,7 +102,7 @@ class SuperController extends Controller
                 'last_login'    => $m->last_login_at ? $m->last_login_at->format('d M Y, H:i') : 'Belum pernah login',
                 'last_activity' => $lastDate ? $lastDate->format('d M Y') : 'Belum ada log',
                 'total_nilai'   => array_sum($counts),
-                'categories'    => $categories,
+                'categories'    => array_values($categories),
                 'mentee_count'  => $m->mentees->count(),
                 'mentees'       => $m->mentees->map(fn($st) => [
                     'id'     => $st->id,
@@ -193,7 +200,8 @@ class SuperController extends Controller
             $query->where('angkatan', '<=', $request->tahun_sampai);
         }
 
-        $users = $query->paginate($request->per_page ?? 12)->withQueryString();
+        $perPage = min((int)($request->per_page ?? 12), 100);
+        $users = $query->paginate($perPage)->withQueryString();
 
         // Map User + Alumni data for frontend
         $mappedData = $users->getCollection()->map(function($user) {
@@ -282,7 +290,8 @@ class SuperController extends Controller
             $query->where('waktu', '<', now());
         }
 
-        $kegiatan = $query->orderBy('waktu', 'desc')->paginate($request->per_page ?? 12)->withQueryString();
+        $perPage = min((int)($request->per_page ?? 12), 100);
+        $kegiatan = $query->orderBy('waktu', 'desc')->paginate($perPage)->withQueryString();
 
         return Inertia::render('Super/Kegiatan', [
             'kegiatan' => $kegiatan,
@@ -576,6 +585,7 @@ class SuperController extends Controller
 
     public function destroyAsrama(\App\Models\Asrama $asrama)
     {
+        \App\Models\User::where('asrama', $asrama->nama_asrama)->update(['asrama' => null]);
         $asrama->delete();
         return back()->with('success', 'Asrama berhasil dihapus.');
     }
@@ -594,6 +604,7 @@ class SuperController extends Controller
 
     public function updateJabatan(Request $request, \App\Models\Asrama $asrama, \App\Models\AsramaJabatan $jabatan)
     {
+        abort_if($jabatan->asrama_id !== $asrama->id, 403);
         $data = $request->validate([
             'tahun'    => 'required|integer|min:2000|max:2100',
             'direktur' => 'nullable|string|max:100',
@@ -605,6 +616,7 @@ class SuperController extends Controller
 
     public function destroyJabatan(\App\Models\Asrama $asrama, \App\Models\AsramaJabatan $jabatan)
     {
+        abort_if($jabatan->asrama_id !== $asrama->id, 403);
         $jabatan->delete();
         return back()->with('success', 'Data jabatan dihapus.');
     }

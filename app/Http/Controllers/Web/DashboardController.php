@@ -131,27 +131,36 @@ class DashboardController extends Controller
         }
         $recentActivities = $recent->sortByDesc(fn($r) => $r['created_at'])->take(3)->values();
 
-        // Real ranking: get all students and sort them by points to find rank
-        $allStudents = \App\Models\User::where('role', 'mahasiswa')->get()
-            ->map(fn($u) => [
-                'id' => $u->id,
-                'points' => $u->calculatePoints()
-            ])
-            ->sortByDesc('points')
-            ->values();
+        // Bulk-compute points for all mahasiswa: O(activity_types) queries, not O(N * activity_types)
+        $studentIds = \App\Models\User::where('role', 'mahasiswa')->pluck('id');
+        $allPoints  = array_fill_keys($studentIds->toArray(), 0);
+        $rules      = \App\Models\PointRule::activeRules();
 
-        $rank = 1;
-        foreach ($allStudents as $index => $item) {
-            if ($item['id'] === $user->id) {
-                $rank = $index + 1;
-                break;
+        if ($rules->isNotEmpty()) {
+            $bulkCounts = [
+                'akademik'   => \App\Models\Akademik::whereIn('user_id', $studentIds)->selectRaw('user_id, COUNT(*) as cnt')->groupBy('user_id')->pluck('cnt', 'user_id'),
+                'leadership' => \App\Models\Leadership::whereIn('user_id', $studentIds)->selectRaw('user_id, COUNT(*) as cnt')->groupBy('user_id')->pluck('cnt', 'user_id'),
+                'karakter'   => \App\Models\Karakter::whereIn('user_id', $studentIds)->selectRaw('user_id, COUNT(*) as cnt')->groupBy('user_id')->pluck('cnt', 'user_id'),
+                'kreatif'    => \App\Models\Kreatif::whereIn('user_id', $studentIds)->selectRaw('user_id, COUNT(*) as cnt')->groupBy('user_id')->pluck('cnt', 'user_id'),
+                'hafalan'    => \App\Models\HafalanLog::whereIn('user_id', $studentIds)->where('score', 'memtas')->selectRaw('user_id, COUNT(*) as cnt')->groupBy('user_id')->pluck('cnt', 'user_id'),
+            ];
+            foreach ($rules as $rule) {
+                $counts = $bulkCounts[$rule->activity_type] ?? collect();
+                foreach ($counts as $uid => $cnt) {
+                    $allPoints[$uid] = ($allPoints[$uid] ?? 0) + (int)$cnt * $rule->poin;
+                }
             }
+        } else {
+            $allPoints[$user->id] = $totalPoints;
         }
 
-        $toNext = 0;
+        arsort($allPoints);
+        $sortedIds = array_keys($allPoints);
+        $rankPos   = array_search($user->id, $sortedIds);
+        $rank      = $rankPos !== false ? (int)$rankPos + 1 : count($allPoints);
+        $toNext    = 0;
         if ($rank > 1) {
-            $nextStudentPoints = $allStudents[$rank - 2]['points'];
-            $toNext = max(0, $nextStudentPoints - $totalPoints + 1);
+            $toNext = max(0, ($allPoints[$sortedIds[$rank - 2]] ?? 0) - $totalPoints + 1);
         }
 
         return [

@@ -14,13 +14,11 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, CanResetPassword, HasRoles;
 
     protected $fillable = [
-        'captcha',
         'avatar',
         'name',
         'email',
         'google_id',
         'password',
-        'role',
         'asrama',
         'status_warga',
         'no_induk',

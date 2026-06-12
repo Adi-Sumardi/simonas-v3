@@ -80,7 +80,14 @@ export default function Alumni({ alumni, asrama_list, stats, filters }: Props) {
     }
 
     const handlePageChange = (page: number) => {
-        router.get('/super/alumni', { ...filters, page }, { preserveState: true });
+        router.get('/super/alumni', {
+            search: debouncedSearch,
+            asrama,
+            tahun_dari: tahunDari,
+            tahun_sampai: tahunSampai,
+            per_page: alumni.per_page,
+            page,
+        }, { preserveState: true });
     };
 
     return (
@@ -272,7 +279,14 @@ export default function Alumni({ alumni, asrama_list, stats, filters }: Props) {
                 perPage={alumni.per_page}
                 onPageChange={handlePageChange}
                 onPerPageChange={(newPerPage) => {
-                    router.get('/super/alumni', { ...filters, per_page: newPerPage }, { preserveState: true });
+                    router.get('/super/alumni', {
+                        search: debouncedSearch,
+                        asrama,
+                        tahun_dari: tahunDari,
+                        tahun_sampai: tahunSampai,
+                        per_page: newPerPage,
+                        page: 1,
+                    }, { preserveState: true });
                 }}
             />
 
