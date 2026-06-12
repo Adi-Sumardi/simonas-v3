@@ -512,7 +512,7 @@ export default function RolePermission({ roles, permissions, users }: Props) {
                                             ROLE_COLOR[r] ?? 'bg-surface-container text-on-surface border-outline-variant'
                                         }`}>
                                             <Icon name={ROLE_ICON[r] ?? 'person'} className="text-xs" filled />
-                                            {r}
+                                            {r.replace(/_/g, ' ')}
                                         </span>
                                     ))}
                                 </div>
@@ -585,7 +585,7 @@ export default function RolePermission({ roles, permissions, users }: Props) {
                                                 key={r.id}
                                                 type="button"
                                                 onClick={() => toggleUserRole(uid, r.name)}
-                                                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold border-2 transition-all text-left ${
+                                                className={`flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-bold border-2 transition-all text-left min-w-0 ${
                                                     checked
                                                         ? (ROLE_COLOR[r.name] ?? 'bg-primary-container') + ' border-current shadow-md scale-[1.02]'
                                                         : 'border-surface-container text-on-surface-variant bg-white/50 hover:bg-white'
@@ -596,8 +596,8 @@ export default function RolePermission({ roles, permissions, users }: Props) {
                                                 }`}>
                                                     {checked && <Icon name="check" className="text-[10px] text-white" />}
                                                 </div>
-                                                <Icon name={ROLE_ICON[r.name] ?? 'person'} className="text-base" filled />
-                                                <span className="capitalize">{r.name}</span>
+                                                <Icon name={ROLE_ICON[r.name] ?? 'person'} className="text-base flex-shrink-0" filled />
+                                                <span className="capitalize truncate min-w-0">{r.name.replace(/_/g, ' ')}</span>
                                             </button>
                                         );
                                     })}
@@ -612,7 +612,7 @@ export default function RolePermission({ roles, permissions, users }: Props) {
                                             ROLE_COLOR[r] ?? 'bg-surface-container text-on-surface border-outline-variant'
                                         }`}>
                                             <Icon name={ROLE_ICON[r] ?? 'person'} className="text-xs" filled />
-                                            {r}
+                                            {r.replace(/_/g, ' ')}
                                         </span>
                                     ))}
                                 </div>

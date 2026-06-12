@@ -34,6 +34,13 @@ createInertiaApp({
         } else {
             createRoot(el).render(<App {...props} />);
         }
+        // Fade out splash screen after React has painted the first frame
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            const splash = document.getElementById('app-splash');
+            if (!splash) return;
+            splash.classList.add('fade-out');
+            setTimeout(() => splash.remove(), 380);
+        }));
     },
     progress: {
         color: '#2563eb',

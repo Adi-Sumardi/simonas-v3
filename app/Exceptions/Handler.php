@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -25,8 +26,18 @@ class Handler extends ExceptionHandler
                 default => 'Errors/Error404',
             };
 
+            $user = Auth::user();
+            $dashboardUrl = match ($user?->role) {
+                'super'   => '/super/dashboard',
+                'admin'   => '/admin/dashboard',
+                'mentor'  => '/mentor',
+                'alumni'  => '/alumni/dashboard',
+                default   => $user ? '/dashboard' : '/',
+            };
+
             return Inertia::render($component, [
-                'status' => $response->getStatusCode(),
+                'status'       => $response->getStatusCode(),
+                'dashboardUrl' => $dashboardUrl,
             ])
                 ->toResponse($request)
                 ->setStatusCode($response->getStatusCode());

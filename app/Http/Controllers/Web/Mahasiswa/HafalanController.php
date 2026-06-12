@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Web\Mahasiswa;
 use App\Http\Controllers\Controller;
 use App\Models\Hafalan;
 use App\Models\HafalanLog;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -84,7 +83,7 @@ class HafalanController extends Controller
             'current_surah_nama'  => $data['surah_nama'],
             'current_ayat'        => $data['ayat'],
             'current_juz'         => $data['juz'],
-            'current_page'        => $data['page'],
+            'current_page'        => $data['page'] ?? null,
         ]);
 
         return back()->with('success', 'Posisi hafalan berhasil disimpan.');

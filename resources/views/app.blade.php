@@ -30,6 +30,75 @@
     {{-- Splash screens for iOS --}}
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+    {{-- Critical inline CSS: background + splash screen (loads instantly, no CSS file needed) --}}
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f9f9f9 0%, #eef2ff 100%);
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        #app-splash {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f9f9f9 0%, #eef2ff 100%);
+            gap: 20px;
+            transition: opacity 0.35s ease;
+        }
+        #app-splash.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .splash-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .splash-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(37,99,235,0.35);
+        }
+        .splash-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: #fff;
+        }
+        .splash-name {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #1e3a8a;
+        }
+        .splash-spinner {
+            width: 28px;
+            height: 28px;
+            border: 3px solid rgba(37,99,235,0.15);
+            border-top-color: #2563eb;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        .splash-hint {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: -8px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+
     {{-- Fonts are self-hosted via npm (material-symbols + fontsource) --}}
     {{-- No external CDN calls needed --}}
 
@@ -38,6 +107,21 @@
     @inertiaHead
 </head>
 <body class="font-body antialiased">
+
+    {{-- Splash screen: pure HTML/CSS, shows instantly before JS/CSS bundle loads --}}
+    <div id="app-splash" aria-hidden="true">
+        <div class="splash-logo">
+            <div class="splash-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 3L1 9l4 2.18V17h14v-5.82L23 9 12 3zm6 12H6v-4.82l6-3.27 6 3.27V15zm-6 2c-1.1 0-2 .9-2 2h4c0-1.1-.9-2-2-2z"/>
+                </svg>
+            </div>
+            <span class="splash-name">SIMONAS</span>
+        </div>
+        <div class="splash-spinner"></div>
+        <span class="splash-hint">Memuat halaman...</span>
+    </div>
+
     @inertia
 </body>
 </html>
