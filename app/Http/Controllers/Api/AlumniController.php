@@ -275,9 +275,9 @@ class AlumniController extends Controller
             // Hitung berdasarkan tahun wisuda
             $alumniPerTahun = User::alumni()
                 ->where('asrama', $asramaName)
-                ->select(DB::raw('YEAR(tgl_wisuda) as tahun'), DB::raw('count(*) as total'))
+                ->select(DB::raw('substr(tgl_wisuda, 1, 4) as tahun'), DB::raw('count(*) as total'))
                 ->whereNotNull('tgl_wisuda')
-                ->groupBy(DB::raw('YEAR(tgl_wisuda)'))
+                ->groupBy(DB::raw('substr(tgl_wisuda, 1, 4)'))
                 ->orderBy('tahun', 'desc')
                 ->get();
 

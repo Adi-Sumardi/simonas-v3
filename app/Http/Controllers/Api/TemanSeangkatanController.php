@@ -36,7 +36,7 @@ class TemanSeangkatanController extends Controller
 
             // Cari teman seangkatan dengan whereRaw untuk handle format tanggal
             $temanSeangkatan = User::where('id', '!=', $userId)
-                ->whereRaw("YEAR(STR_TO_DATE(tgl_masuk, '%Y-%m-%d')) = ?", [$tahunMasuk])
+                ->whereRaw("substr(tgl_masuk, 1, 4) = ?", [(string) $tahunMasuk])
                 ->where('asrama', $user->asrama)
                 ->select([
                     'id',
