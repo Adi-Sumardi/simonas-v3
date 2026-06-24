@@ -47,7 +47,7 @@ export default function Register({ asramas }: Props) {
                 <div className="text-center mb-6">
                     <h2 className="font-display text-headline-md text-on-surface mt-4">Begin Your Journey</h2>
                     <p className="text-body-sm text-on-surface-variant mt-1">
-                        Join our digital academic sanctuary today.
+                        Bergabung dengan digital asrama YAPI hari ini.
                     </p>
                 </div>
 
