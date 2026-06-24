@@ -16,6 +16,7 @@ set -euo pipefail
 # ── Konfigurasi ──────────────────────────────────────────────────────────────
 BRANCH="${BRANCH:-main}"
 WEB_USER="${WEB_USER:-www-data}"        # user yang dipakai nginx/php-fpm
+DEPLOY_USER="${DEPLOY_USER:-$(whoami)}" # user yang menjalankan deploy
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
@@ -23,6 +24,11 @@ cd "$SCRIPT_DIR"
 SUDO=""
 if [ "$(id -u)" -ne 0 ]; then
     command -v sudo >/dev/null 2>&1 && SUDO="sudo"
+fi
+
+# Pastikan deploy user ada di group www-data (sekali saja, idempotent)
+if ! id -nG "$DEPLOY_USER" 2>/dev/null | grep -qw "$WEB_USER"; then
+    $SUDO usermod -aG "$WEB_USER" "$DEPLOY_USER" 2>/dev/null || true
 fi
 
 # ── Deteksi binary PHP 8.x ───────────────────────────────────────────────────
@@ -116,8 +122,9 @@ echo ""
 # ── 8. Storage link + perbaiki permission ────────────────────────────────────
 echo "🔗  [8/9] Storage link & permission..."
 $PHP artisan storage:link --quiet 2>/dev/null || true
+# Owner = deploy user (agar artisan bisa tulis), group = www-data (agar nginx/fpm bisa baca)
 if [ -n "$SUDO" ] || [ "$(id -u)" -eq 0 ]; then
-    $SUDO chown -R "$WEB_USER:$WEB_USER" storage bootstrap/cache 2>/dev/null || true
+    $SUDO chown -R "$DEPLOY_USER:$WEB_USER" storage bootstrap/cache 2>/dev/null || true
 fi
 chmod -R ug+rwX storage bootstrap/cache 2>/dev/null || true
 echo ""
