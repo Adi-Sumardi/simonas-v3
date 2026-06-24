@@ -19,6 +19,7 @@ class User extends Authenticatable
         'email',
         'google_id',
         'password',
+        'role',
         'asrama',
         'status_warga',
         'no_induk',

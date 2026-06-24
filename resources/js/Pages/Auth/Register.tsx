@@ -21,8 +21,11 @@ export default function Register({ asramas }: Props) {
         name: '',
         no_induk: '',
         asrama: '',
+        tgl_masuk: '',
+        role: '',
         email: '',
         password: '',
+        password_confirmation: '',
     });
 
     function submit(e: FormEvent) {
@@ -98,6 +101,43 @@ export default function Register({ asramas }: Props) {
                         </div>
                     </div>
 
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <Label htmlFor="tgl_masuk">Tanggal Masuk Asrama</Label>
+                            <div className="glass-input flex items-center gap-2">
+                                <Icon name="calendar_today" className="text-xl text-on-surface-variant" />
+                                <input
+                                    id="tgl_masuk"
+                                    type="date"
+                                    value={data.tgl_masuk}
+                                    onChange={(e) => setData('tgl_masuk', e.target.value)}
+                                    className="flex-1 bg-transparent border-0 outline-none text-on-surface py-1"
+                                    required
+                                />
+                            </div>
+                            {errors.tgl_masuk && <p className="mt-1 text-body-sm text-error">{errors.tgl_masuk}</p>}
+                        </div>
+                        <div>
+                            <Label htmlFor="role">Role</Label>
+                            <div className="glass-input flex items-center gap-2">
+                                <Icon name="manage_accounts" className="text-xl text-on-surface-variant" />
+                                <select
+                                    id="role"
+                                    value={data.role}
+                                    onChange={(e) => setData('role', e.target.value)}
+                                    className="flex-1 bg-transparent border-0 outline-none text-on-surface py-1"
+                                    required
+                                >
+                                    <option value="">Pilih Role</option>
+                                    <option value="mahasiswa">Mahasiswa</option>
+                                    <option value="mentor">Mentor</option>
+                                    <option value="alumni">Alumni</option>
+                                </select>
+                            </div>
+                            {errors.role && <p className="mt-1 text-body-sm text-error">{errors.role}</p>}
+                        </div>
+                    </div>
+
                     <div>
                         <Label htmlFor="email">Email Address</Label>
                         <Input
@@ -131,6 +171,20 @@ export default function Register({ asramas }: Props) {
                                 </button>
                             }
                             error={errors.password}
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <Label htmlFor="password_confirmation">Konfirmasi Password</Label>
+                        <Input
+                            id="password_confirmation"
+                            type={showPassword ? 'text' : 'password'}
+                            value={data.password_confirmation}
+                            onChange={(e) => setData('password_confirmation', e.target.value)}
+                            placeholder="••••••••"
+                            leftIcon={<Icon name="lock" className="text-xl" />}
+                            error={errors.password_confirmation}
                             required
                         />
                     </div>

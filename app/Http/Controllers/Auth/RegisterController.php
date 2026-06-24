@@ -102,6 +102,8 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'no_induk' => ['required', 'string', 'max:50', 'unique:users,no_induk'],
             'asrama' => ['required', 'string', 'exists:asramas,nama_asrama'],
+            'tgl_masuk' => ['required', 'date'],
+            'role' => ['required', 'string', 'in:mahasiswa,mentor,alumni'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
@@ -119,9 +121,10 @@ class RegisterController extends Controller
             'name' => $data['name'],
             'no_induk' => $data['no_induk'],
             'asrama' => $data['asrama'],
+            'tgl_masuk' => $data['tgl_masuk'],
+            'role' => $data['role'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'role' => 'mahasiswa',
         ]);
     }
 }
