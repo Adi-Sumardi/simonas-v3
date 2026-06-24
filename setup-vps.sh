@@ -1,7 +1,7 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────────────────────
 # setup-vps.sh — Provisioning awal VPS untuk SIMONAS
-#                Ubuntu 22.04 / 24.04 · PHP 8.3 · Nginx · PostgreSQL · SSL
+#                Ubuntu 22.04 / 24.04 · PHP 8.3 · Nginx · PostgreSQL · UFW · SSL
 #
 # Jalankan SEKALI di VPS yang masih kosong, sebagai root:
 #     sudo bash setup-vps.sh
@@ -46,12 +46,12 @@ echo ""
 export DEBIAN_FRONTEND=noninteractive
 
 # ── 1. Paket dasar ───────────────────────────────────────────────────────────
-echo "📦  [1/8] Update & paket dasar..."
+echo "📦  [1/9] Update & paket dasar..."
 apt-get update -y
 apt-get install -y software-properties-common curl git unzip ca-certificates gnupg lsb-release
 
 # ── 2. PHP 8.3 + ekstensi (repo ondrej) ──────────────────────────────────────
-echo "🐘  [2/8] Install PHP $PHP_VER + ekstensi..."
+echo "🐘  [2/9] Install PHP $PHP_VER + ekstensi..."
 add-apt-repository -y ppa:ondrej/php
 apt-get update -y
 apt-get install -y \
@@ -61,25 +61,26 @@ apt-get install -y \
     "php${PHP_VER}-intl" "php${PHP_VER}-redis"
 
 # ── 3. Composer ──────────────────────────────────────────────────────────────
-echo "🎼  [3/8] Install Composer..."
+echo "🎼  [3/9] Install Composer..."
 if ! command -v composer >/dev/null 2>&1; then
     curl -sS https://getcomposer.org/installer | "php${PHP_VER}" -- --install-dir=/usr/local/bin --filename=composer
 fi
 
 # ── 4. Node.js (NodeSource) ──────────────────────────────────────────────────
-echo "🟢  [4/8] Install Node.js $NODE_MAJOR..."
+echo "🟢  [4/9] Install Node.js $NODE_MAJOR..."
 if ! command -v node >/dev/null 2>&1; then
     curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash -
     apt-get install -y nodejs
 fi
 
 # ── 5. Nginx + PostgreSQL ────────────────────────────────────────────────────
-echo "🌐  [5/8] Install Nginx & PostgreSQL..."
+echo "🌐  [5/9] Install Nginx & PostgreSQL..."
 apt-get install -y nginx postgresql postgresql-contrib
 systemctl enable --now nginx postgresql
+systemctl enable --now "php${PHP_VER}-fpm"
 
 # ── 6. Buat database & role ──────────────────────────────────────────────────
-echo "🗄️   [6/8] Setup database '$DB_NAME'..."
+echo "🗄️   [6/9] Setup database '$DB_NAME'..."
 # Buat role (idempotent) — set/refresh password
 sudo -u postgres psql -v ON_ERROR_STOP=1 <<SQL
 DO \$\$
@@ -103,7 +104,7 @@ sudo -u postgres psql -d "${DB_NAME}" -v ON_ERROR_STOP=1 \
     -c "ALTER SCHEMA public OWNER TO \"${DB_USER}\";"
 
 # ── 7. Vhost Nginx (docroot: public/) ────────────────────────────────────────
-echo "⚙️   [7/8] Konfigurasi Nginx..."
+echo "⚙️   [7/9] Konfigurasi Nginx..."
 SERVER_NAME="${DOMAIN:-_}"
 FPM_SOCK="/run/php/php${PHP_VER}-fpm.sock"
 cat > /etc/nginx/sites-available/simonas <<NGINX
@@ -144,9 +145,22 @@ nginx -t && systemctl reload nginx
 mkdir -p "$APP_DIR"
 chown -R "$WEB_USER:$WEB_USER" "$(dirname "$APP_DIR")/$(basename "$APP_DIR")"
 
-# ── 8. SSL (Certbot) — hanya jika domain diisi ───────────────────────────────
+# ── 8. Firewall (UFW) ────────────────────────────────────────────────────────
+echo "🛡️   [8/9] Setup UFW firewall..."
+apt-get install -y ufw
+ufw --force reset
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow 22/tcp    # SSH
+ufw allow 80/tcp    # HTTP
+ufw allow 443/tcp   # HTTPS
+ufw --force enable
+echo "   ✅  UFW aktif. Status:"
+ufw status numbered
+
+# ── 9. SSL (Certbot) — hanya jika domain diisi ───────────────────────────────
 if [ -n "$DOMAIN" ]; then
-    echo "🔒  [8/8] Setup SSL untuk $DOMAIN..."
+    echo "🔒  [9/9] Setup SSL untuk $DOMAIN..."
     apt-get install -y certbot python3-certbot-nginx
     if certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m "$EMAIL" --redirect; then
         echo "   ✅  SSL aktif."
@@ -155,7 +169,7 @@ if [ -n "$DOMAIN" ]; then
         echo "       sudo certbot --nginx -d $DOMAIN"
     fi
 else
-    echo "⏭️   [8/8] Domain kosong, SSL dilewati."
+    echo "⏭️   [9/9] Domain kosong, SSL dilewati."
 fi
 
 # ── Selesai ──────────────────────────────────────────────────────────────────
@@ -174,10 +188,11 @@ Langkah berikutnya:
        cp .env.example .env
        Sesuaikan minimal:
          APP_ENV=production · APP_DEBUG=false
-         APP_URL=https://${DOMAIN:-$SERVER_IP}
+         APP_URL=http://${DOMAIN:-$SERVER_IP}
          DB_CONNECTION=pgsql · DB_HOST=127.0.0.1 · DB_PORT=5432
          DB_DATABASE=${DB_NAME} · DB_USERNAME=${DB_USER} · DB_PASSWORD=(password tadi)
-         LIVEKIT_API_SECRET= (minimal 32 karakter!)
+         LIVEKIT_HOST=https://your-project.livekit.cloud
+         LIVEKIT_API_KEY= · LIVEKIT_API_SECRET=
        php${PHP_VER} artisan key:generate
 
   3. Deploy:

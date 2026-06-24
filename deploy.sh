@@ -14,7 +14,7 @@
 set -euo pipefail
 
 # ── Konfigurasi ──────────────────────────────────────────────────────────────
-BRANCH="${BRANCH:-upgrade/laravel-10}"
+BRANCH="${BRANCH:-main}"
 WEB_USER="${WEB_USER:-www-data}"        # user yang dipakai nginx/php-fpm
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
@@ -45,6 +45,14 @@ FPM_SERVICE="php${PHP_VER%.*}-fpm"      # mis. php8.3-fpm
 echo "✅  PHP: $PHP ($PHP_VER) · FPM service: $FPM_SERVICE · Branch: $BRANCH"
 echo ""
 
+# ── Pastikan .env ada sebelum menjalankan artisan ───────────────────────────
+if [ ! -f .env ]; then
+    echo "❌  File .env tidak ditemukan!"
+    echo "    Salin dan isi dulu: cp .env.example .env"
+    echo "    Lalu jalankan: php artisan key:generate"
+    exit 1
+fi
+
 # Catat commit sebelum pull untuk deteksi perubahan
 PREV_REF="$(git rev-parse HEAD)"
 
@@ -68,7 +76,7 @@ changed() { echo "$CHANGED" | grep -q "$1"; }
 # ── 3. Composer (skip jika composer.lock tidak berubah) ──────────────────────
 if changed "composer.lock" || [ ! -d vendor ]; then
     echo "📦  [3/9] composer install --no-dev --optimize-autoloader..."
-    $PHP "$COMPOSER" install --no-dev --optimize-autoloader --no-interaction
+    "$COMPOSER" install --no-dev --optimize-autoloader --no-interaction
 else
     echo "⏭️   [3/9] composer.lock tidak berubah, skip."
 fi
