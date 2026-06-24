@@ -35,7 +35,7 @@ export default function Login({ canRegister = true, canResetPassword = true, goo
                         <Icon name="apartment" className="text-3xl text-on-primary" filled />
                     </div>
                     <h1 className="font-display text-headline-md text-primary-container">SIMONAS</h1>
-                    <p className="text-body-sm text-on-surface-variant mt-1">Academic Sanctuary Management</p>
+                    <p className="text-body-sm text-on-surface-variant mt-1">Digital Asrama YAPI</p>
                 </div>
 
                 <form onSubmit={submit} className="space-y-5">
