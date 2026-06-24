@@ -68,7 +68,7 @@ export default function Portfolio({ user, riwayats, activities, hafalan }: Portf
 
                     <div className="flex-1 z-10">
                         <h1 className="text-4xl font-black tracking-tight mb-2 uppercase">{user.name}</h1>
-                        <p className="text-lg font-medium opacity-90 mb-4">{user.prodi || 'Mahasiswa'} • {user.universitas || 'SIMONAS Academic Sanctuary'}</p>
+                        <p className="text-lg font-medium opacity-90 mb-4">{user.prodi || 'Mahasiswa'} • {user.universitas || 'Digital Asrama YAPI'}</p>
                         
                         <div className="flex flex-wrap gap-4 text-sm font-semibold">
                             <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-full">
@@ -227,7 +227,7 @@ export default function Portfolio({ user, riwayats, activities, hafalan }: Portf
                         </div>
                         <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest leading-loose">
                             Dokumen ini di-generate secara otomatis oleh Sistem Informasi <br />
-                            Monitoring Mahasiswa & Asrama (SIMONAS) Academic Sanctuary.
+                            Monitoring Mahasiswa & Asrama (SIMONAS) Digital Asrama YAPI.
                         </p>
                     </div>
                     <div className="text-right">

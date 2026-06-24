@@ -139,7 +139,7 @@ export default function Login({ canRegister = true, canResetPassword = true, goo
                     <div className="mt-6">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="flex-1 h-px bg-outline-variant/50" />
-                            <span className="text-label-caps text-on-surface-variant">New to the Sanctuary?</span>
+                            <span className="text-label-caps text-on-surface-variant">Baru di Digital Asrama YAPI?</span>
                             <div className="flex-1 h-px bg-outline-variant/50" />
                         </div>
                         <p className="text-center text-body-sm text-on-surface-variant">

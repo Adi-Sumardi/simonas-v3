@@ -226,7 +226,7 @@ export default function Register({ asramas }: Props) {
                     </div>
                     <div>
                         <div className="text-body-sm font-semibold text-on-surface">Reflection</div>
-                        <div className="text-label-caps text-on-surface-variant">Daily Sanctuary Habit</div>
+                        <div className="text-label-caps text-on-surface-variant">Kebiasaan Asrama YAPI</div>
                     </div>
                 </div>
             </div>

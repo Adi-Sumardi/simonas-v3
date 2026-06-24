@@ -21,7 +21,7 @@ export default function Welcome({ version }: Props) {
 
     return (
         <div className="min-h-screen bg-serene-gradient selection:bg-primary/20 selection:text-primary">
-            <Head title="SIMONAS - Academic Sanctuary & Dormitory Management" />
+            <Head title="SIMONAS - Digital Asrama YAPI" />
 
             {/* Navigation */}
             <nav className="fixed top-0 left-0 w-full z-50 bg-white/60 backdrop-blur-xl border-b border-white/40">
@@ -254,7 +254,7 @@ export default function Welcome({ version }: Props) {
                         </div>
                     </div>
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-on-surface-variant text-[11px] font-bold uppercase tracking-[0.2em]">
-                        <p>© 2024 SIMONAS ACADEMIC SANCTUARY. ALL RIGHTS RESERVED.</p>
+                        <p>© 2024 SIMONAS DIGITAL ASRAMA YAPI. ALL RIGHTS RESERVED.</p>
                         <p>POWERED BY LARAVEL {version}</p>
                     </div>
                 </div>

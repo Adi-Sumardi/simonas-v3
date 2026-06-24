@@ -40,7 +40,7 @@ export default function Maintenance({ progress = 65, statusCode = 'SE_DORM_SNF_4
                     </div>
 
                     <h1 className="font-display text-display-md text-on-surface mb-3">
-                        Sanctuary Under Maintenance.
+                        Digital Asrama YAPI Under Maintenance.
                     </h1>
                     <p className="text-body-md text-on-surface-variant mb-6">
                         We're polishing your academic experience. Please check back shortly.

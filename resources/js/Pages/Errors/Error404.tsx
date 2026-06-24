@@ -41,8 +41,8 @@ export default function Error404({ dashboardUrl = '/' }: Props) {
                         Oops! This page is not in our archives.
                     </h1>
                     <p className="text-body-md text-on-surface-variant mb-8">
-                        Even in a sanctuary of focus, sometimes we drift off course. The records you're
-                        looking for seem to have been misplaced.
+                        Di Digital Asrama YAPI pun, terkadang kita tersesat. Halaman yang kamu cari
+                        sepertinya tidak ditemukan.
                     </p>
 
                     <div className="flex flex-wrap gap-3">
@@ -74,7 +74,7 @@ export default function Error404({ dashboardUrl = '/' }: Props) {
             </main>
 
             <footer className="px-6 py-6 text-center text-label-caps text-on-surface-variant">
-                © 2026 SIMONAS Academic Sanctuary · All records are secured.
+                © 2026 SIMONAS Digital Asrama YAPI · All records are secured.
             </footer>
         </>
     );

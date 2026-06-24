@@ -803,7 +803,7 @@ export default function Dashboard({ role, permissions, stats, students = [], asr
 
             <PageHeader
                 title={`${greeting}, ${auth.user.name.split(' ')[0]} 👋`}
-                subtitle={`Dashboard ${role.charAt(0).toUpperCase() + role.slice(1)} — SIMONAS Academic Sanctuary`}
+                subtitle={`Dashboard ${role.charAt(0).toUpperCase() + role.slice(1)} — SIMONAS Digital Asrama YAPI`}
             />
 
             {role === 'mahasiswa' && (

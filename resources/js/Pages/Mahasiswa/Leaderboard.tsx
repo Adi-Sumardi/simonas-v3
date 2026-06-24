@@ -45,7 +45,7 @@ export default function Leaderboard({
                 <div>
                     <h1 className="font-display text-display-lg text-primary leading-tight mb-2">Leaderboard</h1>
                     <p className="text-on-surface-variant text-body-md max-w-xl">
-                        Celebrating excellence and dedication within our sanctuary.
+                        Celebrating excellence and dedication within Digital Asrama YAPI.
                     </p>
                 </div>
 
