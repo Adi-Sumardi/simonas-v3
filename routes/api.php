@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\AlumniCommentController;
 // use App\Http\Controllers\Api\AlumniJobApplicationController; // TODO: controller belum ada
 use App\Http\Controllers\Api\V2\ReportController;
 use App\Http\Controllers\Api\AlumniBusinessController;
+use App\Http\Controllers\Api\YapinetSummaryController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -153,3 +154,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/alumni-businesses/{id}', [AlumniBusinessController::class, 'update']);
     Route::delete('/alumni-businesses/{id}', [AlumniBusinessController::class, 'destroy']);
 });
+
+// Yapinet integration (external portal dashboard card + detail poll).
+// Guarded by a static bearer token (see EnsureYapinetApiKey), not Sanctum —
+// intentionally kept flat here, outside the auth:sanctum/v2 groups above.
+Route::middleware('yapinet.auth')->get('integrations/yapinet/summary', [YapinetSummaryController::class, 'summary']);

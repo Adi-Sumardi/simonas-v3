@@ -70,5 +70,6 @@ class Kernel extends HttpKernel
         'mentor' => \App\Http\Middleware\Mentor::class,
         'mahasiswa' => \App\Http\Middleware\Mahasiswa::class,
         'alumni' => \App\Http\Middleware\Alumni::class,
+        'yapinet.auth' => \App\Http\Middleware\EnsureYapinetApiKey::class,
     ];
 }

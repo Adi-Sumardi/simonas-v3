@@ -37,4 +37,8 @@ return [
         'allowed_domains' => array_filter(explode(',', env('GOOGLE_ALLOWED_DOMAINS', ''))),
     ],
 
+    'yapinet' => [
+        'api_key' => env('YAPINET_API_KEY'),
+    ],
+
 ];
