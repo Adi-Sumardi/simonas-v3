@@ -10,10 +10,11 @@ use App\Http\Controllers\Web\Mahasiswa\LeaderboardController;
 use App\Http\Controllers\Web\Mentor\MenteesController;
 use App\Http\Controllers\Web\Mentor\HafalanController      as MentorHafalan;
 use App\Http\Controllers\Web\Mentor\DashboardController    as MentorDash;
+use App\Http\Controllers\Web\WelcomeController;
 use Illuminate\Support\Facades\Auth;
 
 // ─── Public / Guest ───────────────────────────────────────────
-Route::get('/', fn () => inertia('Welcome'))->name('home');
+Route::get('/', WelcomeController::class)->name('home');
 Route::get('/privacy-policy', fn () => view('privacy-policy'))->name('privacy-policy');
 Route::get('/reload-captcha',       [CaptchaController::class, 'reloadCaptcha']);
 Route::get('/reload-captcha-login', [CaptchaController::class, 'reloadCaptchaLogin']);

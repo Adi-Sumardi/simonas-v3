@@ -2,12 +2,24 @@ import { useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { Icon } from '@/Components/ui/Icon';
 
-interface Props {
-    appName: string;
-    version: string;
+interface StatItem {
+    raw: number;
+    formatted: string;
 }
 
-export default function Welcome({ version }: Props) {
+interface Props {
+    appName?: string;
+    version?: string;
+    stats?: {
+        mahasiswa: StatItem;
+        mentor: StatItem;
+        asrama: StatItem;
+        program: StatItem;
+        avgScore: string;
+    };
+}
+
+export default function Welcome({ version, stats }: Props) {
     // Auto-redirect to login if running as an installed PWA (standalone)
     useEffect(() => {
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
@@ -18,6 +30,13 @@ export default function Welcome({ version }: Props) {
             window.location.href = '/login';
         }
     }, []);
+
+    const statList = [
+        { label: 'Mahasiswa Aktif', value: stats?.mahasiswa?.formatted ?? '94', icon: 'groups' },
+        { label: 'Mentor Berpengalaman', value: stats?.mentor?.formatted ?? '7', icon: 'supervisor_account' },
+        { label: 'Asrama Terintegrasi', value: stats?.asrama?.formatted ?? '4', icon: 'apartment' },
+        { label: 'Program Unggulan', value: stats?.program?.formatted ?? '3.2k+', icon: 'verified' },
+    ];
 
     return (
         <div className="min-h-screen bg-serene-gradient selection:bg-primary/20 selection:text-primary">
@@ -91,8 +110,8 @@ export default function Welcome({ version }: Props) {
                                             <Icon name="trending_up" className="text-2xl" filled />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Progress Hafalan</p>
-                                            <p className="text-xl font-bold text-on-surface">98.5% Rata-rata</p>
+                                            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Progress Evaluasi</p>
+                                            <p className="text-xl font-bold text-on-surface">{stats?.avgScore ?? '79.0%'} Rata-rata</p>
                                         </div>
                                     </div>
                                 </div>
@@ -106,12 +125,7 @@ export default function Welcome({ version }: Props) {
             <section id="statistik" className="py-20 bg-white/40 border-y border-white/40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                        {[
-                            { label: 'Mahasiswa Aktif', value: '1.2k+', icon: 'groups' },
-                            { label: 'Mentor Berpengalaman', value: '45+', icon: 'supervisor_account' },
-                            { label: 'Asrama Terintegrasi', value: '12', icon: 'apartment' },
-                            { label: 'Program Unggulan', value: '25+', icon: 'verified' },
-                        ].map((stat, i) => (
+                        {statList.map((stat, i) => (
                             <div key={i} className="text-center group">
                                 <div className="w-14 h-14 bg-white/80 rounded-2xl flex items-center justify-center text-primary-container mx-auto mb-4 shadow-sm group-hover:scale-110 transition-transform">
                                     <Icon name={stat.icon} className="text-2xl" />
