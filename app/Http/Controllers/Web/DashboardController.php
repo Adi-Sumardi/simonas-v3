@@ -89,8 +89,9 @@ class DashboardController extends Controller
         $next = $allTodayPrayers->where('completed', false)->where('is_time_arrived', false)->first();
 
         // 2. Real Activity Logs Calculation (Current Month)
-        $month = now()->month;
-        $year = now()->year;
+        // Use whereBetween instead of whereMonth/whereYear — compatible with PostgreSQL
+        $startOfMonth = now()->startOfMonth()->toDateTimeString();
+        $endOfMonth   = now()->endOfMonth()->toDateTimeString();
         $monthLogsCount = 0;
 
         $models = [
@@ -102,8 +103,7 @@ class DashboardController extends Controller
 
         foreach ($models as $m) {
             $monthLogsCount += $m::where('user_id', $user->id)
-                ->whereMonth('waktu', $month)
-                ->whereYear('waktu', $year)
+                ->whereBetween('waktu', [$startOfMonth, $endOfMonth])
                 ->count();
         }
 
