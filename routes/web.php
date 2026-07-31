@@ -177,6 +177,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/users',                      [App\Http\Controllers\Web\Super\RolePermissionController::class, 'storeUser'])->name('users.store');
         Route::post('/users/{user}/role',          [App\Http\Controllers\Web\Super\RolePermissionController::class, 'assignUserRole'])->name('users.role.assign');
         Route::post('/users/{user}/password',      [App\Http\Controllers\Web\Super\RolePermissionController::class, 'changePassword'])->name('users.password.change');
+        Route::delete('/users/{user}',             [App\Http\Controllers\Web\Super\RolePermissionController::class, 'destroyUser'])->name('users.destroy');
 
         // Super Admin pages (Phase 5)
         Route::get('/warga',      [App\Http\Controllers\Web\Super\SuperController::class, 'warga'])->name('warga.index');

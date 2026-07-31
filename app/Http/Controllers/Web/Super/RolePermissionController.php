@@ -160,4 +160,35 @@ class RolePermissionController extends Controller
 
         return back()->with('success', "Password '{$user->name}' berhasil diubah.");
     }
+
+    // ── Delete user ────────────────────────────────────────────
+
+    public function destroyUser(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'Tidak bisa menghapus akun Anda sendiri.');
+        }
+
+        $related = [
+            'nilai akademik' => \App\Models\Akademik::where('user_id', $user->id)->count(),
+            'nilai leadership' => \App\Models\Leadership::where('user_id', $user->id)->count(),
+            'nilai karakter' => \App\Models\Karakter::where('user_id', $user->id)->count(),
+            'nilai kreativitas' => \App\Models\Kreatif::where('user_id', $user->id)->count(),
+            'ipk' => \App\Models\Ipk::where('user_id', $user->id)->count(),
+        ];
+        $related = array_filter($related);
+
+        if (! empty($related)) {
+            $summary = collect($related)->map(fn ($c, $label) => "{$c} {$label}")->implode(', ');
+            return back()->with('error', "User '{$user->name}' tidak bisa dihapus — masih punya riwayat: {$summary}. Hapus/pindahkan data tersebut dulu.");
+        }
+
+        try {
+            $user->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            return back()->with('error', "User '{$user->name}' tidak bisa dihapus karena masih punya data terkait di bagian lain sistem.");
+        }
+
+        return back()->with('success', "User '{$user->name}' berhasil dihapus.");
+    }
 }
