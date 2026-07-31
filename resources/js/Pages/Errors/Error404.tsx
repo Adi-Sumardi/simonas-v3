@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { Button } from '@/Components/ui/Button';
 import { Icon } from '@/Components/ui/Icon';
+import { ERROR_REPORT_WHATSAPP_URL } from '@/lib/adminContact';
 
 interface Props {
     dashboardUrl?: string;
@@ -52,10 +53,10 @@ export default function Error404({ dashboardUrl = '/' }: Props) {
                                 Return to Dashboard
                             </Button>
                         </Link>
-                        <a href="mailto:support@simonas.id">
+                        <a href={ERROR_REPORT_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
                             <Button variant="secondary">
-                                <Icon name="help" />
-                                Help Center
+                                <Icon name="chat" />
+                                Kontak Admin
                             </Button>
                         </a>
                     </div>

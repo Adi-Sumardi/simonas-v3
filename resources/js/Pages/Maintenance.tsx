@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { Button } from '@/Components/ui/Button';
 import { Icon } from '@/Components/ui/Icon';
+import { ERROR_REPORT_WHATSAPP_URL } from '@/lib/adminContact';
 
 interface Props {
     progress?: number;
@@ -81,9 +82,9 @@ export default function Maintenance({ progress = 65, statusCode = 'SE_DORM_SNF_4
                 </div>
             </div>
             <p className="absolute bottom-4 inset-x-0 text-center text-body-sm text-on-surface-variant">
-                Need urgent assistance? Reach out to the{' '}
-                <a href="mailto:support@simonas.id" className="text-primary-container font-semibold">
-                    Academic Support Desk
+                Butuh bantuan? Hubungi{' '}
+                <a href={ERROR_REPORT_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-primary-container font-semibold">
+                    Kontak Admin
                 </a>
             </p>
         </>
