@@ -93,7 +93,7 @@ class ImportFromMySQL extends Command
         // punya FK komponen_id yang butuh tabel ini sudah terisi.
         if (! $dryRun && DB::table('komponens')->count() === 0) {
             $this->info('🌱  Seeding komponens (belum ada data)...');
-            $this->call('db:seed', ['--class' => \Database\Seeders\KomponenSeeder::class]);
+            $this->call('db:seed', ['--class' => \Database\Seeders\KomponenSeeder::class, '--force' => true]);
         }
 
         $tables = $only ? [$only] : $this->importOrder;
@@ -187,7 +187,7 @@ class ImportFromMySQL extends Command
             // (model_has_roles) — tanpa ini, middleware can:access-* di routes/web.php
             // akan block semua user hasil migrasi.
             $this->info('🔑  Sync role Spatie dari kolom users.role...');
-            $this->call('db:seed', ['--class' => \Database\Seeders\RolePermissionSeeder::class]);
+            $this->call('db:seed', ['--class' => \Database\Seeders\RolePermissionSeeder::class, '--force' => true]);
         }
 
         $this->info("\n✅  Import selesai.");
