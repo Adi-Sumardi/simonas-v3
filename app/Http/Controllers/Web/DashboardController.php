@@ -22,7 +22,7 @@ class DashboardController extends Controller
         $role = $user->role ?? 'mahasiswa';
 
         $payload = match ($role) {
-            'super'            => $this->superPayload($user),
+            'super'            => $this->superPayload($user, $request),
             'admin'            => $this->adminPayload($user),
             'mentor'           => $this->mentorPayload($user),
             'alumni'           => $this->alumniPayload($user),
@@ -276,45 +276,28 @@ class DashboardController extends Controller
         ];
     }
 
-    private function superPayload($user): array
+    private function superPayload($user, ?Request $request = null): array
     {
         $totalWarga  = \App\Models\User::where('role', 'mahasiswa')->count();
         $totalMentor = \App\Models\User::where('role', 'mentor')->count();
         $totalAlumni = \App\Models\User::where('role', 'alumni')->count();
 
+        // Rentang tanggal untuk radar chart — default bulan berjalan.
+        $radarFrom = $request?->query('radar_from') ?: now()->startOfMonth()->toDateString();
+        $radarTo   = $request?->query('radar_to')   ?: now()->endOfMonth()->toDateString();
+
         // Build real student radar data from DB
         $mahasiswas = \App\Models\User::where('role', 'mahasiswa')->take(20)->get();
 
-        $students = $mahasiswas->map(function ($m) {
-            $hafalanCount   = \App\Models\HafalanLog::where('user_id', $m->id)->where('score', 'memtas')->count();
-            $akademikCount  = \App\Models\Akademik::where('user_id', $m->id)->count();
-            $leaderCount    = \App\Models\Leadership::where('user_id', $m->id)->count();
-            $karakterCount  = \App\Models\Karakter::where('user_id', $m->id)->count();
-            $kreatifCount   = \App\Models\Kreatif::where('user_id', $m->id)->count();
-
-            // Normalize to 0-100 scale (max ~20 activities = 100)
-            $norm = fn($v) => min(100, round($v * 5));
-
-            $shalat      = $norm(rand(3, 5)); // shalat data from UserEvent would need time-based calc
-            $akademik    = $norm($akademikCount);
-            $hafalan     = $norm($hafalanCount);
-            $kepemimpinan = $norm($leaderCount);
-            $karakter    = $norm($karakterCount);
-            $kreativitas = $norm($kreatifCount);
+        $students = $mahasiswas->map(function ($m) use ($radarFrom, $radarTo) {
+            $scores = $m->radarScores($radarFrom, $radarTo);
 
             return [
                 'id'     => $m->id,
                 'name'   => $m->name,
                 'asrama' => $m->asrama ?? '-',
-                'total'  => round(($shalat + $akademik + $hafalan + $kepemimpinan + $karakter + $kreativitas) / 6),
-                'scores' => [
-                    ['subject' => 'Shalat',       'value' => $shalat,       'fullMark' => 100],
-                    ['subject' => 'Akademik',     'value' => $akademik,     'fullMark' => 100],
-                    ['subject' => 'Hafalan',      'value' => $hafalan,      'fullMark' => 100],
-                    ['subject' => 'Kepemimpinan', 'value' => $kepemimpinan, 'fullMark' => 100],
-                    ['subject' => 'Karakter',     'value' => $karakter,     'fullMark' => 100],
-                    ['subject' => 'Kreativitas',  'value' => $kreativitas,  'fullMark' => 100],
-                ],
+                'total'  => round(collect($scores)->avg('value')),
+                'scores' => $scores,
             ];
         });
 
@@ -341,6 +324,7 @@ class DashboardController extends Controller
             'students'      => $students->values(),
             'asramas'       => $asramas,
             'asrama_stats'  => $asramaStats,
+            'radar_range'   => ['from' => $radarFrom, 'to' => $radarTo],
         ];
     }
 

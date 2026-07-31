@@ -38,8 +38,8 @@ export default function Register({ asramas }: Props) {
             <Head title="Create Account" />
             <div className="glass-panel w-full max-w-md p-8">
                 <div className="flex items-center justify-center gap-2 mb-1">
-                    <div className="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center">
-                        <Icon name="apartment" className="text-base text-on-primary" filled />
+                    <div className="w-8 h-8 rounded-lg overflow-hidden">
+                        <img src="/images/simonas_logo.png" alt="SIMONAS" className="w-full h-full object-cover" />
                     </div>
                     <h1 className="font-display text-title-sm text-primary-container">SIMONAS</h1>
                 </div>

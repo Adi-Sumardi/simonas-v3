@@ -5,6 +5,11 @@ namespace App\Models {
 	/**
 	 * App\Models\Akademik
 	 *
+	 * @property int|null $file_size
+	 * @property string|null $file_mime
+	 * @property string|null $tipe_kegiatan
+	 * @property int|null $komponen_id
+	 * @property int|null $user_id
 	 * @property \Illuminate\Support\Carbon|null $updated_at
 	 * @property \Illuminate\Support\Carbon|null $created_at
 	 * @property string|null $nilai
@@ -13,24 +18,19 @@ namespace App\Models {
 	 * @property string|null $keterangan
 	 * @property string $tempat
 	 * @property string $waktu
-	 * @property string|null $tipe_kegiatan
 	 * @property string $kegiatan
 	 * @property string $asrama
 	 * @property string|null $komponen
 	 * @property string $nama_warga
-	 * @property int|null $user_id
-	 * @property int|null $komponen_id
 	 * @property int $id
+	 * @property-read mixed $file_data
 	 * @property-read \App\Models\User $user
 	 * @property-read \App\Models\Komponen $komponen
 	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereKomponenId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereUserId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereNamaWarga($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereKomponen($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereAsrama($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereKegiatan($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereTipeKegiatan($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereWaktu($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereTempat($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereKeterangan($value)
@@ -39,6 +39,11 @@ namespace App\Models {
 	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereNilai($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereCreatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereUpdatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereUserId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereKomponenId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereTipeKegiatan($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereFileMime($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik whereFileSize($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Akademik>|Akademik query()
@@ -702,39 +707,7 @@ namespace App\Models {
 	/**
 	 * App\Models\AlumniBusiness
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property boolean $is_active
-	 * @property array|null $social_media
-	 * @property string|null $email
-	 * @property string|null $phone
-	 * @property string|null $website
-	 * @property float|null $longitude
-	 * @property float|null $latitude
-	 * @property string|null $address
-	 * @property string|null $logo
-	 * @property string|null $description
-	 * @property string|null $business_type
-	 * @property string $company_name
-	 * @property int|null $alumni_id
-	 * @property int $id
 	 * @property-read \App\Models\User $alumni
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness whereAlumniId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness whereCompanyName($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness whereBusinessType($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness whereDescription($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness whereLogo($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness whereAddress($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness whereLatitude($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness whereLongitude($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness whereWebsite($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness wherePhone($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness whereEmail($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness whereSocialMedia($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness whereIsActive($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniBusiness>|AlumniBusiness query()
@@ -1347,11 +1320,11 @@ namespace App\Models {
 	 * @property string|null $salary_range
 	 * @property string|null $requirements
 	 * @property string $description
-	 * @property mixed $work_type
+	 * @property string $work_type
 	 * @property string $location
 	 * @property string $company
 	 * @property string $title
-	 * @property mixed $type
+	 * @property string $type
 	 * @property int $user_id
 	 * @property int $id
 	 * @property-read \App\Models\User $user
@@ -2562,29 +2535,7 @@ namespace App\Models {
 	/**
 	 * App\Models\AlumniPekerjaanBaru
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property string|null $deskripsi
-	 * @property boolean $is_current
-	 * @property string|null $tahun_selesai
-	 * @property string|null $tahun_mulai
-	 * @property string|null $lokasi
-	 * @property string $perusahaan
-	 * @property string $jabatan
-	 * @property int $user_id
-	 * @property int $id
 	 * @property-read \App\Models\User $user
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPekerjaanBaru>|AlumniPekerjaanBaru whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPekerjaanBaru>|AlumniPekerjaanBaru whereUserId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPekerjaanBaru>|AlumniPekerjaanBaru whereJabatan($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPekerjaanBaru>|AlumniPekerjaanBaru wherePerusahaan($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPekerjaanBaru>|AlumniPekerjaanBaru whereLokasi($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPekerjaanBaru>|AlumniPekerjaanBaru whereTahunMulai($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPekerjaanBaru>|AlumniPekerjaanBaru whereTahunSelesai($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPekerjaanBaru>|AlumniPekerjaanBaru whereIsCurrent($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPekerjaanBaru>|AlumniPekerjaanBaru whereDeskripsi($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPekerjaanBaru>|AlumniPekerjaanBaru whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPekerjaanBaru>|AlumniPekerjaanBaru whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPekerjaanBaru>|AlumniPekerjaanBaru newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPekerjaanBaru>|AlumniPekerjaanBaru newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPekerjaanBaru>|AlumniPekerjaanBaru query()
@@ -3175,27 +3126,7 @@ namespace App\Models {
 	/**
 	 * App\Models\AlumniPendidikanBaru
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property boolean $is_current
-	 * @property string|null $tahun_lulus
-	 * @property string|null $tahun_masuk
-	 * @property string|null $jurusan
-	 * @property string $institusi
-	 * @property string $jenjang
-	 * @property int $user_id
-	 * @property int $id
 	 * @property-read \App\Models\User $user
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPendidikanBaru>|AlumniPendidikanBaru whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPendidikanBaru>|AlumniPendidikanBaru whereUserId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPendidikanBaru>|AlumniPendidikanBaru whereJenjang($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPendidikanBaru>|AlumniPendidikanBaru whereInstitusi($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPendidikanBaru>|AlumniPendidikanBaru whereJurusan($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPendidikanBaru>|AlumniPendidikanBaru whereTahunMasuk($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPendidikanBaru>|AlumniPendidikanBaru whereTahunLulus($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPendidikanBaru>|AlumniPendidikanBaru whereIsCurrent($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPendidikanBaru>|AlumniPendidikanBaru whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPendidikanBaru>|AlumniPendidikanBaru whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPendidikanBaru>|AlumniPendidikanBaru newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPendidikanBaru>|AlumniPendidikanBaru newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniPendidikanBaru>|AlumniPendidikanBaru query()
@@ -3499,7 +3430,7 @@ namespace App\Models {
 	 * @property string|null $image_url
 	 * @property string $content
 	 * @property string|null $title
-	 * @property mixed $type
+	 * @property string $type
 	 * @property int $user_id
 	 * @property int $id
 	 * @property-read \App\Models\User $user
@@ -4108,27 +4039,7 @@ namespace App\Models {
 	/**
 	 * App\Models\AlumniSertifikat
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property string|null $url
-	 * @property string|null $nomor_id
-	 * @property string|null $tahun
-	 * @property string|null $penerbit
-	 * @property string $nama
-	 * @property mixed $tipe
-	 * @property int $user_id
-	 * @property int $id
 	 * @property-read \App\Models\User $user
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniSertifikat>|AlumniSertifikat whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniSertifikat>|AlumniSertifikat whereUserId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniSertifikat>|AlumniSertifikat whereTipe($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniSertifikat>|AlumniSertifikat whereNama($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniSertifikat>|AlumniSertifikat wherePenerbit($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniSertifikat>|AlumniSertifikat whereTahun($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniSertifikat>|AlumniSertifikat whereNomorId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniSertifikat>|AlumniSertifikat whereUrl($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniSertifikat>|AlumniSertifikat whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniSertifikat>|AlumniSertifikat whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniSertifikat>|AlumniSertifikat newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniSertifikat>|AlumniSertifikat newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<AlumniSertifikat>|AlumniSertifikat query()
@@ -5045,12 +4956,12 @@ namespace App\Models {
 	/**
 	 * App\Models\Asrama
 	 *
+	 * @property int $kapasitas
 	 * @property \Illuminate\Support\Carbon|null $updated_at
 	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property string $ketua
-	 * @property string $direktur
-	 * @property string $tahun_jabatan
-	 * @property int $kapasitas
+	 * @property string|null $ketua
+	 * @property string|null $direktur
+	 * @property string|null $tahun_jabatan
 	 * @property string $nama_asrama
 	 * @property int $id
 	 * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AsramaJabatan> $jabatans
@@ -5058,12 +4969,12 @@ namespace App\Models {
 	 * @property-read \App\Models\AsramaJabatan $jabatanTahunIni
 	 * @method static \Illuminate\Database\Eloquent\Builder<Asrama>|Asrama whereId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Asrama>|Asrama whereNamaAsrama($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Asrama>|Asrama whereKapasitas($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Asrama>|Asrama whereTahunJabatan($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Asrama>|Asrama whereDirektur($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Asrama>|Asrama whereKetua($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Asrama>|Asrama whereCreatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Asrama>|Asrama whereUpdatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Asrama>|Asrama whereKapasitas($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Asrama>|Asrama newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Asrama>|Asrama newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Asrama>|Asrama query()
@@ -5359,7 +5270,21 @@ namespace App\Models {
 	/**
 	 * App\Models\AsramaJabatan
 	 *
+	 * @property \Illuminate\Support\Carbon|null $updated_at
+	 * @property \Illuminate\Support\Carbon|null $created_at
+	 * @property string|null $ketua
+	 * @property string|null $direktur
+	 * @property int $tahun
+	 * @property int $asrama_id
+	 * @property int $id
 	 * @property-read \App\Models\Asrama $asrama
+	 * @method static \Illuminate\Database\Eloquent\Builder<AsramaJabatan>|AsramaJabatan whereId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<AsramaJabatan>|AsramaJabatan whereAsramaId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<AsramaJabatan>|AsramaJabatan whereTahun($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<AsramaJabatan>|AsramaJabatan whereDirektur($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<AsramaJabatan>|AsramaJabatan whereKetua($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<AsramaJabatan>|AsramaJabatan whereCreatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<AsramaJabatan>|AsramaJabatan whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<AsramaJabatan>|AsramaJabatan newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<AsramaJabatan>|AsramaJabatan newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<AsramaJabatan>|AsramaJabatan query()
@@ -6298,6 +6223,24 @@ namespace App\Models {
 	/**
 	 * App\Models\DailyTarget
 	 *
+	 * @property \Illuminate\Support\Carbon|null $updated_at
+	 * @property \Illuminate\Support\Carbon|null $created_at
+	 * @property boolean $is_active
+	 * @property string|null $description
+	 * @property string|null $unit
+	 * @property integer $value
+	 * @property string $key
+	 * @property string $label
+	 * @property int $id
+	 * @method static \Illuminate\Database\Eloquent\Builder<DailyTarget>|DailyTarget whereId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<DailyTarget>|DailyTarget whereLabel($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<DailyTarget>|DailyTarget whereKey($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<DailyTarget>|DailyTarget whereValue($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<DailyTarget>|DailyTarget whereUnit($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<DailyTarget>|DailyTarget whereDescription($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<DailyTarget>|DailyTarget whereIsActive($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<DailyTarget>|DailyTarget whereCreatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<DailyTarget>|DailyTarget whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<DailyTarget>|DailyTarget newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<DailyTarget>|DailyTarget newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<DailyTarget>|DailyTarget query()
@@ -7211,15 +7154,16 @@ namespace App\Models {
 	/**
 	 * App\Models\Hafalan
 	 *
+	 * @property integer|null $current_page
+	 * @property int $current_ayat
+	 * @property string $current_surah_nama
+	 * @property int $current_surah_nomor
 	 * @property \Illuminate\Support\Carbon|null $updated_at
 	 * @property \Illuminate\Support\Carbon|null $created_at
 	 * @property \Illuminate\Support\Carbon|null $last_tasmi_at
 	 * @property integer $streak_days
 	 * @property integer $total_ayah_completed
 	 * @property integer $current_ayah
-	 * @property int $current_ayat
-	 * @property string $current_surah_nama
-	 * @property int $current_surah_nomor
 	 * @property integer $current_juz
 	 * @property integer $target_juz
 	 * @property int $user_id
@@ -7232,15 +7176,16 @@ namespace App\Models {
 	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereUserId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereTargetJuz($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereCurrentJuz($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereCurrentSurahNomor($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereCurrentSurahNama($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereCurrentAyat($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereCurrentAyah($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereTotalAyahCompleted($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereStreakDays($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereLastTasmiAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereCreatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereUpdatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereCurrentSurahNomor($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereCurrentSurahNama($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereCurrentAyat($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan whereCurrentPage($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Hafalan>|Hafalan query()
@@ -7536,13 +7481,15 @@ namespace App\Models {
 	/**
 	 * App\Models\HafalanLog
 	 *
+	 * @property integer|null $halaman_end
+	 * @property integer|null $halaman_start
+	 * @property \Illuminate\Support\Carbon|null $reviewed_at
+	 * @property string|null $mentor_notes
 	 * @property \Illuminate\Support\Carbon|null $updated_at
 	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property \Illuminate\Support\Carbon|null $reviewed_at
 	 * @property \Illuminate\Support\Carbon|null $tested_at
-	 * @property string|null $mentor_notes
 	 * @property string|null $notes
-	 * @property mixed $score
+	 * @property string $score
 	 * @property integer $ayat_end
 	 * @property integer $ayat_start
 	 * @property string $surah
@@ -7559,11 +7506,13 @@ namespace App\Models {
 	 * @method static \Illuminate\Database\Eloquent\Builder<HafalanLog>|HafalanLog whereAyatEnd($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<HafalanLog>|HafalanLog whereScore($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<HafalanLog>|HafalanLog whereNotes($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<HafalanLog>|HafalanLog whereMentorNotes($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<HafalanLog>|HafalanLog whereTestedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<HafalanLog>|HafalanLog whereReviewedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<HafalanLog>|HafalanLog whereCreatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<HafalanLog>|HafalanLog whereUpdatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<HafalanLog>|HafalanLog whereMentorNotes($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<HafalanLog>|HafalanLog whereReviewedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<HafalanLog>|HafalanLog whereHalamanStart($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<HafalanLog>|HafalanLog whereHalamanEnd($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<HafalanLog>|HafalanLog newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<HafalanLog>|HafalanLog newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<HafalanLog>|HafalanLog query()
@@ -7860,23 +7809,23 @@ namespace App\Models {
 	/**
 	 * App\Models\Ipk
 	 *
+	 * @property int|null $user_id
 	 * @property \Illuminate\Support\Carbon|null $updated_at
 	 * @property \Illuminate\Support\Carbon|null $created_at
 	 * @property string $file
 	 * @property string $semester
 	 * @property string $tahun
 	 * @property string $ip
-	 * @property int|null $user_id
 	 * @property int $id
 	 * @property-read \App\Models\User $user
 	 * @method static \Illuminate\Database\Eloquent\Builder<Ipk>|Ipk whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Ipk>|Ipk whereUserId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Ipk>|Ipk whereIp($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Ipk>|Ipk whereTahun($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Ipk>|Ipk whereSemester($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Ipk>|Ipk whereFile($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Ipk>|Ipk whereCreatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Ipk>|Ipk whereUpdatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Ipk>|Ipk whereUserId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Ipk>|Ipk newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Ipk>|Ipk newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Ipk>|Ipk query()
@@ -8172,6 +8121,11 @@ namespace App\Models {
 	/**
 	 * App\Models\Karakter
 	 *
+	 * @property int|null $file_size
+	 * @property string|null $file_mime
+	 * @property string|null $tipe_kegiatan
+	 * @property int|null $komponen_id
+	 * @property int|null $user_id
 	 * @property \Illuminate\Support\Carbon|null $updated_at
 	 * @property \Illuminate\Support\Carbon|null $created_at
 	 * @property string|null $nilai
@@ -8180,24 +8134,19 @@ namespace App\Models {
 	 * @property string|null $keterangan
 	 * @property string $tempat
 	 * @property string $waktu
-	 * @property string|null $tipe_kegiatan
 	 * @property string $kegiatan
 	 * @property string $asrama
 	 * @property string|null $komponen
 	 * @property string $nama_warga
-	 * @property int|null $user_id
-	 * @property int|null $komponen_id
 	 * @property int $id
+	 * @property-read mixed $file_data
 	 * @property-read \App\Models\User $user
 	 * @property-read \App\Models\Komponen $komponen
 	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereKomponenId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereUserId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereNamaWarga($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereKomponen($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereAsrama($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereKegiatan($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereTipeKegiatan($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereWaktu($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereTempat($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereKeterangan($value)
@@ -8206,6 +8155,11 @@ namespace App\Models {
 	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereNilai($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereCreatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereUpdatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereUserId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereKomponenId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereTipeKegiatan($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereFileMime($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter whereFileSize($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Karakter>|Karakter query()
@@ -8501,6 +8455,7 @@ namespace App\Models {
 	/**
 	 * App\Models\Kegiatan
 	 *
+	 * @property string|null $asrama
 	 * @property \Illuminate\Support\Carbon|null $updated_at
 	 * @property \Illuminate\Support\Carbon|null $created_at
 	 * @property string|null $file
@@ -8523,6 +8478,7 @@ namespace App\Models {
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kegiatan>|Kegiatan whereFile($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kegiatan>|Kegiatan whereCreatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kegiatan>|Kegiatan whereUpdatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Kegiatan>|Kegiatan whereAsrama($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kegiatan>|Kegiatan newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kegiatan>|Kegiatan newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kegiatan>|Kegiatan query()
@@ -9113,6 +9069,7 @@ namespace App\Models {
 	/**
 	 * App\Models\Komponen
 	 *
+	 * @property integer $bobot
 	 * @property \Illuminate\Support\Carbon|null $updated_at
 	 * @property \Illuminate\Support\Carbon|null $created_at
 	 * @property string $aspek
@@ -9127,6 +9084,7 @@ namespace App\Models {
 	 * @method static \Illuminate\Database\Eloquent\Builder<Komponen>|Komponen whereAspek($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Komponen>|Komponen whereCreatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Komponen>|Komponen whereUpdatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Komponen>|Komponen whereBobot($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Komponen>|Komponen newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Komponen>|Komponen newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Komponen>|Komponen query()
@@ -9422,6 +9380,11 @@ namespace App\Models {
 	/**
 	 * App\Models\Kreatif
 	 *
+	 * @property int|null $file_size
+	 * @property string|null $file_mime
+	 * @property string|null $tipe_kegiatan
+	 * @property int|null $komponen_id
+	 * @property int|null $user_id
 	 * @property \Illuminate\Support\Carbon|null $updated_at
 	 * @property \Illuminate\Support\Carbon|null $created_at
 	 * @property string|null $nilai
@@ -9430,24 +9393,19 @@ namespace App\Models {
 	 * @property string|null $keterangan
 	 * @property string $tempat
 	 * @property string $waktu
-	 * @property string|null $tipe_kegiatan
 	 * @property string $kegiatan
 	 * @property string $asrama
 	 * @property string|null $komponen
 	 * @property string $nama_warga
-	 * @property int|null $user_id
-	 * @property int|null $komponen_id
 	 * @property int $id
+	 * @property-read mixed $file_data
 	 * @property-read \App\Models\User $user
 	 * @property-read \App\Models\Komponen $komponen
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereKomponenId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereUserId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereNamaWarga($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereKomponen($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereAsrama($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereKegiatan($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereTipeKegiatan($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereWaktu($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereTempat($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereKeterangan($value)
@@ -9456,6 +9414,11 @@ namespace App\Models {
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereNilai($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereCreatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereUpdatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereUserId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereKomponenId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereTipeKegiatan($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereFileMime($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif whereFileSize($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Kreatif>|Kreatif query()
@@ -9751,6 +9714,11 @@ namespace App\Models {
 	/**
 	 * App\Models\Leadership
 	 *
+	 * @property int|null $file_size
+	 * @property string|null $file_mime
+	 * @property string|null $tipe_kegiatan
+	 * @property int|null $komponen_id
+	 * @property int|null $user_id
 	 * @property \Illuminate\Support\Carbon|null $updated_at
 	 * @property \Illuminate\Support\Carbon|null $created_at
 	 * @property string|null $nilai
@@ -9759,24 +9727,19 @@ namespace App\Models {
 	 * @property string|null $keterangan
 	 * @property string $tempat
 	 * @property string $waktu
-	 * @property string|null $tipe_kegiatan
 	 * @property string $kegiatan
 	 * @property string $asrama
 	 * @property string|null $komponen
 	 * @property string $nama_warga
-	 * @property int|null $user_id
-	 * @property int|null $komponen_id
 	 * @property int $id
+	 * @property-read mixed $file_data
 	 * @property-read \App\Models\User $user
 	 * @property-read \App\Models\Komponen $komponen
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereKomponenId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereUserId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereNamaWarga($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereKomponen($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereAsrama($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereKegiatan($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereTipeKegiatan($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereWaktu($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereTempat($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereKeterangan($value)
@@ -9785,6 +9748,11 @@ namespace App\Models {
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereNilai($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereCreatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereUpdatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereUserId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereKomponenId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereTipeKegiatan($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereFileMime($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership whereFileSize($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leadership>|Leadership query()
@@ -10073,6 +10041,318 @@ namespace App\Models {
 	 * @mixin \Illuminate\Database\Query\Builder
 	 */
 	class Leadership extends \Illuminate\Database\Eloquent\Model
+	{
+		//
+	}
+
+	/**
+	 * App\Models\LiveMeeting
+	 *
+	 * @property \Illuminate\Support\Carbon|null $updated_at
+	 * @property \Illuminate\Support\Carbon|null $created_at
+	 * @property \Illuminate\Support\Carbon|null $ended_at
+	 * @property \Illuminate\Support\Carbon $started_at
+	 * @property boolean $is_active
+	 * @property string $room_name
+	 * @property int $mentor_id
+	 * @property int $id
+	 * @property-read \App\Models\User $mentor
+	 * @method static \Illuminate\Database\Eloquent\Builder<LiveMeeting>|LiveMeeting whereId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<LiveMeeting>|LiveMeeting whereMentorId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<LiveMeeting>|LiveMeeting whereRoomName($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<LiveMeeting>|LiveMeeting whereIsActive($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<LiveMeeting>|LiveMeeting whereStartedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<LiveMeeting>|LiveMeeting whereEndedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<LiveMeeting>|LiveMeeting whereCreatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<LiveMeeting>|LiveMeeting whereUpdatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<LiveMeeting>|LiveMeeting newModelQuery()
+	 * @method static \Illuminate\Database\Eloquent\Builder<LiveMeeting>|LiveMeeting newQuery()
+	 * @method static \Illuminate\Database\Eloquent\Builder<LiveMeeting>|LiveMeeting query()
+	 * @method static mixed select($columns)
+	 * @method static mixed selectSub($query, $as)
+	 * @method static mixed selectRaw($expression, array $bindings)
+	 * @method static mixed fromSub($query, $as)
+	 * @method static mixed fromRaw($expression, $bindings)
+	 * @method static mixed createSub($query)
+	 * @method static mixed parseSub($query)
+	 * @method static mixed prependDatabaseNameIfCrossDatabaseQuery($query)
+	 * @method static mixed addSelect($column)
+	 * @method static mixed distinct()
+	 * @method static mixed from($table, $as)
+	 * @method static mixed useIndex($index)
+	 * @method static mixed forceIndex($index)
+	 * @method static mixed ignoreIndex($index)
+	 * @method static mixed join($table, $first, $operator, $second, $type, $where)
+	 * @method static mixed joinWhere($table, $first, $operator, $second, $type)
+	 * @method static mixed joinSub($query, $as, $first, $operator, $second, $type, $where)
+	 * @method static mixed joinLateral($query, string $as, string $type)
+	 * @method static mixed leftJoinLateral($query, string $as)
+	 * @method static mixed leftJoin($table, $first, $operator, $second)
+	 * @method static mixed leftJoinWhere($table, $first, $operator, $second)
+	 * @method static mixed leftJoinSub($query, $as, $first, $operator, $second)
+	 * @method static mixed rightJoin($table, $first, $operator, $second)
+	 * @method static mixed rightJoinWhere($table, $first, $operator, $second)
+	 * @method static mixed rightJoinSub($query, $as, $first, $operator, $second)
+	 * @method static mixed crossJoin($table, $first, $operator, $second)
+	 * @method static mixed crossJoinSub($query, $as)
+	 * @method static mixed newJoinClause(self $parentQuery, $type, $table)
+	 * @method static mixed newJoinLateralClause(self $parentQuery, $type, $table)
+	 * @method static mixed mergeWheres($wheres, $bindings)
+	 * @method static mixed where($column, $operator, $value, $boolean)
+	 * @method static mixed addArrayOfWheres($column, $boolean, $method)
+	 * @method static mixed prepareValueAndOperator($value, $operator, $useDefault)
+	 * @method static mixed invalidOperatorAndValue($operator, $value)
+	 * @method static mixed invalidOperator($operator)
+	 * @method static mixed isBitwiseOperator($operator)
+	 * @method static mixed orWhere($column, $operator, $value)
+	 * @method static mixed whereNot($column, $operator, $value, $boolean)
+	 * @method static mixed orWhereNot($column, $operator, $value)
+	 * @method static mixed whereColumn($first, $operator, $second, $boolean)
+	 * @method static mixed orWhereColumn($first, $operator, $second)
+	 * @method static mixed whereRaw($sql, $bindings, $boolean)
+	 * @method static mixed orWhereRaw($sql, $bindings)
+	 * @method static mixed whereLike($column, $value, $caseSensitive, $boolean, $not)
+	 * @method static mixed orWhereLike($column, $value, $caseSensitive)
+	 * @method static mixed whereNotLike($column, $value, $caseSensitive, $boolean)
+	 * @method static mixed orWhereNotLike($column, $value, $caseSensitive)
+	 * @method static mixed whereIn($column, $values, $boolean, $not)
+	 * @method static mixed orWhereIn($column, $values)
+	 * @method static mixed whereNotIn($column, $values, $boolean)
+	 * @method static mixed orWhereNotIn($column, $values)
+	 * @method static mixed whereIntegerInRaw($column, $values, $boolean, $not)
+	 * @method static mixed orWhereIntegerInRaw($column, $values)
+	 * @method static mixed whereIntegerNotInRaw($column, $values, $boolean)
+	 * @method static mixed orWhereIntegerNotInRaw($column, $values)
+	 * @method static mixed whereNull($columns, $boolean, $not)
+	 * @method static mixed orWhereNull($column)
+	 * @method static mixed whereNotNull($columns, $boolean)
+	 * @method static mixed whereBetween($column, iterable $values, $boolean, $not)
+	 * @method static mixed whereBetweenColumns($column, array $values, $boolean, $not)
+	 * @method static mixed orWhereBetween($column, iterable $values)
+	 * @method static mixed orWhereBetweenColumns($column, array $values)
+	 * @method static mixed whereNotBetween($column, iterable $values, $boolean)
+	 * @method static mixed whereNotBetweenColumns($column, array $values, $boolean)
+	 * @method static mixed orWhereNotBetween($column, iterable $values)
+	 * @method static mixed orWhereNotBetweenColumns($column, array $values)
+	 * @method static mixed orWhereNotNull($column)
+	 * @method static mixed whereDate($column, $operator, $value, $boolean)
+	 * @method static mixed orWhereDate($column, $operator, $value)
+	 * @method static mixed whereTime($column, $operator, $value, $boolean)
+	 * @method static mixed orWhereTime($column, $operator, $value)
+	 * @method static mixed whereDay($column, $operator, $value, $boolean)
+	 * @method static mixed orWhereDay($column, $operator, $value)
+	 * @method static mixed whereMonth($column, $operator, $value, $boolean)
+	 * @method static mixed orWhereMonth($column, $operator, $value)
+	 * @method static mixed whereYear($column, $operator, $value, $boolean)
+	 * @method static mixed orWhereYear($column, $operator, $value)
+	 * @method static mixed addDateBasedWhere($type, $column, $operator, $value, $boolean)
+	 * @method static mixed whereNested(Closure $callback, $boolean)
+	 * @method static mixed forNestedWhere()
+	 * @method static mixed addNestedWhereQuery($query, $boolean)
+	 * @method static mixed whereSub($column, $operator, $callback, $boolean)
+	 * @method static mixed whereExists($callback, $boolean, $not)
+	 * @method static mixed orWhereExists($callback, $not)
+	 * @method static mixed whereNotExists($callback, $boolean)
+	 * @method static mixed orWhereNotExists($callback)
+	 * @method static mixed addWhereExistsQuery(self $query, $boolean, $not)
+	 * @method static mixed whereRowValues($columns, $operator, $values, $boolean)
+	 * @method static mixed orWhereRowValues($columns, $operator, $values)
+	 * @method static mixed whereJsonContains($column, $value, $boolean, $not)
+	 * @method static mixed orWhereJsonContains($column, $value)
+	 * @method static mixed whereJsonDoesntContain($column, $value, $boolean)
+	 * @method static mixed orWhereJsonDoesntContain($column, $value)
+	 * @method static mixed whereJsonOverlaps($column, $value, $boolean, $not)
+	 * @method static mixed orWhereJsonOverlaps($column, $value)
+	 * @method static mixed whereJsonDoesntOverlap($column, $value, $boolean)
+	 * @method static mixed orWhereJsonDoesntOverlap($column, $value)
+	 * @method static mixed whereJsonContainsKey($column, $boolean, $not)
+	 * @method static mixed orWhereJsonContainsKey($column)
+	 * @method static mixed whereJsonDoesntContainKey($column, $boolean)
+	 * @method static mixed orWhereJsonDoesntContainKey($column)
+	 * @method static mixed whereJsonLength($column, $operator, $value, $boolean)
+	 * @method static mixed orWhereJsonLength($column, $operator, $value)
+	 * @method static mixed dynamicWhere($method, $parameters)
+	 * @method static mixed addDynamic($segment, $connector, $parameters, $index)
+	 * @method static mixed whereFullText($columns, $value, array $options, $boolean)
+	 * @method static mixed orWhereFullText($columns, $value, array $options)
+	 * @method static mixed whereAll($columns, $operator, $value, $boolean)
+	 * @method static mixed orWhereAll($columns, $operator, $value)
+	 * @method static mixed whereAny($columns, $operator, $value, $boolean)
+	 * @method static mixed orWhereAny($columns, $operator, $value)
+	 * @method static mixed whereNone($columns, $operator, $value, $boolean)
+	 * @method static mixed orWhereNone($columns, $operator, $value)
+	 * @method static mixed groupBy($groups)
+	 * @method static mixed groupByRaw($sql, array $bindings)
+	 * @method static mixed having($column, $operator, $value, $boolean)
+	 * @method static mixed orHaving($column, $operator, $value)
+	 * @method static mixed havingNested(Closure $callback, $boolean)
+	 * @method static mixed addNestedHavingQuery($query, $boolean)
+	 * @method static mixed havingNull($columns, $boolean, $not)
+	 * @method static mixed orHavingNull($column)
+	 * @method static mixed havingNotNull($columns, $boolean)
+	 * @method static mixed orHavingNotNull($column)
+	 * @method static mixed havingBetween($column, iterable $values, $boolean, $not)
+	 * @method static mixed havingRaw($sql, array $bindings, $boolean)
+	 * @method static mixed orHavingRaw($sql, array $bindings)
+	 * @method static mixed orderBy($column, $direction)
+	 * @method static mixed orderByDesc($column)
+	 * @method static mixed latest($column)
+	 * @method static mixed oldest($column)
+	 * @method static mixed inRandomOrder($seed)
+	 * @method static mixed orderByRaw($sql, $bindings)
+	 * @method static mixed skip($value)
+	 * @method static mixed offset($value)
+	 * @method static mixed take($value)
+	 * @method static mixed limit($value)
+	 * @method static mixed groupLimit($value, $column)
+	 * @method static mixed forPage($page, $perPage)
+	 * @method static mixed forPageBeforeId($perPage, $lastId, $column)
+	 * @method static mixed forPageAfterId($perPage, $lastId, $column)
+	 * @method static mixed reorder($column, $direction)
+	 * @method static mixed removeExistingOrdersFor($column)
+	 * @method static mixed union($query, $all)
+	 * @method static mixed unionAll($query)
+	 * @method static mixed lock($value)
+	 * @method static mixed lockForUpdate()
+	 * @method static mixed sharedLock()
+	 * @method static mixed beforeQuery(callable $callback)
+	 * @method static mixed applyBeforeQueryCallbacks()
+	 * @method static mixed afterQuery(Closure $callback)
+	 * @method static mixed applyAfterQueryCallbacks($result)
+	 * @method static mixed toSql()
+	 * @method static mixed toRawSql()
+	 * @method static mixed find($id, $columns)
+	 * @method static mixed findOr($id, $columns, Closure $callback)
+	 * @method static mixed value($column)
+	 * @method static mixed rawValue(string $expression, array $bindings)
+	 * @method static mixed soleValue($column)
+	 * @method static mixed get($columns)
+	 * @method static mixed runSelect()
+	 * @method static mixed withoutGroupLimitKeys($items)
+	 * @method static mixed paginate($perPage, $columns, $pageName, $page, $total)
+	 * @method static mixed simplePaginate($perPage, $columns, $pageName, $page)
+	 * @method static mixed cursorPaginate($perPage, $columns, $cursorName, $cursor)
+	 * @method static mixed ensureOrderForCursorPagination($shouldReverse)
+	 * @method static mixed getCountForPagination($columns)
+	 * @method static mixed runPaginationCountQuery($columns)
+	 * @method static mixed cloneForPaginationCount()
+	 * @method static mixed withoutSelectAliases(array $columns)
+	 * @method static mixed cursor()
+	 * @method static mixed enforceOrderBy()
+	 * @method static mixed pluck($column, $key)
+	 * @method static mixed stripTableForPluck($column)
+	 * @method static mixed pluckFromObjectColumn($queryResult, $column, $key)
+	 * @method static mixed pluckFromArrayColumn($queryResult, $column, $key)
+	 * @method static mixed implode($column, $glue)
+	 * @method static mixed exists()
+	 * @method static mixed doesntExist()
+	 * @method static mixed existsOr(Closure $callback)
+	 * @method static mixed doesntExistOr(Closure $callback)
+	 * @method static mixed count($columns)
+	 * @method static mixed min($column)
+	 * @method static mixed max($column)
+	 * @method static mixed sum($column)
+	 * @method static mixed avg($column)
+	 * @method static mixed average($column)
+	 * @method static mixed aggregate($function, $columns)
+	 * @method static mixed numericAggregate($function, $columns)
+	 * @method static mixed setAggregate($function, $columns)
+	 * @method static mixed onceWithColumns($columns, $callback)
+	 * @method static mixed insert(array $values)
+	 * @method static mixed insertOrIgnore(array $values)
+	 * @method static mixed insertGetId(array $values, $sequence)
+	 * @method static mixed insertUsing(array $columns, $query)
+	 * @method static mixed insertOrIgnoreUsing(array $columns, $query)
+	 * @method static mixed update(array $values)
+	 * @method static mixed updateFrom(array $values)
+	 * @method static mixed updateOrInsert(array $attributes, callable|array $values)
+	 * @method static mixed upsert(array $values, $uniqueBy, $update)
+	 * @method static mixed increment($column, $amount, array $extra)
+	 * @method static mixed incrementEach(array $columns, array $extra)
+	 * @method static mixed decrement($column, $amount, array $extra)
+	 * @method static mixed decrementEach(array $columns, array $extra)
+	 * @method static mixed delete($id)
+	 * @method static mixed truncate()
+	 * @method static mixed newQuery()
+	 * @method static mixed forSubQuery()
+	 * @method static mixed getColumns()
+	 * @method static mixed raw($value)
+	 * @method static mixed getUnionBuilders()
+	 * @method static mixed getBindings()
+	 * @method static mixed getRawBindings()
+	 * @method static mixed setBindings(array $bindings, $type)
+	 * @method static mixed addBinding($value, $type)
+	 * @method static mixed castBinding($value)
+	 * @method static mixed mergeBindings(self $query)
+	 * @method static mixed cleanBindings(array $bindings)
+	 * @method static mixed flattenValue($value)
+	 * @method static mixed defaultKeyName()
+	 * @method static mixed getConnection()
+	 * @method static mixed getProcessor()
+	 * @method static mixed getGrammar()
+	 * @method static mixed useWritePdo()
+	 * @method static mixed isQueryable($value)
+	 * @method static mixed clone()
+	 * @method static mixed cloneWithout(array $properties)
+	 * @method static mixed cloneWithoutBindings(array $except)
+	 * @method static mixed dump($args)
+	 * @method static mixed dumpRawSql()
+	 * @method static mixed dd()
+	 * @method static mixed ddRawSql()
+	 * @method static mixed wherePast($columns)
+	 * @method static mixed whereNowOrPast($columns)
+	 * @method static mixed orWherePast($columns)
+	 * @method static mixed orWhereNowOrPast($columns)
+	 * @method static mixed whereFuture($columns)
+	 * @method static mixed whereNowOrFuture($columns)
+	 * @method static mixed orWhereFuture($columns)
+	 * @method static mixed orWhereNowOrFuture($columns)
+	 * @method static mixed wherePastOrFuture($columns, $operator, $boolean)
+	 * @method static mixed whereToday($columns, $boolean)
+	 * @method static mixed whereBeforeToday($columns)
+	 * @method static mixed whereTodayOrBefore($columns)
+	 * @method static mixed whereAfterToday($columns)
+	 * @method static mixed whereTodayOrAfter($columns)
+	 * @method static mixed orWhereToday($columns)
+	 * @method static mixed orWhereBeforeToday($columns)
+	 * @method static mixed orWhereTodayOrBefore($columns)
+	 * @method static mixed orWhereAfterToday($columns)
+	 * @method static mixed orWhereTodayOrAfter($columns)
+	 * @method static mixed whereTodayBeforeOrAfter($columns, $operator, $boolean)
+	 * @method static mixed chunk($count, callable $callback)
+	 * @method static mixed chunkMap(callable $callback, $count)
+	 * @method static mixed each(callable $callback, $count)
+	 * @method static mixed chunkById($count, callable $callback, $column, $alias)
+	 * @method static mixed chunkByIdDesc($count, callable $callback, $column, $alias)
+	 * @method static mixed orderedChunkById($count, callable $callback, $column, $alias, $descending)
+	 * @method static mixed eachById(callable $callback, $count, $column, $alias)
+	 * @method static mixed lazy($chunkSize)
+	 * @method static mixed lazyById($chunkSize, $column, $alias)
+	 * @method static mixed lazyByIdDesc($chunkSize, $column, $alias)
+	 * @method static mixed orderedLazyById($chunkSize, $column, $alias, $descending)
+	 * @method static mixed first($columns)
+	 * @method static mixed firstOrFail($columns, $message)
+	 * @method static mixed sole($columns)
+	 * @method static mixed paginateUsingCursor($perPage, $columns, $cursorName, $cursor)
+	 * @method static mixed getOriginalColumnNameForCursorPagination($builder, string $parameter)
+	 * @method static mixed paginator($items, $total, $perPage, $currentPage, $options)
+	 * @method static mixed simplePaginator($items, $perPage, $currentPage, $options)
+	 * @method static mixed cursorPaginator($items, $perPage, $cursor, $options)
+	 * @method static mixed tap($callback)
+	 * @method static mixed when($value, callable $callback, callable $default)
+	 * @method static mixed unless($value, callable $callback, callable $default)
+	 * @method static mixed explain()
+	 * @method static mixed forwardCallTo($object, $method, $parameters)
+	 * @method static mixed forwardDecoratedCallTo($object, $method, $parameters)
+	 * @method static mixed throwBadMethodCallException($method)
+	 * @method static mixed macro($name, $macro)
+	 * @method static mixed mixin($mixin, $replace)
+	 * @method static mixed hasMacro($name)
+	 * @method static mixed flushMacros()
+	 * @method static mixed macroCall($method, $parameters)
+	 * @mixin \Illuminate\Database\Query\Builder
+	 */
+	class LiveMeeting extends \Illuminate\Database\Eloquent\Model
 	{
 		//
 	}
@@ -10984,6 +11264,22 @@ namespace App\Models {
 	/**
 	 * App\Models\PointRule
 	 *
+	 * @property \Illuminate\Support\Carbon|null $updated_at
+	 * @property \Illuminate\Support\Carbon|null $created_at
+	 * @property boolean $is_active
+	 * @property string|null $unit
+	 * @property integer $poin
+	 * @property string $activity_type
+	 * @property string $label
+	 * @property int $id
+	 * @method static \Illuminate\Database\Eloquent\Builder<PointRule>|PointRule whereId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<PointRule>|PointRule whereLabel($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<PointRule>|PointRule whereActivityType($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<PointRule>|PointRule wherePoin($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<PointRule>|PointRule whereUnit($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<PointRule>|PointRule whereIsActive($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<PointRule>|PointRule whereCreatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<PointRule>|PointRule whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<PointRule>|PointRule newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<PointRule>|PointRule newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<PointRule>|PointRule query()
@@ -11584,7 +11880,7 @@ namespace App\Models {
 	 * @property \Illuminate\Support\Carbon|null $mulai
 	 * @property string|null $posisi
 	 * @property string $judul
-	 * @property mixed $tipe
+	 * @property string $tipe
 	 * @property int $user_id
 	 * @property int $id
 	 * @property-read \App\Models\User $user
@@ -11888,6 +12184,328 @@ namespace App\Models {
 	 * @mixin \Illuminate\Database\Query\Builder
 	 */
 	class ProfilRiwayat extends \Illuminate\Database\Eloquent\Model
+	{
+		//
+	}
+
+	/**
+	 * App\Models\ProgramKerja
+	 *
+	 * @property \Illuminate\Support\Carbon|null $updated_at
+	 * @property \Illuminate\Support\Carbon|null $created_at
+	 * @property int $created_by
+	 * @property string|null $penanggung_jawab
+	 * @property \Illuminate\Support\Carbon|null $tanggal_selesai
+	 * @property \Illuminate\Support\Carbon|null $tanggal_mulai
+	 * @property string $status
+	 * @property int $semester
+	 * @property int $tahun
+	 * @property string|null $deskripsi
+	 * @property string $nama_program
+	 * @property string $asrama
+	 * @property int $id
+	 * @property-read \App\Models\User $creator
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja whereId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja whereAsrama($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja whereNamaProgram($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja whereDeskripsi($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja whereTahun($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja whereSemester($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja whereStatus($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja whereTanggalMulai($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja whereTanggalSelesai($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja wherePenanggungJawab($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja whereCreatedBy($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja whereCreatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja whereUpdatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja newModelQuery()
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja newQuery()
+	 * @method static \Illuminate\Database\Eloquent\Builder<ProgramKerja>|ProgramKerja query()
+	 * @method static mixed select($columns)
+	 * @method static mixed selectSub($query, $as)
+	 * @method static mixed selectRaw($expression, array $bindings)
+	 * @method static mixed fromSub($query, $as)
+	 * @method static mixed fromRaw($expression, $bindings)
+	 * @method static mixed createSub($query)
+	 * @method static mixed parseSub($query)
+	 * @method static mixed prependDatabaseNameIfCrossDatabaseQuery($query)
+	 * @method static mixed addSelect($column)
+	 * @method static mixed distinct()
+	 * @method static mixed from($table, $as)
+	 * @method static mixed useIndex($index)
+	 * @method static mixed forceIndex($index)
+	 * @method static mixed ignoreIndex($index)
+	 * @method static mixed join($table, $first, $operator, $second, $type, $where)
+	 * @method static mixed joinWhere($table, $first, $operator, $second, $type)
+	 * @method static mixed joinSub($query, $as, $first, $operator, $second, $type, $where)
+	 * @method static mixed joinLateral($query, string $as, string $type)
+	 * @method static mixed leftJoinLateral($query, string $as)
+	 * @method static mixed leftJoin($table, $first, $operator, $second)
+	 * @method static mixed leftJoinWhere($table, $first, $operator, $second)
+	 * @method static mixed leftJoinSub($query, $as, $first, $operator, $second)
+	 * @method static mixed rightJoin($table, $first, $operator, $second)
+	 * @method static mixed rightJoinWhere($table, $first, $operator, $second)
+	 * @method static mixed rightJoinSub($query, $as, $first, $operator, $second)
+	 * @method static mixed crossJoin($table, $first, $operator, $second)
+	 * @method static mixed crossJoinSub($query, $as)
+	 * @method static mixed newJoinClause(self $parentQuery, $type, $table)
+	 * @method static mixed newJoinLateralClause(self $parentQuery, $type, $table)
+	 * @method static mixed mergeWheres($wheres, $bindings)
+	 * @method static mixed where($column, $operator, $value, $boolean)
+	 * @method static mixed addArrayOfWheres($column, $boolean, $method)
+	 * @method static mixed prepareValueAndOperator($value, $operator, $useDefault)
+	 * @method static mixed invalidOperatorAndValue($operator, $value)
+	 * @method static mixed invalidOperator($operator)
+	 * @method static mixed isBitwiseOperator($operator)
+	 * @method static mixed orWhere($column, $operator, $value)
+	 * @method static mixed whereNot($column, $operator, $value, $boolean)
+	 * @method static mixed orWhereNot($column, $operator, $value)
+	 * @method static mixed whereColumn($first, $operator, $second, $boolean)
+	 * @method static mixed orWhereColumn($first, $operator, $second)
+	 * @method static mixed whereRaw($sql, $bindings, $boolean)
+	 * @method static mixed orWhereRaw($sql, $bindings)
+	 * @method static mixed whereLike($column, $value, $caseSensitive, $boolean, $not)
+	 * @method static mixed orWhereLike($column, $value, $caseSensitive)
+	 * @method static mixed whereNotLike($column, $value, $caseSensitive, $boolean)
+	 * @method static mixed orWhereNotLike($column, $value, $caseSensitive)
+	 * @method static mixed whereIn($column, $values, $boolean, $not)
+	 * @method static mixed orWhereIn($column, $values)
+	 * @method static mixed whereNotIn($column, $values, $boolean)
+	 * @method static mixed orWhereNotIn($column, $values)
+	 * @method static mixed whereIntegerInRaw($column, $values, $boolean, $not)
+	 * @method static mixed orWhereIntegerInRaw($column, $values)
+	 * @method static mixed whereIntegerNotInRaw($column, $values, $boolean)
+	 * @method static mixed orWhereIntegerNotInRaw($column, $values)
+	 * @method static mixed whereNull($columns, $boolean, $not)
+	 * @method static mixed orWhereNull($column)
+	 * @method static mixed whereNotNull($columns, $boolean)
+	 * @method static mixed whereBetween($column, iterable $values, $boolean, $not)
+	 * @method static mixed whereBetweenColumns($column, array $values, $boolean, $not)
+	 * @method static mixed orWhereBetween($column, iterable $values)
+	 * @method static mixed orWhereBetweenColumns($column, array $values)
+	 * @method static mixed whereNotBetween($column, iterable $values, $boolean)
+	 * @method static mixed whereNotBetweenColumns($column, array $values, $boolean)
+	 * @method static mixed orWhereNotBetween($column, iterable $values)
+	 * @method static mixed orWhereNotBetweenColumns($column, array $values)
+	 * @method static mixed orWhereNotNull($column)
+	 * @method static mixed whereDate($column, $operator, $value, $boolean)
+	 * @method static mixed orWhereDate($column, $operator, $value)
+	 * @method static mixed whereTime($column, $operator, $value, $boolean)
+	 * @method static mixed orWhereTime($column, $operator, $value)
+	 * @method static mixed whereDay($column, $operator, $value, $boolean)
+	 * @method static mixed orWhereDay($column, $operator, $value)
+	 * @method static mixed whereMonth($column, $operator, $value, $boolean)
+	 * @method static mixed orWhereMonth($column, $operator, $value)
+	 * @method static mixed whereYear($column, $operator, $value, $boolean)
+	 * @method static mixed orWhereYear($column, $operator, $value)
+	 * @method static mixed addDateBasedWhere($type, $column, $operator, $value, $boolean)
+	 * @method static mixed whereNested(Closure $callback, $boolean)
+	 * @method static mixed forNestedWhere()
+	 * @method static mixed addNestedWhereQuery($query, $boolean)
+	 * @method static mixed whereSub($column, $operator, $callback, $boolean)
+	 * @method static mixed whereExists($callback, $boolean, $not)
+	 * @method static mixed orWhereExists($callback, $not)
+	 * @method static mixed whereNotExists($callback, $boolean)
+	 * @method static mixed orWhereNotExists($callback)
+	 * @method static mixed addWhereExistsQuery(self $query, $boolean, $not)
+	 * @method static mixed whereRowValues($columns, $operator, $values, $boolean)
+	 * @method static mixed orWhereRowValues($columns, $operator, $values)
+	 * @method static mixed whereJsonContains($column, $value, $boolean, $not)
+	 * @method static mixed orWhereJsonContains($column, $value)
+	 * @method static mixed whereJsonDoesntContain($column, $value, $boolean)
+	 * @method static mixed orWhereJsonDoesntContain($column, $value)
+	 * @method static mixed whereJsonOverlaps($column, $value, $boolean, $not)
+	 * @method static mixed orWhereJsonOverlaps($column, $value)
+	 * @method static mixed whereJsonDoesntOverlap($column, $value, $boolean)
+	 * @method static mixed orWhereJsonDoesntOverlap($column, $value)
+	 * @method static mixed whereJsonContainsKey($column, $boolean, $not)
+	 * @method static mixed orWhereJsonContainsKey($column)
+	 * @method static mixed whereJsonDoesntContainKey($column, $boolean)
+	 * @method static mixed orWhereJsonDoesntContainKey($column)
+	 * @method static mixed whereJsonLength($column, $operator, $value, $boolean)
+	 * @method static mixed orWhereJsonLength($column, $operator, $value)
+	 * @method static mixed dynamicWhere($method, $parameters)
+	 * @method static mixed addDynamic($segment, $connector, $parameters, $index)
+	 * @method static mixed whereFullText($columns, $value, array $options, $boolean)
+	 * @method static mixed orWhereFullText($columns, $value, array $options)
+	 * @method static mixed whereAll($columns, $operator, $value, $boolean)
+	 * @method static mixed orWhereAll($columns, $operator, $value)
+	 * @method static mixed whereAny($columns, $operator, $value, $boolean)
+	 * @method static mixed orWhereAny($columns, $operator, $value)
+	 * @method static mixed whereNone($columns, $operator, $value, $boolean)
+	 * @method static mixed orWhereNone($columns, $operator, $value)
+	 * @method static mixed groupBy($groups)
+	 * @method static mixed groupByRaw($sql, array $bindings)
+	 * @method static mixed having($column, $operator, $value, $boolean)
+	 * @method static mixed orHaving($column, $operator, $value)
+	 * @method static mixed havingNested(Closure $callback, $boolean)
+	 * @method static mixed addNestedHavingQuery($query, $boolean)
+	 * @method static mixed havingNull($columns, $boolean, $not)
+	 * @method static mixed orHavingNull($column)
+	 * @method static mixed havingNotNull($columns, $boolean)
+	 * @method static mixed orHavingNotNull($column)
+	 * @method static mixed havingBetween($column, iterable $values, $boolean, $not)
+	 * @method static mixed havingRaw($sql, array $bindings, $boolean)
+	 * @method static mixed orHavingRaw($sql, array $bindings)
+	 * @method static mixed orderBy($column, $direction)
+	 * @method static mixed orderByDesc($column)
+	 * @method static mixed latest($column)
+	 * @method static mixed oldest($column)
+	 * @method static mixed inRandomOrder($seed)
+	 * @method static mixed orderByRaw($sql, $bindings)
+	 * @method static mixed skip($value)
+	 * @method static mixed offset($value)
+	 * @method static mixed take($value)
+	 * @method static mixed limit($value)
+	 * @method static mixed groupLimit($value, $column)
+	 * @method static mixed forPage($page, $perPage)
+	 * @method static mixed forPageBeforeId($perPage, $lastId, $column)
+	 * @method static mixed forPageAfterId($perPage, $lastId, $column)
+	 * @method static mixed reorder($column, $direction)
+	 * @method static mixed removeExistingOrdersFor($column)
+	 * @method static mixed union($query, $all)
+	 * @method static mixed unionAll($query)
+	 * @method static mixed lock($value)
+	 * @method static mixed lockForUpdate()
+	 * @method static mixed sharedLock()
+	 * @method static mixed beforeQuery(callable $callback)
+	 * @method static mixed applyBeforeQueryCallbacks()
+	 * @method static mixed afterQuery(Closure $callback)
+	 * @method static mixed applyAfterQueryCallbacks($result)
+	 * @method static mixed toSql()
+	 * @method static mixed toRawSql()
+	 * @method static mixed find($id, $columns)
+	 * @method static mixed findOr($id, $columns, Closure $callback)
+	 * @method static mixed value($column)
+	 * @method static mixed rawValue(string $expression, array $bindings)
+	 * @method static mixed soleValue($column)
+	 * @method static mixed get($columns)
+	 * @method static mixed runSelect()
+	 * @method static mixed withoutGroupLimitKeys($items)
+	 * @method static mixed paginate($perPage, $columns, $pageName, $page, $total)
+	 * @method static mixed simplePaginate($perPage, $columns, $pageName, $page)
+	 * @method static mixed cursorPaginate($perPage, $columns, $cursorName, $cursor)
+	 * @method static mixed ensureOrderForCursorPagination($shouldReverse)
+	 * @method static mixed getCountForPagination($columns)
+	 * @method static mixed runPaginationCountQuery($columns)
+	 * @method static mixed cloneForPaginationCount()
+	 * @method static mixed withoutSelectAliases(array $columns)
+	 * @method static mixed cursor()
+	 * @method static mixed enforceOrderBy()
+	 * @method static mixed pluck($column, $key)
+	 * @method static mixed stripTableForPluck($column)
+	 * @method static mixed pluckFromObjectColumn($queryResult, $column, $key)
+	 * @method static mixed pluckFromArrayColumn($queryResult, $column, $key)
+	 * @method static mixed implode($column, $glue)
+	 * @method static mixed exists()
+	 * @method static mixed doesntExist()
+	 * @method static mixed existsOr(Closure $callback)
+	 * @method static mixed doesntExistOr(Closure $callback)
+	 * @method static mixed count($columns)
+	 * @method static mixed min($column)
+	 * @method static mixed max($column)
+	 * @method static mixed sum($column)
+	 * @method static mixed avg($column)
+	 * @method static mixed average($column)
+	 * @method static mixed aggregate($function, $columns)
+	 * @method static mixed numericAggregate($function, $columns)
+	 * @method static mixed setAggregate($function, $columns)
+	 * @method static mixed onceWithColumns($columns, $callback)
+	 * @method static mixed insert(array $values)
+	 * @method static mixed insertOrIgnore(array $values)
+	 * @method static mixed insertGetId(array $values, $sequence)
+	 * @method static mixed insertUsing(array $columns, $query)
+	 * @method static mixed insertOrIgnoreUsing(array $columns, $query)
+	 * @method static mixed update(array $values)
+	 * @method static mixed updateFrom(array $values)
+	 * @method static mixed updateOrInsert(array $attributes, callable|array $values)
+	 * @method static mixed upsert(array $values, $uniqueBy, $update)
+	 * @method static mixed increment($column, $amount, array $extra)
+	 * @method static mixed incrementEach(array $columns, array $extra)
+	 * @method static mixed decrement($column, $amount, array $extra)
+	 * @method static mixed decrementEach(array $columns, array $extra)
+	 * @method static mixed delete($id)
+	 * @method static mixed truncate()
+	 * @method static mixed newQuery()
+	 * @method static mixed forSubQuery()
+	 * @method static mixed getColumns()
+	 * @method static mixed raw($value)
+	 * @method static mixed getUnionBuilders()
+	 * @method static mixed getBindings()
+	 * @method static mixed getRawBindings()
+	 * @method static mixed setBindings(array $bindings, $type)
+	 * @method static mixed addBinding($value, $type)
+	 * @method static mixed castBinding($value)
+	 * @method static mixed mergeBindings(self $query)
+	 * @method static mixed cleanBindings(array $bindings)
+	 * @method static mixed flattenValue($value)
+	 * @method static mixed defaultKeyName()
+	 * @method static mixed getConnection()
+	 * @method static mixed getProcessor()
+	 * @method static mixed getGrammar()
+	 * @method static mixed useWritePdo()
+	 * @method static mixed isQueryable($value)
+	 * @method static mixed clone()
+	 * @method static mixed cloneWithout(array $properties)
+	 * @method static mixed cloneWithoutBindings(array $except)
+	 * @method static mixed dump($args)
+	 * @method static mixed dumpRawSql()
+	 * @method static mixed dd()
+	 * @method static mixed ddRawSql()
+	 * @method static mixed wherePast($columns)
+	 * @method static mixed whereNowOrPast($columns)
+	 * @method static mixed orWherePast($columns)
+	 * @method static mixed orWhereNowOrPast($columns)
+	 * @method static mixed whereFuture($columns)
+	 * @method static mixed whereNowOrFuture($columns)
+	 * @method static mixed orWhereFuture($columns)
+	 * @method static mixed orWhereNowOrFuture($columns)
+	 * @method static mixed wherePastOrFuture($columns, $operator, $boolean)
+	 * @method static mixed whereToday($columns, $boolean)
+	 * @method static mixed whereBeforeToday($columns)
+	 * @method static mixed whereTodayOrBefore($columns)
+	 * @method static mixed whereAfterToday($columns)
+	 * @method static mixed whereTodayOrAfter($columns)
+	 * @method static mixed orWhereToday($columns)
+	 * @method static mixed orWhereBeforeToday($columns)
+	 * @method static mixed orWhereTodayOrBefore($columns)
+	 * @method static mixed orWhereAfterToday($columns)
+	 * @method static mixed orWhereTodayOrAfter($columns)
+	 * @method static mixed whereTodayBeforeOrAfter($columns, $operator, $boolean)
+	 * @method static mixed chunk($count, callable $callback)
+	 * @method static mixed chunkMap(callable $callback, $count)
+	 * @method static mixed each(callable $callback, $count)
+	 * @method static mixed chunkById($count, callable $callback, $column, $alias)
+	 * @method static mixed chunkByIdDesc($count, callable $callback, $column, $alias)
+	 * @method static mixed orderedChunkById($count, callable $callback, $column, $alias, $descending)
+	 * @method static mixed eachById(callable $callback, $count, $column, $alias)
+	 * @method static mixed lazy($chunkSize)
+	 * @method static mixed lazyById($chunkSize, $column, $alias)
+	 * @method static mixed lazyByIdDesc($chunkSize, $column, $alias)
+	 * @method static mixed orderedLazyById($chunkSize, $column, $alias, $descending)
+	 * @method static mixed first($columns)
+	 * @method static mixed firstOrFail($columns, $message)
+	 * @method static mixed sole($columns)
+	 * @method static mixed paginateUsingCursor($perPage, $columns, $cursorName, $cursor)
+	 * @method static mixed getOriginalColumnNameForCursorPagination($builder, string $parameter)
+	 * @method static mixed paginator($items, $total, $perPage, $currentPage, $options)
+	 * @method static mixed simplePaginator($items, $perPage, $currentPage, $options)
+	 * @method static mixed cursorPaginator($items, $perPage, $cursor, $options)
+	 * @method static mixed tap($callback)
+	 * @method static mixed when($value, callable $callback, callable $default)
+	 * @method static mixed unless($value, callable $callback, callable $default)
+	 * @method static mixed explain()
+	 * @method static mixed forwardCallTo($object, $method, $parameters)
+	 * @method static mixed forwardDecoratedCallTo($object, $method, $parameters)
+	 * @method static mixed throwBadMethodCallException($method)
+	 * @method static mixed macro($name, $macro)
+	 * @method static mixed mixin($mixin, $replace)
+	 * @method static mixed hasMacro($name)
+	 * @method static mixed flushMacros()
+	 * @method static mixed macroCall($method, $parameters)
+	 * @mixin \Illuminate\Database\Query\Builder
+	 */
+	class ProgramKerja extends \Illuminate\Database\Eloquent\Model
 	{
 		//
 	}
@@ -12487,6 +13105,12 @@ namespace App\Models {
 	/**
 	 * App\Models\User
 	 *
+	 * @property \Illuminate\Support\Carbon|null $last_login_at
+	 * @property string|null $no_hp
+	 * @property string|null $bio
+	 * @property string|null $nim
+	 * @property int|null $mentor_id
+	 * @property string|null $google_id
 	 * @property \Illuminate\Support\Carbon|null $updated_at
 	 * @property \Illuminate\Support\Carbon|null $created_at
 	 * @property string|null $remember_token
@@ -12506,8 +13130,6 @@ namespace App\Models {
 	 * @property string|null $tgl_wisuda
 	 * @property string|null $tgl_skripsi
 	 * @property string|null $tgl_seminar
-	 * @property string|null $no_hp
-	 * @property string|null $bio
 	 * @property string|null $angkatan
 	 * @property string|null $prodi
 	 * @property string|null $fakultas
@@ -12519,19 +13141,16 @@ namespace App\Models {
 	 * @property int|null $no_induk
 	 * @property string|null $status_warga
 	 * @property string|null $asrama
-	 * @property int|null $mentor_id
 	 * @property string $role
-	 * @property \Illuminate\Support\Carbon|null $last_login_at
 	 * @property string|null $password
 	 * @property \Illuminate\Support\Carbon|null $email_verified_at
-	 * @property string|null $google_id
-	 * @property string|null $nim
 	 * @property string $email
 	 * @property string $name
 	 * @property int $id
 	 * @property-read mixed $avatar
 	 * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Ipk> $ipks
 	 * @property-read int|null $ipks_count
+	 * @property-read \App\Models\Hafalan $hafalan
 	 * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Akademik> $akademiks
 	 * @property-read int|null $akademiks_count
 	 * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Leadership> $leaderships
@@ -12557,13 +13176,9 @@ namespace App\Models {
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereName($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereEmail($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereNim($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereGoogleId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereEmailVerifiedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePassword($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereLastLoginAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereRole($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereMentorId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereAsrama($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereStatusWarga($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereNoInduk($value)
@@ -12575,8 +13190,6 @@ namespace App\Models {
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereFakultas($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereProdi($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereAngkatan($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereBio($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereNoHp($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTglSeminar($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTglSkripsi($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTglWisuda($value)
@@ -12596,6 +13209,12 @@ namespace App\Models {
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereRememberToken($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereCreatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereUpdatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereGoogleId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereMentorId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereNim($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereBio($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereNoHp($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereLastLoginAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User query()
@@ -12896,12 +13515,12 @@ namespace App\Models {
 	/**
 	 * App\Models\UserEvent
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
+	 * @property boolean $is_mandatory
 	 * @property array|null $completed_at_details
 	 * @property array|null $completed_at_dates
 	 * @property array|null $excluded_dates
-	 * @property boolean $is_mandatory
+	 * @property \Illuminate\Support\Carbon|null $updated_at
+	 * @property \Illuminate\Support\Carbon|null $created_at
 	 * @property boolean $recurring
 	 * @property string|null $desc
 	 * @property string $color
@@ -12921,12 +13540,12 @@ namespace App\Models {
 	 * @method static \Illuminate\Database\Eloquent\Builder<UserEvent>|UserEvent whereColor($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<UserEvent>|UserEvent whereDesc($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<UserEvent>|UserEvent whereRecurring($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<UserEvent>|UserEvent whereIsMandatory($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<UserEvent>|UserEvent whereCreatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<UserEvent>|UserEvent whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<UserEvent>|UserEvent whereExcludedDates($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<UserEvent>|UserEvent whereCompletedAtDates($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<UserEvent>|UserEvent whereCompletedAtDetails($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<UserEvent>|UserEvent whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<UserEvent>|UserEvent whereUpdatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<UserEvent>|UserEvent whereIsMandatory($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<UserEvent>|UserEvent newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<UserEvent>|UserEvent newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<UserEvent>|UserEvent query()

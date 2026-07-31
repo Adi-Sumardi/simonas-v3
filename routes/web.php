@@ -43,6 +43,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/change-password', [\App\Http\Controllers\UserController::class, 'changePassword'])
         ->name('user.changePassword');
 
+    // ── File (bukti kegiatan, disimpan sebagai BLOB di database) ──
+    Route::get('/files/{table}/{id}', [\App\Http\Controllers\Web\FileController::class, 'show'])
+        ->where(['table' => 'akademiks|leaderships|karakters|kreatifs', 'id' => '[0-9]+'])
+        ->name('files.show');
+
     // ── Mahasiswa (permission-gated) ──────────────────────────
     Route::middleware('can:access-mahasiswa')->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
 
@@ -175,6 +180,7 @@ Route::middleware('auth')->group(function () {
 
         // Super Admin pages (Phase 5)
         Route::get('/warga',      [App\Http\Controllers\Web\Super\SuperController::class, 'warga'])->name('warga.index');
+        Route::post('/warga',     [App\Http\Controllers\Web\Super\SuperController::class, 'storeWarga'])->name('warga.store');
         Route::get('/mentor',     [App\Http\Controllers\Web\Super\SuperController::class, 'mentor'])->name('mentor.index');
         Route::get('/mentor/{id}/analysis', [App\Http\Controllers\Web\Super\SuperController::class, 'mentorAnalysis'])->name('mentor.analysis');
         Route::get('/alumni',     [App\Http\Controllers\Web\Super\SuperController::class, 'alumni'])->name('alumni.index');
@@ -203,6 +209,16 @@ Route::middleware('auth')->group(function () {
         Route::post('/asrama/{asrama}/jabatan',          [App\Http\Controllers\Web\Super\SuperController::class, 'storeJabatan'])  ->name('asrama.jabatan.store');
         Route::put('/asrama/{asrama}/jabatan/{jabatan}', [App\Http\Controllers\Web\Super\SuperController::class, 'updateJabatan']) ->name('asrama.jabatan.update');
         Route::delete('/asrama/{asrama}/jabatan/{jabatan}',[App\Http\Controllers\Web\Super\SuperController::class, 'destroyJabatan'])->name('asrama.jabatan.destroy');
+
+        // Komponen CRUD
+        Route::post('/komponen',              [App\Http\Controllers\Web\Super\SuperController::class, 'storeKomponen'])  ->name('komponen.store');
+        Route::put('/komponen/{komponen}',    [App\Http\Controllers\Web\Super\SuperController::class, 'updateKomponen']) ->name('komponen.update');
+        Route::delete('/komponen/{komponen}', [App\Http\Controllers\Web\Super\SuperController::class, 'destroyKomponen'])->name('komponen.destroy');
+
+        // Warga detail/edit
+        Route::get('/warga/{id}',        [App\Http\Controllers\Web\Super\SuperController::class, 'wargaDetail']) ->name('warga.detail');
+        Route::get('/warga/{id}/edit',   [App\Http\Controllers\Web\Super\SuperController::class, 'wargaEdit'])   ->name('warga.edit');
+        Route::put('/warga/{id}',        [App\Http\Controllers\Web\Super\SuperController::class, 'wargaUpdate'])->name('warga.update');
     });
 
 });

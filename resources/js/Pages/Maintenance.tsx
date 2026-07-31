@@ -14,8 +14,8 @@ export default function Maintenance({ progress = 65, statusCode = 'SE_DORM_SNF_4
             <div className="min-h-screen flex items-center justify-center px-4">
                 <div className="glass-panel max-w-lg w-full p-10 text-center">
                     <div className="flex items-center justify-center gap-2 mb-8">
-                        <div className="w-7 h-7 rounded-lg bg-primary-container flex items-center justify-center">
-                            <Icon name="apartment" className="text-base text-on-primary" filled />
+                        <div className="w-7 h-7 rounded-lg overflow-hidden">
+                            <img src="/images/simonas_logo.png" alt="SIMONAS" className="w-full h-full object-cover" />
                         </div>
                         <span className="font-display text-title-sm text-primary-container">SIMONAS</span>
                     </div>

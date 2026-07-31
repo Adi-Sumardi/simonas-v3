@@ -38,11 +38,12 @@ const TIPE_META: Record<string, { icon:string; bg:string; text:string }> = {
 export default function Kegiatan({ kegiatan, stats, filters }: Props) {
     const [statusFilter, setStatusFilter] = useState(filters.status || 'all');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [selectedKegiatan, setSelectedKegiatan] = useState<KegiatanData | null>(null);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         nama_kegiatan: '',
         tujuan: '',
-        penyelenggara: 'Pesantren SIMONAS',
+        penyelenggara: 'Asrama SIMONAS',
         jenis_kegiatan: 'kegiatan',
         waktu: '',
         tempat: '',
@@ -75,7 +76,7 @@ export default function Kegiatan({ kegiatan, stats, filters }: Props) {
             <Head title="Kegiatan & Event" />
             <PageHeader
                 title="Kegiatan & Event"
-                subtitle="Program pesantren, jadwal kegiatan, dan rencana aktivitas"
+                subtitle="Program Asrama, jadwal kegiatan, dan rencana aktivitas"
                 breadcrumbs={[{ label:'Dashboard', href:'/dashboard' }, { label:'Kegiatan' }]}
                 actions={
                     <button onClick={() => setIsCreateModalOpen(true)} className="btn-primary flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold">
@@ -150,7 +151,7 @@ export default function Kegiatan({ kegiatan, stats, filters }: Props) {
                                 </div>
                             </div>
                             <div className="flex gap-2 pt-1">
-                                <button className="flex-1 py-2 rounded-xl text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-white transition-colors">Detail</button>
+                                <button onClick={() => setSelectedKegiatan(k)} className="flex-1 py-2 rounded-xl text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-white transition-colors">Detail</button>
                                 {isUpcoming && (
                                     <button className="flex-1 py-2 rounded-xl text-xs font-bold bg-primary-container/10 text-primary-container hover:bg-primary-container hover:text-white transition-all">Edit</button>
                                 )}
@@ -230,6 +231,42 @@ export default function Kegiatan({ kegiatan, stats, filters }: Props) {
                         </button>
                     </div>
                 </form>
+            </Modal>
+
+            {/* Detail Modal */}
+            <Modal open={!!selectedKegiatan} onClose={() => setSelectedKegiatan(null)} title={selectedKegiatan?.nama_kegiatan} icon="event" size="md">
+                {selectedKegiatan && (
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Waktu</p>
+                                <p className="text-sm font-semibold text-on-surface mt-0.5">
+                                    {new Date(selectedKegiatan.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                    {' · '}{new Date(selectedKegiatan.waktu).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Jenis</p>
+                                <p className="text-sm font-semibold text-on-surface mt-0.5 capitalize">{selectedKegiatan.jenis_kegiatan}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Tempat</p>
+                                <p className="text-sm font-semibold text-on-surface mt-0.5">{selectedKegiatan.tempat || '-'}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Penyelenggara</p>
+                                <p className="text-sm font-semibold text-on-surface mt-0.5">{selectedKegiatan.penyelenggara || '-'}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Keterangan</p>
+                            <p className="text-sm text-on-surface mt-0.5 leading-relaxed">{selectedKegiatan.keterangan || 'Tidak ada keterangan tambahan.'}</p>
+                        </div>
+                        <div className="flex gap-3 pt-2">
+                            <button onClick={() => setSelectedKegiatan(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-surface-container text-on-surface-variant hover:bg-white transition-colors">Tutup</button>
+                        </div>
+                    </div>
+                )}
             </Modal>
         </AppLayout>
     );

@@ -95,7 +95,7 @@ export default function Alumni({ alumni, asrama_list, stats, filters }: Props) {
             <Head title="Data Alumni" />
             <PageHeader
                 title="Data Alumni"
-                subtitle="Direktori alumni, jejak karir, dan komunitas pesantren"
+                subtitle="Direktori alumni, jejak karir, dan komunitas Asrama"
                 breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Alumni' }]}
                 actions={
                     <button className="btn-primary flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold">

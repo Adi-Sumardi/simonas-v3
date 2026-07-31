@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title inertia>{{ config('app.name', 'SIMONAS') }}</title>
-    <meta name="description" content="SIMONAS – Sistem Informasi Manajemen Pondok Pesantren berbasis teknologi modern.">
+    <meta name="description" content="SIMONAS – Sistem Informasi Manajemen Asrama berbasis teknologi modern.">
 
     {{-- PWA Meta Tags --}}
     <meta name="theme-color" content="#2563eb">
@@ -64,16 +64,16 @@
             width: 44px;
             height: 44px;
             border-radius: 12px;
-            background: #2563eb;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 16px rgba(37,99,235,0.35);
         }
-        .splash-icon svg {
-            width: 24px;
-            height: 24px;
-            fill: #fff;
+        .splash-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .splash-name {
             font-size: 22px;
@@ -112,9 +112,7 @@
     <div id="app-splash" aria-hidden="true">
         <div class="splash-logo">
             <div class="splash-icon">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 3L1 9l4 2.18V17h14v-5.82L23 9 12 3zm6 12H6v-4.82l6-3.27 6 3.27V15zm-6 2c-1.1 0-2 .9-2 2h4c0-1.1-.9-2-2-2z"/>
-                </svg>
+                <img src="/images/simonas_logo.png" alt="SIMONAS">
             </div>
             <span class="splash-name">SIMONAS</span>
         </div>

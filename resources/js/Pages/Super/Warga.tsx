@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
@@ -36,7 +36,17 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [asrama, setAsrama] = useState(filters.asrama || '');
     const [status, setStatus] = useState(filters.status || '');
-    
+    const [showAddModal, setShowAddModal] = useState(false);
+    const addForm = useForm({ name: '', email: '', password: '', no_induk: '', asrama: '', status_warga: 'aktif', angkatan: '' });
+
+    function submitAdd(e: React.FormEvent) {
+        e.preventDefault();
+        addForm.post('/super/warga', {
+            preserveScroll: true,
+            onSuccess: () => { addForm.reset(); setShowAddModal(false); },
+        });
+    }
+
     const debouncedSearch = useDebounce(search, 500);
 
     useEffect(() => {
@@ -65,10 +75,10 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
             <Head title="Manajemen Warga" />
             <PageHeader
                 title="Manajemen Warga"
-                subtitle="Data seluruh warga aktif dan nonaktif di pesantren"
+                subtitle="Data seluruh warga aktif dan nonaktif di Asrama"
                 breadcrumbs={[{ label:'Dashboard', href:'/dashboard' }, { label:'Warga' }]}
                 actions={
-                    <button className="btn-primary flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold">
+                    <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold">
                         <Icon name="person_add" className="text-lg" />
                         Tambah Warga
                     </button>
@@ -108,7 +118,7 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
                     <table className="w-full text-sm">
                         <thead className="border-b border-white/40 bg-surface-container/30">
                             <tr>
-                                {['#','NIM','Nama','Asrama','Angkatan','Hafalan','Skor','Status','Aksi'].map(h => (
+                                {['#','Nomor Induk Warga','Nama','Asrama','Angkatan','Hafalan','Skor','Status','Aksi'].map(h => (
                                     <th key={h} className="text-left py-3 px-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant whitespace-nowrap last:text-right">{h}</th>
                                 ))}
                             </tr>
@@ -147,12 +157,12 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
                                     </td>
                                     <td className="py-3 px-4 text-right">
                                         <div className="flex justify-end gap-1">
-                                            <button className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors">
+                                            <Link href={`/super/warga/${w.id}`} className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors">
                                                 <Icon name="visibility" className="text-sm" />
-                                            </button>
-                                            <button className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition-colors">
+                                            </Link>
+                                            <Link href={`/super/warga/${w.id}/edit`} className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition-colors">
                                                 <Icon name="edit" className="text-sm" />
-                                            </button>
+                                            </Link>
                                         </div>
                                     </td>
                                 </tr>
@@ -195,12 +205,12 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
                             </div>
                         </div>
                         <div className="flex gap-2">
-                            <button className="flex-1 py-2 rounded-xl bg-blue-50 text-blue-600 font-bold text-xs flex items-center justify-center gap-1">
+                            <Link href={`/super/warga/${w.id}`} className="flex-1 py-2 rounded-xl bg-blue-50 text-blue-600 font-bold text-xs flex items-center justify-center gap-1">
                                 <Icon name="visibility" className="text-sm" /> Detail
-                            </button>
-                            <button className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                            </Link>
+                            <Link href={`/super/warga/${w.id}/edit`} className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
                                 <Icon name="edit" className="text-sm" />
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 ))}
@@ -223,6 +233,59 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
                     router.get('/super/warga', { ...filters, per_page: newPerPage }, { preserveState: true });
                 }}
             />
+
+            {showAddModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-modal-in">
+                        <div className="flex items-center justify-between p-6 border-b border-zinc-100">
+                            <h3 className="font-bold text-on-surface">Tambah Warga</h3>
+                            <button onClick={() => setShowAddModal(false)} className="w-8 h-8 rounded-xl bg-zinc-100 flex items-center justify-center hover:bg-zinc-200">
+                                <Icon name="close" className="text-sm" />
+                            </button>
+                        </div>
+                        <form onSubmit={submitAdd} className="p-6 space-y-4">
+                            <div>
+                                <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1.5 block">Nama Lengkap *</label>
+                                <input value={addForm.data.name} onChange={e => addForm.setData('name', e.target.value)} className="glass-input w-full text-sm" />
+                                {addForm.errors.name && <p className="text-xs text-rose-500 mt-1">{addForm.errors.name}</p>}
+                            </div>
+                            <div>
+                                <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1.5 block">Email *</label>
+                                <input type="email" value={addForm.data.email} onChange={e => addForm.setData('email', e.target.value)} className="glass-input w-full text-sm" />
+                                {addForm.errors.email && <p className="text-xs text-rose-500 mt-1">{addForm.errors.email}</p>}
+                            </div>
+                            <div>
+                                <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1.5 block">Password *</label>
+                                <input type="password" value={addForm.data.password} onChange={e => addForm.setData('password', e.target.value)} className="glass-input w-full text-sm" placeholder="Min. 8 karakter" />
+                                {addForm.errors.password && <p className="text-xs text-rose-500 mt-1">{addForm.errors.password}</p>}
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1.5 block">No. Induk</label>
+                                    <input value={addForm.data.no_induk} onChange={e => addForm.setData('no_induk', e.target.value)} className="glass-input w-full text-sm" />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1.5 block">Angkatan</label>
+                                    <input value={addForm.data.angkatan} onChange={e => addForm.setData('angkatan', e.target.value)} className="glass-input w-full text-sm" placeholder="cth. 2024" />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1.5 block">Asrama</label>
+                                <select value={addForm.data.asrama} onChange={e => addForm.setData('asrama', e.target.value)} className="glass-input w-full text-sm py-2">
+                                    <option value="">— Pilih Asrama —</option>
+                                    {asramas.map(a => <option key={a} value={a}>{a}</option>)}
+                                </select>
+                            </div>
+                            <div className="flex gap-3 pt-2">
+                                <button type="submit" disabled={addForm.processing} className="btn-primary flex-1 py-3 rounded-xl font-bold text-sm">
+                                    {addForm.processing ? 'Menyimpan...' : 'Tambah Warga'}
+                                </button>
+                                <button type="button" onClick={() => setShowAddModal(false)} className="px-6 py-3 rounded-xl font-bold text-sm bg-zinc-100 text-on-surface-variant">Batal</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </AppLayout>
     );
 }

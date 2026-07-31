@@ -247,8 +247,8 @@ export function Sidebar({ user, drawerOpen = false, onClose, onOpen }: SidebarPr
                 {/* Brand */}
                 <div className="mb-4 px-2 flex items-center justify-between">
                     <div>
-                        <div className="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center text-white shadow-md mb-3">
-                            <Icon name="school" className="text-xl" filled />
+                        <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md mb-3">
+                            <img src="/images/simonas_logo.png" alt="SIMONAS" className="w-full h-full object-cover" />
                         </div>
                         <p className="font-display text-sm font-black text-primary-container">SIMONAS</p>
                     </div>

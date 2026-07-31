@@ -9,7 +9,9 @@ use App\Models\Komponen;
 use App\Models\Kreatif;
 use App\Models\Leadership;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class AktivitasController extends Controller
@@ -23,6 +25,18 @@ class AktivitasController extends Controller
     ];
 
     private const VALID_CATS = 'required|in:akademik,leadership,karakter,kreativitas';
+
+    private const TABLES = [
+        'akademik'    => 'akademiks',
+        'leadership'  => 'leaderships',
+        'karakter'    => 'karakters',
+        'kreativitas' => 'kreatifs',
+    ];
+
+    private static function tableFor(string $kategori): string
+    {
+        return self::TABLES[$kategori];
+    }
 
     public function index(Request $request)
     {
@@ -48,7 +62,8 @@ class AktivitasController extends Controller
                 'komponen'      => optional($r->komponen)->nama_komponen ?? $r->komponen ?? '-',
                 'komponen_id'   => $r->komponen_id,
                 'tipe_kegiatan' => $r->tipe_kegiatan,
-                'image'         => $r->file,
+                'image'         => $r->file_data ? route('files.show', ['table' => self::tableFor($cat), 'id' => $r->id]) : null,
+                'image_name'    => $r->file,
                 'waktu'         => $r->waktu,
                 'tempat'        => $r->tempat,
                 'keterangan'    => $r->keterangan,
@@ -92,6 +107,10 @@ class AktivitasController extends Controller
         ]);
     }
 
+    // Hanya 3 tipe ini yang diterima — mimes: memvalidasi isi file asli,
+    // bukan cuma ekstensi, jadi file .heic/.mp4 yang di-rename tetap ditolak.
+    private const ALLOWED_UPLOAD_RULE = 'file|mimes:jpg,jpeg,png,pdf|max:20480'; // 20MB mentah, sebelum dikompres
+
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -102,15 +121,11 @@ class AktivitasController extends Controller
             'waktu'         => 'required|date',
             'tempat'        => 'required|string|max:255',
             'keterangan'    => 'nullable|string|max:1000',
-            'image'         => 'required|image|max:2048', // 2MB max
+            'image'         => 'required|' . self::ALLOWED_UPLOAD_RULE,
         ]);
 
         $model = self::CATS[$data['kategori']]['model'];
-
-        $filePath = null;
-        if ($request->hasFile('image')) {
-            $filePath = $request->file('image')->store('aktivitas', 'public');
-        }
+        $file  = $this->processUpload($request->file('image'));
 
         $model::create([
             'user_id'       => Auth::id(),
@@ -122,7 +137,10 @@ class AktivitasController extends Controller
             'waktu'         => $data['waktu'],
             'tempat'        => $data['tempat'],
             'keterangan'    => $data['keterangan'] ?? null,
-            'file'          => $filePath,
+            'file'          => $file['name'],
+            'file_data'     => $this->binaryExpr($file['data']),
+            'file_mime'     => $file['mime'],
+            'file_size'     => $file['size'],
         ]);
 
         return back()->with('success', 'Aktivitas berhasil ditambahkan.');
@@ -138,7 +156,7 @@ class AktivitasController extends Controller
             'waktu'         => 'required|date',
             'tempat'        => 'required|string|max:255',
             'keterangan'    => 'nullable|string|max:1000',
-            'image'         => 'nullable|image|max:2048',
+            'image'         => 'nullable|' . self::ALLOWED_UPLOAD_RULE,
         ]);
 
         $model  = self::CATS[$data['kategori']]['model'];
@@ -154,16 +172,67 @@ class AktivitasController extends Controller
         ];
 
         if ($request->hasFile('image')) {
-            // Delete old file if exists
-            if ($record->file && \Storage::disk('public')->exists($record->file)) {
-                \Storage::disk('public')->delete($record->file);
-            }
-            $updateData['file'] = $request->file('image')->store('aktivitas', 'public');
+            // BLOB lama otomatis "hilang" begitu kolomnya ditimpa — tidak ada
+            // file fisik yang perlu dibersihkan.
+            $file = $this->processUpload($request->file('image'));
+            $updateData['file']      = $file['name'];
+            $updateData['file_data'] = $this->binaryExpr($file['data']);
+            $updateData['file_mime'] = $file['mime'];
+            $updateData['file_size'] = $file['size'];
         }
 
         $record->update($updateData);
 
         return back()->with('success', 'Aktivitas berhasil diperbarui.');
+    }
+
+    /**
+     * PDO pgsql mem-bind string biasa sebagai teks UTF-8 — data biner mentah
+     * (JPEG/PDF) bukan UTF-8 valid dan bikin insert gagal ("invalid byte
+     * sequence"). decode(hex) di sisi Postgres yang menuliskan bytea-nya,
+     * bukan parameter binding, jadi aman dari isu encoding ini.
+     */
+    private function binaryExpr(string $binary): \Illuminate\Database\Query\Expression
+    {
+        return DB::raw("decode('" . bin2hex($binary) . "', 'hex')");
+    }
+
+    /**
+     * Kompres gambar (resize max 1600px, re-encode JPEG kualitas 75) sebelum
+     * disimpan sebagai BLOB. PDF disimpan apa adanya (tidak ada kompresi yang
+     * aman dilakukan tanpa dependensi tambahan seperti Ghostscript).
+     *
+     * @return array{data:string,mime:string,size:int,name:string}
+     */
+    private function processUpload(UploadedFile $file): array
+    {
+        $ext = strtolower($file->getClientOriginalExtension());
+
+        if (in_array($ext, ['jpg', 'jpeg', 'png'], true)) {
+            $manager = new \Intervention\Image\ImageManager(['driver' => 'gd']);
+            $image = $manager->make($file->getRealPath());
+            $image->resize(1600, 1600, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+            $encoded = (string) $image->encode('jpg', 75);
+
+            return [
+                'data' => $encoded,
+                'mime' => 'image/jpeg',
+                'size' => strlen($encoded),
+                'name' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.jpg',
+            ];
+        }
+
+        $contents = file_get_contents($file->getRealPath());
+
+        return [
+            'data' => $contents,
+            'mime' => 'application/pdf',
+            'size' => strlen($contents),
+            'name' => $file->getClientOriginalName(),
+        ];
     }
 
     public function destroy(Request $request, int $id)

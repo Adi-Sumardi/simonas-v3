@@ -16,11 +16,23 @@ class Akademik extends Model
         'waktu', 
         'tempat', 
         'keterangan', 
-        'file', 
+        'file',
+        'file_data',
+        'file_mime',
+        'file_size',
         'nama_penilai', 
         'nilai',
         'tipe_kegiatan',
     ];
+
+    protected $hidden = ['file_data'];
+
+    public function getFileDataAttribute($value)
+    {
+        if (! is_resource($value)) return $value;
+        rewind($value);
+        return stream_get_contents($value);
+    }
 
     public function user()
     {

@@ -22,11 +22,11 @@ class KalenderController extends Controller
             ['id'=>4,  'title'=>'Setoran Hafalan — Al-Qalam',   'date'=>now()->format('Y-m').'-10', 'time'=>'08:00', 'type'=>'hafalan',  'color'=>'#10b981', 'desc'=>'Mentor: Ust. Ahmad'],
             // Akademik
             ['id'=>5,  'title'=>'UTS Matematika',               'date'=>now()->format('Y-m').'-'.str_pad(now()->day + 3, 2, '0', STR_PAD_LEFT), 'time'=>'08:00', 'type'=>'akademik', 'color'=>'#f59e0b', 'desc'=>'Ruang B201'],
-            ['id'=>6,  'title'=>'Presentasi Tugas Akhir',       'date'=>now()->format('Y-m').'-20', 'time'=>'13:00', 'type'=>'akademik', 'color'=>'#f59e0b', 'desc'=>'Aula Pesantren'],
+            ['id'=>6,  'title'=>'Presentasi Tugas Akhir',       'date'=>now()->format('Y-m').'-20', 'time'=>'13:00', 'type'=>'akademik', 'color'=>'#f59e0b', 'desc'=>'Aula Asrama'],
             // Kegiatan
             ['id'=>7,  'title'=>'Rapat OSIS Bulanan',           'date'=>now()->format('Y-m').'-'.str_pad(now()->day, 2, '0', STR_PAD_LEFT),     'time'=>'15:00', 'type'=>'kegiatan', 'color'=>'#8b5cf6', 'desc'=>'Ruang Sekretariat'],
             ['id'=>8,  'title'=>'Seminar Kewirausahaan',        'date'=>now()->format('Y-m').'-15', 'time'=>'09:00', 'type'=>'kegiatan', 'color'=>'#8b5cf6', 'desc'=>'Aula Utama'],
-            ['id'=>9,  'title'=>'Pramuka & Leadership Camp',    'date'=>now()->format('Y-m').'-22', 'time'=>'07:00', 'type'=>'kegiatan', 'color'=>'#8b5cf6', 'desc'=>'Lapangan Pesantren'],
+            ['id'=>9,  'title'=>'Pramuka & Leadership Camp',    'date'=>now()->format('Y-m').'-22', 'time'=>'07:00', 'type'=>'kegiatan', 'color'=>'#8b5cf6', 'desc'=>'Lapangan Asrama'],
             // Jadwal Harian
             ['id'=>10, 'title'=>'Belajar Mandiri',              'date'=>now()->format('Y-m').'-'.str_pad(now()->day + 1, 2, '0', STR_PAD_LEFT), 'time'=>'20:00', 'type'=>'belajar',  'color'=>'#ec4899', 'desc'=>'Perpustakaan'],
             ['id'=>11, 'title'=>'Olahraga Pagi',                'date'=>now()->format('Y-m').'-'.str_pad(now()->day + 2, 2, '0', STR_PAD_LEFT), 'time'=>'05:30', 'type'=>'olahraga', 'color'=>'#14b8a6', 'desc'=>'Lapangan'],

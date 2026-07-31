@@ -58,8 +58,8 @@ export function Topbar({
                 >
                     <Icon name="menu" className="text-xl" />
                 </button>
-                <div className="w-9 h-9 bg-primary-container rounded-xl flex items-center justify-center text-white shadow-md lg:hidden">
-                    <Icon name="school" className="text-xl" filled />
+                <div className="w-9 h-9 rounded-xl overflow-hidden shadow-md lg:hidden">
+                    <img src="/images/simonas_logo.png" alt="SIMONAS" className="w-full h-full object-cover" />
                 </div>
                 <span className="font-display text-xl font-bold tracking-tight text-primary-container lg:hidden">
                     SIMONAS

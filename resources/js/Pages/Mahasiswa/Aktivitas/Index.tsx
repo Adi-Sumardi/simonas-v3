@@ -15,8 +15,12 @@ type Kategori = 'akademik' | 'leadership' | 'karakter' | 'kreativitas';
 interface KomponenItem { id: number; nama: string; kode: string; }
 interface AktivitasItem {
     id: number; kategori: Kategori; kegiatan: string; komponen: string; komponen_id?: number;
-    tipe_kegiatan?: string; image?: string;
+    tipe_kegiatan?: string; image?: string | null; image_name?: string | null;
     waktu: string; tempat: string; keterangan?: string; nilai?: string; created_at: string;
+}
+
+function isPdfName(name?: string | null): boolean {
+    return !!name && name.toLowerCase().endsWith('.pdf');
 }
 interface AktivitasIndexProps extends PageProps {
     items: AktivitasItem[];
@@ -71,9 +75,8 @@ function AktivitasModal({
     });
     const [saving, setSaving] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
-    const [preview, setPreview] = useState<string | null>(
-        editItem?.image ? `/storage/${editItem.image}` : null
-    );
+    const [preview, setPreview] = useState<string | null>(editItem?.image ?? null);
+    const [previewIsPdf, setPreviewIsPdf] = useState(isPdfName(editItem?.image_name));
 
     const aspeks = ASPEK_MAP[form.kategori as Kategori];
     // Flatten all matching aspeks (kreativitas has 2)
@@ -86,6 +89,7 @@ function AktivitasModal({
         const file = e.target.files?.[0];
         if (file) {
             set('image', file);
+            setPreviewIsPdf(file.type === 'application/pdf');
             setPreview(URL.createObjectURL(file));
         }
     }
@@ -184,21 +188,28 @@ function AktivitasModal({
 
                 {/* Image Upload * */}
                 <div>
-                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Foto Kegiatan *</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Bukti Kegiatan *</label>
                     <div className="flex items-start gap-4">
                         <div className={`relative w-24 h-24 rounded-2xl border-2 border-dashed flex-shrink-0 flex items-center justify-center overflow-hidden transition-colors ${
                             errors.image ? 'border-rose-400 bg-rose-50' : 'border-slate-200 hover:border-primary-container/50'
                         }`}>
                             {preview ? (
-                                <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                                previewIsPdf ? (
+                                    <div className="flex flex-col items-center gap-1 text-rose-500">
+                                        <Icon name="picture_as_pdf" className="text-3xl" />
+                                        <span className="text-[9px] font-bold">PDF</span>
+                                    </div>
+                                ) : (
+                                    <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                                )
                             ) : (
                                 <Icon name="add_a_photo" className="text-2xl text-slate-300" />
                             )}
-                            <input type="file" accept="image/*" onChange={handleFile} className="absolute inset-0 opacity-0 cursor-pointer" />
+                            <input type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" onChange={handleFile} className="absolute inset-0 opacity-0 cursor-pointer" />
                         </div>
                         <div className="flex-1">
                             <p className="text-[10px] text-on-surface-variant leading-relaxed">
-                                Ambil foto atau unggah dokumentasi kegiatan. Maksimal 2MB.
+                                Format JPG, PNG, atau PDF. Maksimal 20MB (gambar otomatis dikompres).
                             </p>
                             {errors.image && <p className="text-xs text-rose-500 mt-1 font-bold">{errors.image}</p>}
                         </div>
@@ -287,12 +298,19 @@ function AktivitasDetailModal({ item, onClose }: { item: AktivitasItem; onClose:
                     <div>
                         <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-2 block">Dokumentasi</label>
                         {item.image ? (
-                            <div className="rounded-2xl overflow-hidden border-2 border-slate-100 shadow-sm aspect-video group relative">
-                                <img src={`/storage/${item.image}`} className="w-full h-full object-cover" alt="Foto" />
-                                <a href={`/storage/${item.image}`} target="_blank" className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold text-sm gap-2">
-                                    <Icon name="open_in_new" className="text-xl" /> Buka Gambar
+                            isPdfName(item.image_name) ? (
+                                <a href={item.image} target="_blank" rel="noopener" className="rounded-2xl border-2 border-slate-100 shadow-sm aspect-video flex flex-col items-center justify-center gap-2 text-rose-500 hover:bg-rose-50 transition-colors">
+                                    <Icon name="picture_as_pdf" className="text-4xl" />
+                                    <span className="text-xs font-bold">Buka PDF</span>
                                 </a>
-                            </div>
+                            ) : (
+                                <div className="rounded-2xl overflow-hidden border-2 border-slate-100 shadow-sm aspect-video group relative">
+                                    <img src={item.image} className="w-full h-full object-cover" alt="Foto" />
+                                    <a href={item.image} target="_blank" rel="noopener" className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold text-sm gap-2">
+                                        <Icon name="open_in_new" className="text-xl" /> Buka Gambar
+                                    </a>
+                                </div>
+                            )
                         ) : (
                             <div className="rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 aspect-video flex flex-col items-center justify-center text-slate-300 gap-2">
                                 <Icon name="no_photography" className="text-4xl" />
@@ -351,8 +369,12 @@ function AktivitasRow({ item, index, onDetail, onEdit, onDelete }: { item: Aktiv
                 </div>
                 <div className="flex gap-3 mt-2">
                     {item.image && (
-                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-white/50">
-                            <img src={`/storage/${item.image}`} alt="Foto" className="w-full h-full object-cover" />
+                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-white/50 flex items-center justify-center bg-white/70">
+                            {isPdfName(item.image_name) ? (
+                                <Icon name="picture_as_pdf" className="text-lg text-rose-500" />
+                            ) : (
+                                <img src={item.image} alt="Foto" className="w-full h-full object-cover" />
+                            )}
                         </div>
                     )}
                     <div>

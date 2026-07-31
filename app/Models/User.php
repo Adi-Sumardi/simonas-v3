@@ -6,6 +6,7 @@ use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -88,30 +89,68 @@ class User extends Authenticatable
         return $total;
     }
 
-    private function countByActivityType(string $type): int
+    private function countByActivityType(string $type, ?string $from = null, ?string $to = null): int
     {
+        $range = fn ($query) => ($from && $to) ? $query->whereBetween('created_at', [$from, $to]) : $query;
+
         return match ($type) {
-            'shalat' => (int) \App\Models\UserEvent::where('user_id', $this->id)
-                ->where('type', 'shalat')
+            'shalat' => (int) $range(\App\Models\UserEvent::where('user_id', $this->id)->where('type', 'shalat'))
                 ->get()
                 ->sum(fn ($e) => count($e->completed_at_dates ?? [])),
 
-            'hafalan' => \App\Models\HafalanLog::where('user_id', $this->id)
-                ->where('score', 'memtas')
+            'hafalan' => $range(\App\Models\HafalanLog::where('user_id', $this->id)->where('score', 'memtas'))
                 ->count(),
 
-            'kegiatan' => (int) \App\Models\UserEvent::where('user_id', $this->id)
-                ->where('type', 'kegiatan')
+            'kegiatan' => (int) $range(\App\Models\UserEvent::where('user_id', $this->id)->where('type', 'kegiatan'))
                 ->get()
                 ->sum(fn ($e) => count($e->completed_at_dates ?? [])),
 
-            'akademik'   => \App\Models\Akademik::where('user_id', $this->id)->count(),
-            'leadership' => \App\Models\Leadership::where('user_id', $this->id)->count(),
-            'karakter'   => \App\Models\Karakter::where('user_id', $this->id)->count(),
-            'kreatif'    => \App\Models\Kreatif::where('user_id', $this->id)->count(),
+            'akademik'   => $this->sumKomponenBobot('akademiks', $from, $to),
+            'leadership' => $this->sumKomponenBobot('leaderships', $from, $to),
+            'karakter'   => $this->sumKomponenBobot('karakters', $from, $to),
+            'kreatif'    => $this->sumKomponenBobot('kreatifs', $from, $to),
 
             default => 0,
         };
+    }
+
+    /**
+     * Jumlah bobot komponen (dari tabel `komponens`) untuk semua baris user di
+     * $table (akademiks/leaderships/karakters/kreatifs). Baris tanpa komponen_id
+     * (atau yang komponennya sudah dihapus) dihitung bobot 1 supaya konsisten
+     * dengan hitungan lama (count per aktivitas).
+     */
+    private function sumKomponenBobot(string $table, ?string $from, ?string $to): int
+    {
+        $query = DB::table($table)
+            ->leftJoin('komponens', 'komponens.id', '=', "{$table}.komponen_id")
+            ->where("{$table}.user_id", $this->id);
+
+        if ($from && $to) {
+            $query->whereBetween("{$table}.created_at", [$from, $to]);
+        }
+
+        return (int) $query->sum(DB::raw('COALESCE(komponens.bobot, 1)'));
+    }
+
+    /**
+     * 6 dimensi penilaian dinormalisasi ke skala 0-100 (20 aktivitas = 100),
+     * dipakai di radar chart Dashboard super-admin dan halaman detail warga
+     * supaya kedua tempat selalu menampilkan angka yang identik. $from/$to
+     * (format Y-m-d) membatasi rentang tanggal aktivitas yang dihitung.
+     */
+    public function radarScores(?string $from = null, ?string $to = null): array
+    {
+        $norm = fn (int $v) => min(100, (int) round($v * 5));
+
+        return [
+            ['subject' => 'Shalat',       'value' => $norm($this->countByActivityType('shalat', $from, $to)),     'fullMark' => 100],
+            ['subject' => 'Akademik',     'value' => $norm($this->countByActivityType('akademik', $from, $to)),   'fullMark' => 100],
+            ['subject' => 'Hafalan',      'value' => $norm($this->countByActivityType('hafalan', $from, $to)),    'fullMark' => 100],
+            ['subject' => 'Kepemimpinan', 'value' => $norm($this->countByActivityType('leadership', $from, $to)), 'fullMark' => 100],
+            ['subject' => 'Karakter',     'value' => $norm($this->countByActivityType('karakter', $from, $to)),   'fullMark' => 100],
+            ['subject' => 'Kreativitas',  'value' => $norm($this->countByActivityType('kreatif', $from, $to)),    'fullMark' => 100],
+        ];
     }
 
     private function calculatePointsLegacy(): int
@@ -145,6 +184,11 @@ class User extends Authenticatable
     public function ipks()
     {
         return $this->hasMany(Ipk::class);
+    }
+
+    public function hafalan()
+    {
+        return $this->hasOne(Hafalan::class);
     }
 
     public function akademiks()

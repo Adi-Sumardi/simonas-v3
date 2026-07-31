@@ -14,6 +14,33 @@ use Illuminate\Support\Facades\DB;
 class SuperController extends Controller
 {
     // ── Warga ─────────────────────────────────────────────────
+    public function storeWarga(Request $request)
+    {
+        $data = $request->validate([
+            'name'         => 'required|string|max:255',
+            'email'        => 'required|email|max:255|unique:users,email',
+            'password'     => 'required|string|min:8',
+            'no_induk'     => 'nullable|string|max:50',
+            'asrama'       => 'nullable|string|max:255',
+            'status_warga' => 'nullable|string|in:aktif,nonaktif',
+            'angkatan'     => 'nullable|string|max:10',
+        ]);
+
+        $warga = User::create([
+            'name'         => $data['name'],
+            'email'        => $data['email'],
+            'password'     => \Illuminate\Support\Facades\Hash::make($data['password']),
+            'role'         => 'mahasiswa',
+            'no_induk'     => $data['no_induk'] ?? null,
+            'asrama'       => $data['asrama'] ?? null,
+            'status_warga' => $data['status_warga'] ?? 'aktif',
+            'angkatan'     => $data['angkatan'] ?? null,
+        ]);
+        $warga->assignRole('mahasiswa');
+
+        return back()->with('success', "Warga '{$warga->name}' berhasil ditambahkan.");
+    }
+
     public function warga(Request $request)
     {
         $query = User::where('role', 'mahasiswa');
@@ -50,6 +77,79 @@ class SuperController extends Controller
         ]);
     }
 
+    public function wargaDetail($id, Request $request)
+    {
+        $warga = User::where('role', 'mahasiswa')->findOrFail($id);
+
+        $radarFrom = $request->query('radar_from') ?: now()->startOfMonth()->toDateString();
+        $radarTo   = $request->query('radar_to')   ?: now()->endOfMonth()->toDateString();
+
+        return Inertia::render('Super/WargaDetail', [
+            'warga' => $warga,
+            'stats' => [
+                'akademik'   => \App\Models\Akademik::where('user_id', $warga->id)->count(),
+                'leadership' => \App\Models\Leadership::where('user_id', $warga->id)->count(),
+                'karakter'   => \App\Models\Karakter::where('user_id', $warga->id)->count(),
+                'kreatif'    => \App\Models\Kreatif::where('user_id', $warga->id)->count(),
+                'points'     => $warga->calculatePoints(),
+            ],
+            'radarScores' => $warga->radarScores($radarFrom, $radarTo),
+            'radarRange'  => ['from' => $radarFrom, 'to' => $radarTo],
+            'ipks'      => \App\Models\Ipk::where('user_id', $warga->id)->orderByDesc('semester')->get(),
+            'hafalan'   => \App\Models\Hafalan::where('user_id', $warga->id)->first(),
+            'akademiks'   => $this->mapAktivitasFile(\App\Models\Akademik::where('user_id', $warga->id)->latest()->limit(10)->get(), 'akademiks'),
+            'leaderships' => $this->mapAktivitasFile(\App\Models\Leadership::where('user_id', $warga->id)->latest()->limit(10)->get(), 'leaderships'),
+            'karakters'   => $this->mapAktivitasFile(\App\Models\Karakter::where('user_id', $warga->id)->latest()->limit(10)->get(), 'karakters'),
+            'kreatifs'    => $this->mapAktivitasFile(\App\Models\Kreatif::where('user_id', $warga->id)->latest()->limit(10)->get(), 'kreatifs'),
+        ]);
+    }
+
+    /**
+     * Ganti kolom `file` (nama file asli, BLOB tersimpan di `file_data`) jadi
+     * URL yang bisa dibuka lewat FileController, plus `file_name` buat deteksi
+     * tipe (mis. PDF) di frontend.
+     */
+    private function mapAktivitasFile(\Illuminate\Support\Collection $rows, string $table): \Illuminate\Support\Collection
+    {
+        return $rows->map(function ($r) use ($table) {
+            $arr = $r->toArray();
+            $arr['file_name'] = $r->file;
+            $arr['file'] = $r->file_data ? route('files.show', ['table' => $table, 'id' => $r->id]) : null;
+            return $arr;
+        });
+    }
+
+    public function wargaEdit($id)
+    {
+        $warga = User::where('role', 'mahasiswa')->findOrFail($id);
+
+        return Inertia::render('Super/WargaEdit', [
+            'warga'   => $warga,
+            'asramas' => \App\Models\Asrama::orderBy('nama_asrama')->pluck('nama_asrama'),
+        ]);
+    }
+
+    public function wargaUpdate(Request $request, $id)
+    {
+        $warga = User::where('role', 'mahasiswa')->findOrFail($id);
+
+        $data = $request->validate([
+            'name'         => 'required|string|max:255',
+            'email'        => 'required|email|max:255|unique:users,email,' . $warga->id,
+            'no_induk'     => 'nullable|string|max:50',
+            'asrama'       => 'nullable|string|max:255',
+            'status_warga' => 'nullable|string|in:aktif,nonaktif',
+            'tgl_masuk'    => 'nullable|date',
+            'angkatan'     => 'nullable|string|max:10',
+            'no_telp'      => 'nullable|string|max:30',
+            'alamat'       => 'nullable|string|max:500',
+        ]);
+
+        $warga->update($data);
+
+        return redirect()->route('super.warga.detail', $warga->id)->with('success', 'Data warga berhasil diperbarui.');
+    }
+
     // ── Mentor ────────────────────────────────────────────────
     public function mentor(Request $request)
     {
@@ -76,17 +176,19 @@ class SuperController extends Controller
         $bulkHafalan    = \App\Models\HafalanLog::whereIn('mentor_id', $mentorIds)->selectRaw('mentor_id, COUNT(*) as cnt, MAX(updated_at) as last_at')->groupBy('mentor_id')->get()->keyBy('mentor_id');
 
         $mappedMentors = $mentors->getCollection()->map(function($m) use ($bulkAkademik, $bulkLeadership, $bulkKarakter, $bulkKreatif, $bulkHafalan) {
-            $lastAkademikAt = $bulkAkademik[$m->name]?->last_at ? \Carbon\Carbon::parse($bulkAkademik[$m->name]->last_at) : null;
-            $lastHafalanAt  = $bulkHafalan[$m->id]?->last_at ? \Carbon\Carbon::parse($bulkHafalan[$m->id]->last_at) : null;
+            $akademikRow  = $bulkAkademik->get($m->name);
+            $hafalanRow   = $bulkHafalan->get($m->id);
+            $lastAkademikAt = $akademikRow?->last_at ? \Carbon\Carbon::parse($akademikRow->last_at) : null;
+            $lastHafalanAt  = $hafalanRow?->last_at ? \Carbon\Carbon::parse($hafalanRow->last_at) : null;
             $lastDate = collect([$lastAkademikAt, $lastHafalanAt])->filter()->max();
             $isActive = $lastDate && $lastDate->gt(now()->subDays(30));
 
             $counts = [
-                'akademik'   => (int)($bulkAkademik[$m->name]?->cnt ?? 0),
-                'leadership' => (int)($bulkLeadership[$m->name] ?? 0),
-                'karakter'   => (int)($bulkKarakter[$m->name] ?? 0),
-                'kreatif'    => (int)($bulkKreatif[$m->name] ?? 0),
-                'hafalan'    => (int)($bulkHafalan[$m->id]?->cnt ?? 0),
+                'akademik'   => (int) ($akademikRow?->cnt ?? 0),
+                'leadership' => (int) $bulkLeadership->get($m->name, 0),
+                'karakter'   => (int) $bulkKarakter->get($m->name, 0),
+                'kreatif'    => (int) $bulkKreatif->get($m->name, 0),
+                'hafalan'    => (int) ($hafalanRow?->cnt ?? 0),
             ];
             $categories = array_keys(array_filter($counts, fn($c) => $c > 0));
             $categories = array_map('ucfirst', $categories);
@@ -330,7 +432,7 @@ class SuperController extends Controller
                     'time'         => $dt->format('H:i'),
                     'type'         => 'kegiatan',
                     'color'        => '#6366f1',
-                    'desc'         => $data['keterangan'] ?? "Kegiatan Pesantren: {$data['nama_kegiatan']}",
+                    'desc'         => $data['keterangan'] ?? "Kegiatan Asrama: {$data['nama_kegiatan']}",
                     'recurring'    => false,
                     'is_mandatory' => true,
                 ]);
@@ -343,18 +445,32 @@ class SuperController extends Controller
     // ── Hafalan ───────────────────────────────────────────────
     public function hafalan()
     {
-        $data = collect(range(1, 12))->map(fn($i) => [
-            'id'        => $i,
-            'name'      => ['Ahmad Fauzi','Budi Santoso','Cahya Ramadhan','Dani Pratama','Eko Wahyudi',
-                            'Fahri Maulana','Galih Setiawan','Hendra Gunawan','Irfan Hakim','Joko Widodo',
-                            'Kemal Aditya','Lukman Hakim'][($i-1)],
-            'asrama'    => ['Al-Farabi','Al-Ghazali','Ibnu Sina','Al-Kindi'][($i-1) % 4],
-            'juz'       => [12,8,20,6,15,18,10,25,7,14,22,28][($i-1)],
-            'target_juz'=> 30,
-            'last_setoran'=> now()->subDays(rand(0,10))->format('Y-m-d'),
-            'mentor'    => ['Ust. Ahmad Yani','Ust. Basyir','Ust. Chandra'][($i-1) % 3],
-            'status'    => $i % 5 === 0 ? 'perlu_perhatian' : ($i % 3 === 0 ? 'on_track' : 'baik'),
-        ]);
+        $students = User::where('role', 'mahasiswa')->with(['hafalan', 'mentor'])->get();
+
+        $data = $students->map(function ($u) {
+            $h = $u->hafalan;
+            $juz    = $h->current_juz ?? 0;
+            $target = $h->target_juz ?? 30;
+            $lastTasmi  = $h?->last_tasmi_at;
+            $daysSince  = $lastTasmi ? $lastTasmi->diffInDays(now()) : null;
+
+            $status = match (true) {
+                $daysSince === null || $daysSince > 14 => 'perlu_perhatian',
+                $juz >= $target                        => 'baik',
+                default                                 => 'on_track',
+            };
+
+            return [
+                'id'           => $u->id,
+                'name'         => $u->name,
+                'asrama'       => $u->asrama ?? '-',
+                'juz'          => $juz,
+                'target_juz'   => $target,
+                'last_setoran' => $lastTasmi?->format('Y-m-d') ?? '-',
+                'mentor'       => $u->mentor->name ?? '-',
+                'status'       => $status,
+            ];
+        });
 
         $juzDist = collect(range(1, 30))->map(fn($j) => [
             'juz'   => "Juz $j",
@@ -365,9 +481,9 @@ class SuperController extends Controller
             'hafalan'   => $data->values(),
             'juzDist'   => $juzDist,
             'stats' => [
-                'avg_juz'        => round($data->avg('juz'), 1),
-                'hafidz'         => $data->where('juz', 30)->count(),
-                'perlu_perhatian'=> $data->where('status','perlu_perhatian')->count(),
+                'avg_juz'        => $data->count() ? round($data->avg('juz'), 1) : 0,
+                'hafidz'         => $data->where('juz', '>=', 30)->count(),
+                'perlu_perhatian'=> $data->where('status', 'perlu_perhatian')->count(),
                 'total'          => $data->count(),
             ],
         ]);
@@ -376,29 +492,46 @@ class SuperController extends Controller
     // ── Leaderboard ───────────────────────────────────────────
     public function leaderboard()
     {
-        $entries = collect(range(1, 20))->map(fn($i) => [
-            'rank'   => $i,
-            'id'     => $i,
-            'name'   => ['Cahya Ramadhan','Hendra Gunawan','Lukman Hakim','Ahmad Fauzi','Eko Wahyudi',
-                         'Galih Setiawan','Joko Widodo','Kemal Aditya','Budi Santoso','Dani Pratama',
-                         'Fahri Maulana','Irfan Hakim','Miftah Rizky','Naufal Hasan','Omar Syarif',
-                         'Pandu Wijaya','Qodir Rahman','Rizal Pratama','Syamsul Bahri','Taufik Hidayat'][($i-1)],
-            'asrama' => ['Al-Farabi','Al-Ghazali','Ibnu Sina','Al-Kindi'][($i-1) % 4],
-            'points' => max(100, 2500 - ($i * 95) + rand(-20,20)),
-            'shalat' => rand(80,100),
-            'hafalan'=> rand(60,98),
-            'akademik'=> rand(70,97),
-            'badge'  => $i === 1 ? '🥇' : ($i === 2 ? '🥈' : ($i === 3 ? '🥉' : null)),
-        ]);
+        $students = \App\Models\User::where('role', 'mahasiswa')->get();
+
+        $entries = $students->map(function ($u) {
+            $shalat = (int) \App\Models\UserEvent::where('user_id', $u->id)->where('type', 'shalat')
+                ->get()->sum(fn ($e) => count($e->completed_at_dates ?? []));
+            $hafalan  = \App\Models\HafalanLog::where('user_id', $u->id)->where('score', 'memtas')->count();
+            $akademik = \App\Models\Akademik::where('user_id', $u->id)->count();
+
+            return [
+                'id'       => $u->id,
+                'name'     => $u->name,
+                'asrama'   => $u->asrama ?? '-',
+                'points'   => $u->calculatePoints(),
+                'shalat'   => $shalat,
+                'hafalan'  => $hafalan,
+                'akademik' => $akademik,
+            ];
+        })
+            ->sortByDesc('points')
+            ->values()
+            ->map(function ($e, $i) {
+                $rank = $i + 1;
+                $e['rank']  = $rank;
+                $e['badge'] = $rank === 1 ? '🥇' : ($rank === 2 ? '🥈' : ($rank === 3 ? '🥉' : null));
+                return $e;
+            });
 
         $asramaNames = \App\Models\Asrama::orderBy('nama_asrama')->pluck('nama_asrama');
 
+        $topAsrama = $entries->groupBy('asrama')
+            ->map(fn ($g, $nama) => ['asrama' => $nama, 'avg' => $g->avg('points')])
+            ->sortByDesc('avg')
+            ->first();
+
         return Inertia::render('Super/Leaderboard', [
-            'entries' => $entries->values(),
+            'entries' => $entries,
             'asramas' => $asramaNames,
             'stats'   => [
-                'top_asrama' => $asramaNames->first() ?? '-',
-                'avg_points' => round($entries->avg('points')),
+                'top_asrama' => $topAsrama['asrama'] ?? '-',
+                'avg_points' => $entries->isNotEmpty() ? round($entries->avg('points')) : 0,
                 'total'      => $entries->count(),
             ],
         ]);
@@ -408,31 +541,50 @@ class SuperController extends Controller
     public function laporan()
     {
         $months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-        $trendData = collect(range(0, 11))->map(fn($i) => [
-            'bulan'   => $months[$i],
-            'shalat'  => rand(75, 95),
-            'hafalan' => rand(60, 88),
-            'akademik'=> rand(70, 92),
-            'kegiatan'=> rand(65, 85),
-        ]);
 
-        $asramaPerf = \App\Models\Asrama::orderBy('nama_asrama')->get()->map(function($a) {
-            $warga = \App\Models\User::where('role', 'mahasiswa')->where('asrama', $a->nama_asrama)->count();
+        $trendData = collect(range(11, 0))->map(function ($i) use ($months) {
+            $month = now()->subMonths($i);
+            $start = $month->copy()->startOfMonth();
+            $end   = $month->copy()->endOfMonth();
+
+            $shalat = (int) UserEvent::where('type', 'shalat')->whereBetween('created_at', [$start, $end])
+                ->get()->sum(fn ($e) => count($e->completed_at_dates ?? []));
+            $kegiatan = (int) UserEvent::where('type', 'kegiatan')->whereBetween('created_at', [$start, $end])
+                ->get()->sum(fn ($e) => count($e->completed_at_dates ?? []));
+            $hafalan  = \App\Models\HafalanLog::where('score', 'memtas')->whereBetween('created_at', [$start, $end])->count();
+            $akademik = \App\Models\Akademik::whereBetween('created_at', [$start, $end])->count();
+
+            return [
+                'bulan'    => $months[$month->month - 1],
+                'shalat'   => $shalat,
+                'hafalan'  => $hafalan,
+                'akademik' => $akademik,
+                'kegiatan' => $kegiatan,
+            ];
+        });
+
+        $asramaPerf = \App\Models\Asrama::orderBy('nama_asrama')->get()->map(function ($a) {
+            $warga = User::where('role', 'mahasiswa')->where('asrama', $a->nama_asrama)->get();
             return [
                 'asrama' => $a->nama_asrama,
-                'avg'    => 80, // placeholder until real scoring is wired
-                'warga'  => $warga,
+                'avg'    => $warga->isEmpty() ? 0 : round($warga->avg(fn ($u) => $u->calculatePoints())),
+                'warga'  => $warga->count(),
             ];
         })->values()->toArray();
+
+        $totalWarga = User::where('role', 'mahasiswa')->count();
+        $avgPoints  = $totalWarga
+            ? round(User::where('role', 'mahasiswa')->get()->avg(fn ($u) => $u->calculatePoints()))
+            : 0;
 
         return Inertia::render('Super/Laporan', [
             'trend'       => $trendData->values(),
             'asramaPerf'  => $asramaPerf,
             'stats' => [
-                'total_warga'   => 120,
-                'avg_skor'      => 84,
-                'total_kegiatan'=> 24,
-                'persen_aktif'  => 94,
+                'total_warga'    => $totalWarga,
+                'avg_skor'       => $avgPoints,
+                'total_kegiatan' => \App\Models\Kegiatan::count(),
+                'persen_aktif'   => $totalWarga ? round(User::where('role', 'mahasiswa')->where('status_warga', 'aktif')->count() / $totalWarga * 100) : 0,
             ],
         ]);
     }
@@ -447,6 +599,8 @@ class SuperController extends Controller
             'pointRules'   => \App\Models\PointRule::orderBy('id')->get(),
             'dailyTargets' => \App\Models\DailyTarget::orderBy('id')->get(),
             'activityTypes'=> \App\Models\PointRule::TYPES,
+            'komponens'    => \App\Models\Komponen::orderBy('aspek')->orderBy('kode')->get(),
+            'aspekList'    => \App\Models\Komponen::ASPEK,
             'settings'     => [
                 'app_name'         => config('app.name', 'SIMONAS'),
                 'app_url'          => config('app.url'),
@@ -507,6 +661,41 @@ class SuperController extends Controller
         $rule->update(['is_active' => !$rule->is_active]);
         \App\Models\PointRule::clearCache();
         return back()->with('success', 'Status aturan poin diperbarui.');
+    }
+
+    // ── Komponen CRUD ─────────────────────────────────────────
+    public function storeKomponen(Request $request)
+    {
+        $data = $request->validate([
+            'kode'          => 'required|string|max:20',
+            'nama_komponen' => 'required|string|max:255',
+            'aspek'         => 'required|string|in:' . implode(',', \App\Models\Komponen::ASPEK),
+            'bobot'         => 'required|integer|min:0',
+        ]);
+        \App\Models\Komponen::create($data);
+        return back()->with('success', 'Komponen berhasil ditambahkan.');
+    }
+
+    public function updateKomponen(Request $request, \App\Models\Komponen $komponen)
+    {
+        $data = $request->validate([
+            'kode'          => 'required|string|max:20',
+            'nama_komponen' => 'required|string|max:255',
+            'aspek'         => 'required|string|in:' . implode(',', \App\Models\Komponen::ASPEK),
+            'bobot'         => 'required|integer|min:0',
+        ]);
+        $komponen->update($data);
+        return back()->with('success', 'Komponen berhasil diperbarui.');
+    }
+
+    public function destroyKomponen(\App\Models\Komponen $komponen)
+    {
+        try {
+            $komponen->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            return back()->with('error', 'Komponen tidak bisa dihapus karena masih dipakai di data penilaian.');
+        }
+        return back()->with('success', 'Komponen dihapus.');
     }
 
     // ── Daily Targets CRUD ────────────────────────────────────

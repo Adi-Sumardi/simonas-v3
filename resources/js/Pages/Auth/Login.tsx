@@ -31,8 +31,8 @@ export default function Login({ canRegister = true, canResetPassword = true, goo
             <div className="glass-panel w-full max-w-md p-8">
                 {/* Logo + Brand */}
                 <div className="flex flex-col items-center text-center mb-8">
-                    <div className="w-16 h-16 rounded-2xl bg-primary-container flex items-center justify-center mb-4 shadow-glow">
-                        <Icon name="apartment" className="text-3xl text-on-primary" filled />
+                    <div className="w-16 h-16 rounded-2xl overflow-hidden mb-4 shadow-glow">
+                        <img src="/images/simonas_logo.png" alt="SIMONAS" className="w-full h-full object-cover" />
                     </div>
                     <h1 className="font-display text-headline-md text-primary-container">SIMONAS</h1>
                     <p className="text-body-sm text-on-surface-variant mt-1">Digital Asrama YAPI</p>

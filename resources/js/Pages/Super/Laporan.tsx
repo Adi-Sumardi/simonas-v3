@@ -13,7 +13,7 @@ export default function Laporan({ trend, asramaPerf, stats }: Props) {
     return (
         <AppLayout>
             <Head title="Laporan Eksekutif" />
-            <PageHeader title="Laporan Eksekutif" subtitle="Analitik performa, tren perkembangan, dan ringkasan data pesantren"
+            <PageHeader title="Laporan Eksekutif" subtitle="Analitik performa, tren perkembangan, dan ringkasan data Asrama"
                 breadcrumbs={[{ label:'Dashboard', href:'/dashboard' }, { label:'Laporan' }]}
                 actions={
                     <button className="btn-primary flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold">

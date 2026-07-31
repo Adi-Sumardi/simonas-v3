@@ -11,8 +11,8 @@ export default function Error404({ dashboardUrl = '/' }: Props) {
         <>
             <Head title="404 — Not Found" />
             <header className="px-6 py-4 flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center">
-                    <Icon name="apartment" className="text-base text-on-primary" filled />
+                <div className="w-8 h-8 rounded-lg overflow-hidden">
+                    <img src="/images/simonas_logo.png" alt="SIMONAS" className="w-full h-full object-cover" />
                 </div>
                 <span className="font-display text-title-sm text-primary-container">SIMONAS</span>
             </header>
