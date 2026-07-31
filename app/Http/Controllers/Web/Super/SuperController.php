@@ -257,14 +257,18 @@ class SuperController extends Controller
 
         // 2. Mentees Progress (Averages)
         $menteeStats = $mentor->mentees->map(function($st) {
+            // CAST nilai (varchar) to numeric for PostgreSQL compatibility
+            $avgVal = fn ($model) => (float) ($model::where('user_id', $st->id)
+                ->selectRaw("AVG(NULLIF(nilai, '')::numeric) as avg_val")
+                ->value('avg_val') ?? 0);
             return [
                 'name'   => $st->name,
                 'avatar' => $st->avatar,
                 'values' => [
-                    ['subject' => 'Akademik',   'A' => (float)(\App\Models\Akademik::where('user_id', $st->id)->avg('nilai') ?? 0), 'fullMark' => 100],
-                    ['subject' => 'Leadership', 'A' => (float)(\App\Models\Leadership::where('user_id', $st->id)->avg('nilai') ?? 0), 'fullMark' => 100],
-                    ['subject' => 'Karakter',   'A' => (float)(\App\Models\Karakter::where('user_id', $st->id)->avg('nilai') ?? 0), 'fullMark' => 100],
-                    ['subject' => 'Kreativitas','A' => (float)(\App\Models\Kreatif::where('user_id', $st->id)->avg('nilai') ?? 0), 'fullMark' => 100],
+                    ['subject' => 'Akademik',   'A' => $avgVal(\App\Models\Akademik::class),   'fullMark' => 100],
+                    ['subject' => 'Leadership', 'A' => $avgVal(\App\Models\Leadership::class), 'fullMark' => 100],
+                    ['subject' => 'Karakter',   'A' => $avgVal(\App\Models\Karakter::class),   'fullMark' => 100],
+                    ['subject' => 'Kreativitas','A' => $avgVal(\App\Models\Kreatif::class),    'fullMark' => 100],
                     ['subject' => 'Hafalan',    'A' => (float)(\App\Models\HafalanLog::where('user_id', $st->id)->where('score', 'memtas')->count() * 10), 'fullMark' => 100],
                 ]
             ];

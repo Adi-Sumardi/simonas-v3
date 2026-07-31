@@ -218,13 +218,18 @@ class DashboardController extends Controller
 
         // Stats
         $totalMentees = $mentees->count();
-        
+
+        // Helper: avg 'nilai' (varchar) with safe numeric cast for PostgreSQL
+        $avgNilai = fn ($model, $ids) => (float) ($model::whereIn('user_id', $ids)
+            ->selectRaw("AVG(NULLIF(nilai, '')::numeric) as avg_val")
+            ->value('avg_val') ?? 0);
+
         // Avg Performance (Scale 0-100)
-        $avgAkademik = \App\Models\Akademik::whereIn('user_id', $menteeIds)->avg('nilai') ?? 0;
-        $avgLeadership = \App\Models\Leadership::whereIn('user_id', $menteeIds)->avg('nilai') ?? 0;
-        $avgKarakter = \App\Models\Karakter::whereIn('user_id', $menteeIds)->avg('nilai') ?? 0;
-        $avgKreatif = \App\Models\Kreatif::whereIn('user_id', $menteeIds)->avg('nilai') ?? 0;
-        
+        $avgAkademik   = $avgNilai(\App\Models\Akademik::class,   $menteeIds);
+        $avgLeadership = $avgNilai(\App\Models\Leadership::class, $menteeIds);
+        $avgKarakter   = $avgNilai(\App\Models\Karakter::class,   $menteeIds);
+        $avgKreatif    = $avgNilai(\App\Models\Kreatif::class,    $menteeIds);
+
         $avgPerformance = ($avgAkademik + $avgLeadership + $avgKarakter + $avgKreatif) / 4;
 
         $pendingNilai = \App\Models\HafalanLog::where('mentor_id', $user->id)
@@ -239,11 +244,12 @@ class DashboardController extends Controller
         $trend = [];
         for ($i = 4; $i >= 0; $i--) {
             $start = now()->subWeeks($i)->startOfWeek();
-            $end = now()->subWeeks($i)->endOfWeek();
-            
-            $weekAvg = \App\Models\Akademik::whereIn('user_id', $menteeIds)
+            $end   = now()->subWeeks($i)->endOfWeek();
+
+            $weekAvg = (float) (\App\Models\Akademik::whereIn('user_id', $menteeIds)
                 ->whereBetween('created_at', [$start, $end])
-                ->avg('nilai') ?? 50; // default 50 if no data
+                ->selectRaw("AVG(NULLIF(nilai, '')::numeric) as avg_val")
+                ->value('avg_val') ?? 50); // default 50 if no data
             
             $trend[] = [
                 'label'   => $i === 0 ? 'Now' : 'W' . (now()->subWeeks($i)->weekOfYear),
