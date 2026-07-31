@@ -63,14 +63,6 @@ class SocialiteController extends Controller
 
         Auth::login($user, remember: true);
 
-        $redirectMap = [
-            'super' => '/super',
-            'admin' => '/admin',
-            'mentor' => '/mentor',
-            'mahasiswa' => '/mahasiswa',
-            'alumni' => '/alumni',
-        ];
-
-        return redirect($redirectMap[$user->role] ?? '/');
+        return redirect('/dashboard');
     }
 }
