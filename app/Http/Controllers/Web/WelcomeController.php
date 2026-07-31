@@ -70,7 +70,6 @@ class WelcomeController extends Controller
                 ],
                 'avgScore' => $avgScoreFormatted,
             ],
-            'version' => app()->version(),
         ]);
     }
 }

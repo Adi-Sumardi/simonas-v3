@@ -9,7 +9,6 @@ interface StatItem {
 
 interface Props {
     appName?: string;
-    version?: string;
     stats?: {
         mahasiswa: StatItem;
         mentor: StatItem;
@@ -19,7 +18,7 @@ interface Props {
     };
 }
 
-export default function Welcome({ version, stats }: Props) {
+export default function Welcome({ stats }: Props) {
     // Auto-redirect to login if running as an installed PWA (standalone)
     useEffect(() => {
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
@@ -268,8 +267,8 @@ export default function Welcome({ version, stats }: Props) {
                         </div>
                     </div>
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-on-surface-variant text-[11px] font-bold uppercase tracking-[0.2em]">
-                        <p>© 2024 SIMONAS DIGITAL ASRAMA YAPI. ALL RIGHTS RESERVED.</p>
-                        <p>POWERED BY LARAVEL {version}</p>
+                        <p>© 2026 SIMONAS DIGITAL ASRAMA YAPI. ALL RIGHTS RESERVED.</p>
+                        <p>POWERED BY TIM IT YAPI</p>
                     </div>
                 </div>
             </footer>
