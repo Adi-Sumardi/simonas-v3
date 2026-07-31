@@ -14,7 +14,7 @@ interface Props {
         mahasiswa: StatItem;
         mentor: StatItem;
         asrama: StatItem;
-        program: StatItem;
+        aspek: StatItem;
         avgScore: string;
     };
 }
@@ -35,7 +35,7 @@ export default function Welcome({ version, stats }: Props) {
         { label: 'Mahasiswa Aktif', value: stats?.mahasiswa?.formatted ?? '94', icon: 'groups' },
         { label: 'Mentor Berpengalaman', value: stats?.mentor?.formatted ?? '7', icon: 'supervisor_account' },
         { label: 'Asrama Terintegrasi', value: stats?.asrama?.formatted ?? '4', icon: 'apartment' },
-        { label: 'Program Unggulan', value: stats?.program?.formatted ?? '3.2k+', icon: 'verified' },
+        { label: 'Aspek Penilaian', value: stats?.aspek?.formatted ?? '4', icon: 'verified' },
     ];
 
     return (

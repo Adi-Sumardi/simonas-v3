@@ -23,9 +23,9 @@ export default defineConfig({
             devOptions: { enabled: true },
             includeAssets: ['favicon.ico', 'icons/*.png'],
             manifest: {
-                name: 'SIMONAS – Academic Sanctuary',
+                name: 'SIMONAS – Digital Asrama YAPI',
                 short_name: 'SIMONAS',
-                description: 'Sistem Informasi Manajemen Pondok Pesantren',
+                description: 'Sistem Informasi Manajemen Asrama',
                 theme_color: '#2563eb',
                 background_color: '#f0f4ff',
                 display: 'standalone',

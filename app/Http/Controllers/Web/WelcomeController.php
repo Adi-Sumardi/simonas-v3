@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Asrama;
-use App\Models\Kegiatan;
 use App\Models\User;
 use App\Models\Akademik;
+use App\Models\Komponen;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,8 +29,8 @@ class WelcomeController extends Controller
         // 3. Asrama count
         $asramaCount = Asrama::count();
 
-        // 4. Program Kerja / Kegiatan count
-        $programCount = Kegiatan::count();
+        // 4. Aspek penilaian (Akademik, Leadership, Karakter Islami, Kreativitas & Kewirausahaan)
+        $aspekCount = count(Komponen::ASPEK);
 
         // 5. Average score from real academic evaluations
         $avgScore = Akademik::whereNotNull('nilai')
@@ -64,9 +64,9 @@ class WelcomeController extends Controller
                     'raw' => $asramaCount,
                     'formatted' => (string) $asramaCount,
                 ],
-                'program' => [
-                    'raw' => $programCount,
-                    'formatted' => $formatValue($programCount),
+                'aspek' => [
+                    'raw' => $aspekCount,
+                    'formatted' => (string) $aspekCount,
                 ],
                 'avgScore' => $avgScoreFormatted,
             ],

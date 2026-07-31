@@ -116,6 +116,11 @@ export default function RolePermission({ roles, permissions, users }: Props) {
         router.delete(`/super/permissions/${encodeURIComponent(perm)}`);
     }
 
+    function deleteUser(user: UserItem) {
+        if (!confirm(`Hapus user "${user.name}" (${user.email})? Tindakan ini tidak bisa dibatalkan.`)) return;
+        router.delete(`/super/users/${user.id}`, { preserveScroll: true });
+    }
+
     // Multi-role modal state
     const [pendingRoles, setPendingRoles] = useState<Record<number, string[]>>(
         Object.fromEntries(users.map(u => [u.id, Array.isArray(u.roles) && u.roles.length > 0 ? [...u.roles] : [u.role]]))
@@ -534,6 +539,13 @@ export default function RolePermission({ roles, permissions, users }: Props) {
                                     >
                                         <Icon name="lock_reset" className="text-base" />
                                         Password
+                                    </button>
+                                    <button
+                                        onClick={() => deleteUser(user)}
+                                        title="Hapus User"
+                                        className="flex items-center justify-center w-8 h-8 rounded-xl text-xs font-bold bg-rose-50 text-rose-600 hover:bg-rose-100 hover:shadow-md transition-all"
+                                    >
+                                        <Icon name="delete" className="text-base" />
                                     </button>
                                 </div>
                             </div>
