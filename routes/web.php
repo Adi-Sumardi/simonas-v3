@@ -15,7 +15,9 @@ use Illuminate\Support\Facades\Auth;
 
 // ─── Public / Guest ───────────────────────────────────────────
 Route::get('/', WelcomeController::class)->name('home');
-Route::get('/privacy-policy', fn () => view('privacy-policy'))->name('privacy-policy');
+Route::get('/privacy-policy', fn () => inertia('PrivacyPolicy'))->name('privacy-policy');
+Route::get('/terms', fn () => inertia('Terms'))->name('terms');
+Route::get('/help-center', fn () => inertia('HelpCenter'))->name('help-center');
 Route::get('/reload-captcha',       [CaptchaController::class, 'reloadCaptcha']);
 Route::get('/reload-captcha-login', [CaptchaController::class, 'reloadCaptchaLogin']);
 

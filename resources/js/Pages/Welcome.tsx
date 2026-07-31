@@ -262,8 +262,8 @@ export default function Welcome({ version, stats }: Props) {
                             <h4 className="font-black text-on-surface uppercase tracking-widest text-xs mb-6">Legalitas</h4>
                             <ul className="space-y-4">
                                 <li><a href="/privacy-policy" className="text-on-surface-variant hover:text-primary transition-colors text-sm font-medium">Kebijakan Privasi</a></li>
-                                <li><a href="#" className="text-on-surface-variant hover:text-primary transition-colors text-sm font-medium">Syarat & Ketentuan</a></li>
-                                <li><a href="#" className="text-on-surface-variant hover:text-primary transition-colors text-sm font-medium">Pusat Bantuan</a></li>
+                                <li><a href="/terms" className="text-on-surface-variant hover:text-primary transition-colors text-sm font-medium">Syarat & Ketentuan</a></li>
+                                <li><a href="/help-center" className="text-on-surface-variant hover:text-primary transition-colors text-sm font-medium">Pusat Bantuan</a></li>
                             </ul>
                         </div>
                     </div>
