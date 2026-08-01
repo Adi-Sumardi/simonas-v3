@@ -241,7 +241,7 @@ export function Sidebar({ user, drawerOpen = false, onClose, onOpen }: SidebarPr
             )}
 
             {/* ── Sidebar / Drawer ── */}
-            <aside className={`flex flex-col h-[calc(100vh-64px)] w-64 fixed left-0 top-16 bg-white/60 backdrop-blur-2xl border-r border-white/30 shadow-[20px_0_30px_rgba(37,99,235,0.05)] p-4 z-40 transition-transform duration-300 ${
+            <aside className={`flex flex-col h-[calc(100vh-64px)] w-64 fixed left-0 top-16 bg-white/60 backdrop-blur-2xl border-r border-white/30 shadow-[20px_0_30px_rgba(37,99,235,0.05)] p-4 z-40 transition-transform duration-300 print:hidden ${
                 drawerOpen ? 'translate-x-0 !flex' : '-translate-x-full lg:translate-x-0 lg:flex'
             }`}>
                 {/* Brand */}
@@ -320,7 +320,7 @@ export function Sidebar({ user, drawerOpen = false, onClose, onOpen }: SidebarPr
             </aside>
 
             {/* ── Mobile Bottom Nav ── */}
-            <nav className="lg:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-3 pb-safe pb-3 bg-white/80 backdrop-blur-lg border-t border-white/40 shadow-[0_-10px_25px_rgba(0,0,0,0.05)]">
+            <nav className="lg:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-3 pb-safe pb-3 bg-white/80 backdrop-blur-lg border-t border-white/40 shadow-[0_-10px_25px_rgba(0,0,0,0.05)] print:hidden">
                 {bottomNav.map(item => <NavItem key={`${item.href}-mob`} item={item} mobile />)}
             </nav>
 

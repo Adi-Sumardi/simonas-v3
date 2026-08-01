@@ -49,7 +49,7 @@ export function Topbar({
         .toUpperCase();
 
     return (
-        <header className="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-md border-b border-white/40 shadow-lg shadow-blue-500/5 px-6 py-3 flex justify-between items-center">
+        <header className="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-md border-b border-white/40 shadow-lg shadow-blue-500/5 px-6 py-3 flex justify-between items-center print:hidden">
             {/* Brand */}
             <div className="flex items-center gap-3">
                 <button 

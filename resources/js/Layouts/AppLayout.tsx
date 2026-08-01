@@ -51,8 +51,8 @@ export function AppLayout({ children, searchPlaceholder }: AppLayoutProps) {
                 />
 
                 {/* Main content */}
-                <main className="lg:ml-64 pt-16 min-h-screen">
-                    <div className="w-full max-w-7xl mx-auto px-4 py-6 sm:px-6 md:px-8 pb-24 lg:pb-10">
+                <main className="lg:ml-64 pt-16 min-h-screen print:ml-0 print:pt-0">
+                    <div className="w-full max-w-7xl mx-auto px-4 py-6 sm:px-6 md:px-8 pb-24 lg:pb-10 print:p-0 print:max-w-none">
                         {children}
                     </div>
                 </main>

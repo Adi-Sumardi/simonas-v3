@@ -47,18 +47,53 @@ export default function Laporan({ trend, asramaPerf, stats, rekap, rekapFilters,
         setRekapTo(to);
         applyRekapFilter({ asrama: '', from, to, page: 1 });
     }
+
+    const [exportedAt, setExportedAt] = useState<string | null>(null);
+    const [exporting, setExporting]   = useState(false);
+    function handleExport() {
+        setExporting(true);
+        // Ambil semua baris yang cocok sama filter (bukan cuma halaman yang lagi kebuka)
+        // supaya hasil cetak/PDF-nya lengkap buat dokumentasi.
+        router.get('/super/laporan', {
+            rekap_asrama: rekapAsrama,
+            rekap_from: rekapFrom,
+            rekap_to: rekapTo,
+            rekap_page: 1,
+            rekap_per_page: Math.max(rekap.total, 1),
+        }, {
+            preserveScroll: true,
+            preserveState: true,
+            only: ['rekap', 'rekapFilters'],
+            onSuccess: () => {
+                setExportedAt(new Date().toLocaleString('id-ID', {
+                    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
+                }));
+                setExporting(false);
+                requestAnimationFrame(() => window.print());
+            },
+            onError: () => setExporting(false),
+        });
+    }
+
     return (
         <AppLayout>
             <Head title="Laporan Eksekutif" />
             <PageHeader title="Laporan Eksekutif" subtitle="Analitik performa, tren perkembangan, dan ringkasan data Asrama"
                 breadcrumbs={[{ label:'Dashboard', href:'/dashboard' }, { label:'Laporan' }]}
                 actions={
-                    <button className="btn-primary flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold">
-                        <Icon name="download" className="text-lg" />
-                        Export PDF
+                    <button onClick={handleExport} disabled={exporting} className="btn-primary flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold print:hidden disabled:opacity-60">
+                        <Icon name={exporting ? 'hourglass_empty' : 'download'} className="text-lg" />
+                        {exporting ? 'Menyiapkan...' : 'Export PDF'}
                     </button>
                 }
             />
+
+            {/* Muncul cuma pas print/export — bukti kapan laporan ini dicetak */}
+            {exportedAt && (
+                <p className="hidden print:block text-xs text-on-surface-variant mb-4 -mt-2">
+                    Dicetak pada: {exportedAt}
+                </p>
+            )}
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <StatCard icon="people"           label="TOTAL WARGA"    value={stats.total_warga}             badgeColor="blue" />
@@ -106,7 +141,7 @@ export default function Laporan({ trend, asramaPerf, stats, rekap, rekapFilters,
                 <div className="glass-card rounded-2xl p-5">
                     <h3 className="font-bold text-on-surface mb-4">Ringkasan Asrama</h3>
                     <div className="space-y-3">
-                        {asramaPerf.sort((a,b) => b.avg-a.avg).map((a, i) => (
+                        {[...asramaPerf].sort((a,b) => b.avg-a.avg).map((a, i) => (
                             <div key={a.asrama} className="flex items-center gap-3">
                                 <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black text-white flex-shrink-0 ${
                                     i===0?'bg-amber-400':i===1?'bg-slate-400':i===2?'bg-amber-700':'bg-blue-400'
@@ -134,7 +169,7 @@ export default function Laporan({ trend, asramaPerf, stats, rekap, rekapFilters,
                         <h3 className="font-bold text-on-surface mb-1">Rekap Aktivitas Warga</h3>
                         <p className="text-xs text-on-surface-variant">Jumlah aktivitas per dimensi, bisa difilter per asrama & rentang tanggal</p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 print:hidden">
                         <select
                             value={rekapAsrama}
                             onChange={e => { setRekapAsrama(e.target.value); applyRekapFilter({ asrama: e.target.value, page: 1 }); }}
@@ -160,6 +195,9 @@ export default function Laporan({ trend, asramaPerf, stats, rekap, rekapFilters,
                             Reset
                         </button>
                     </div>
+                    <p className="hidden print:block text-xs text-on-surface-variant">
+                        Filter: {rekapAsrama || 'Semua Asrama'} · Periode {rekapFrom} s/d {rekapTo}
+                    </p>
                 </div>
 
                 {rekap.items.length === 0 ? (
@@ -197,7 +235,7 @@ export default function Laporan({ trend, asramaPerf, stats, rekap, rekapFilters,
                     </div>
                 )}
 
-                <div className="mt-4">
+                <div className="mt-4 print:hidden">
                     <Pagination
                         currentPage={rekap.page}
                         totalPages={rekap.last_page}
