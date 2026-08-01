@@ -1,15 +1,52 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
+import { useState } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { StatCard } from '@/Components/ui/StatCard';
+import { Pagination } from '@/Components/ui/Pagination';
 import { Icon } from '@/Components/ui/Icon';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 interface TrendData { bulan:string; shalat:number; hafalan:number; akademik:number; kegiatan:number }
 interface AsramaPerf { asrama:string; avg:number; warga:number }
-interface Props { trend:TrendData[]; asramaPerf:AsramaPerf[]; stats:Record<string,number> }
+interface RekapItem {
+    id: number; name: string; asrama: string;
+    akademik: number; leadership: number; karakter: number; kreatif: number; total: number;
+}
+interface Rekap { items: RekapItem[]; total: number; page: number; per_page: number; last_page: number }
+interface RekapFilters { asrama: string | null; from: string; to: string }
+interface Props {
+    trend: TrendData[];
+    asramaPerf: AsramaPerf[];
+    stats: Record<string, number>;
+    rekap: Rekap;
+    rekapFilters: RekapFilters;
+    asramas: string[];
+}
 
-export default function Laporan({ trend, asramaPerf, stats }: Props) {
+export default function Laporan({ trend, asramaPerf, stats, rekap, rekapFilters, asramas }: Props) {
+    const [rekapAsrama, setRekapAsrama] = useState(rekapFilters.asrama ?? '');
+    const [rekapFrom, setRekapFrom]     = useState(rekapFilters.from);
+    const [rekapTo, setRekapTo]         = useState(rekapFilters.to);
+
+    function applyRekapFilter(overrides: Partial<{ asrama: string; from: string; to: string; page: number }> = {}) {
+        router.get('/super/laporan', {
+            rekap_asrama: overrides.asrama ?? rekapAsrama,
+            rekap_from:   overrides.from   ?? rekapFrom,
+            rekap_to:     overrides.to     ?? rekapTo,
+            rekap_page:   overrides.page   ?? 1,
+            rekap_per_page: rekap.per_page,
+        }, { preserveScroll: true, preserveState: true, only: ['rekap', 'rekapFilters'] });
+    }
+
+    function resetRekapFilter() {
+        const from = new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10);
+        const to   = new Date().toISOString().slice(0, 10);
+        setRekapAsrama('');
+        setRekapFrom(from);
+        setRekapTo(to);
+        applyRekapFilter({ asrama: '', from, to, page: 1 });
+    }
     return (
         <AppLayout>
             <Head title="Laporan Eksekutif" />
@@ -87,6 +124,93 @@ export default function Laporan({ trend, asramaPerf, stats }: Props) {
                             </div>
                         ))}
                     </div>
+                </div>
+            </div>
+
+            {/* Rekap Aktivitas Warga */}
+            <div className="glass-card rounded-2xl p-5 mt-6">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-5">
+                    <div>
+                        <h3 className="font-bold text-on-surface mb-1">Rekap Aktivitas Warga</h3>
+                        <p className="text-xs text-on-surface-variant">Jumlah aktivitas per dimensi, bisa difilter per asrama & rentang tanggal</p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <select
+                            value={rekapAsrama}
+                            onChange={e => { setRekapAsrama(e.target.value); applyRekapFilter({ asrama: e.target.value, page: 1 }); }}
+                            className="glass-input text-xs py-2"
+                        >
+                            <option value="">Semua Asrama</option>
+                            {asramas.map(a => <option key={a} value={a}>{a}</option>)}
+                        </select>
+                        <input
+                            type="date"
+                            value={rekapFrom}
+                            onChange={e => { setRekapFrom(e.target.value); applyRekapFilter({ from: e.target.value, page: 1 }); }}
+                            className="glass-input text-xs py-2"
+                        />
+                        <span className="text-xs text-on-surface-variant">s/d</span>
+                        <input
+                            type="date"
+                            value={rekapTo}
+                            onChange={e => { setRekapTo(e.target.value); applyRekapFilter({ to: e.target.value, page: 1 }); }}
+                            className="glass-input text-xs py-2"
+                        />
+                        <button onClick={resetRekapFilter} className="text-xs font-bold px-3 py-2 rounded-lg bg-surface-container text-on-surface-variant hover:bg-white/60 transition-colors whitespace-nowrap">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+
+                {rekap.items.length === 0 ? (
+                    <div className="text-center py-10 text-on-surface-variant text-sm">Tidak ada data aktivitas untuk filter ini.</div>
+                ) : (
+                    <div className="overflow-x-auto -mx-5">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b border-white/40">
+                                    <th className="text-left px-5 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">#</th>
+                                    <th className="text-left px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Nama</th>
+                                    <th className="text-left px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Asrama</th>
+                                    <th className="text-center px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Akademik</th>
+                                    <th className="text-center px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Leadership</th>
+                                    <th className="text-center px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Karakter Islami</th>
+                                    <th className="text-center px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Kreativitas</th>
+                                    <th className="text-center px-5 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {rekap.items.map((r, i) => (
+                                    <tr key={r.id} className="border-b border-white/20 hover:bg-white/20 transition-colors">
+                                        <td className="px-5 py-3 text-xs font-black text-on-surface-variant tabular-nums">{(rekap.page - 1) * rekap.per_page + i + 1}</td>
+                                        <td className="px-4 py-3 font-semibold text-on-surface">{r.name}</td>
+                                        <td className="px-4 py-3 text-on-surface-variant">{r.asrama}</td>
+                                        <td className="px-4 py-3 text-center">{r.akademik}</td>
+                                        <td className="px-4 py-3 text-center">{r.leadership}</td>
+                                        <td className="px-4 py-3 text-center">{r.karakter}</td>
+                                        <td className="px-4 py-3 text-center">{r.kreatif}</td>
+                                        <td className="px-5 py-3 text-center font-black text-primary-container">{r.total}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                <div className="mt-4">
+                    <Pagination
+                        currentPage={rekap.page}
+                        totalPages={rekap.last_page}
+                        totalItems={rekap.total}
+                        perPage={rekap.per_page}
+                        onPageChange={(page) => applyRekapFilter({ page })}
+                        onPerPageChange={(perPage) => {
+                            router.get('/super/laporan', {
+                                rekap_asrama: rekapAsrama, rekap_from: rekapFrom, rekap_to: rekapTo,
+                                rekap_page: 1, rekap_per_page: perPage,
+                            }, { preserveScroll: true, preserveState: true, only: ['rekap', 'rekapFilters'] });
+                        }}
+                    />
                 </div>
             </div>
         </AppLayout>

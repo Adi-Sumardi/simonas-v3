@@ -542,7 +542,7 @@ class SuperController extends Controller
     }
 
     // ── Laporan ───────────────────────────────────────────────
-    public function laporan()
+    public function laporan(Request $request)
     {
         $months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 
@@ -581,6 +581,54 @@ class SuperController extends Controller
             ? round(User::where('role', 'mahasiswa')->get()->avg(fn ($u) => $u->calculatePoints()))
             : 0;
 
+        // ── Rekap Aktivitas Warga ───────────────────────────────
+        $rekapFrom   = $request->query('rekap_from') ?: now()->startOfMonth()->toDateString();
+        $rekapTo     = $request->query('rekap_to')   ?: now()->endOfMonth()->toDateString();
+        $rekapAsrama = $request->query('rekap_asrama');
+        $rekapPage   = (int) $request->query('rekap_page', 1);
+        $rekapPerPage = min((int) $request->query('rekap_per_page', 10), 100);
+
+        $rekapQuery = User::where('role', 'mahasiswa');
+        if ($rekapAsrama) {
+            $rekapQuery->where('asrama', $rekapAsrama);
+        }
+        $rekapUsers = $rekapQuery->select(['id', 'name', 'asrama'])->get();
+        $rekapUserIds = $rekapUsers->pluck('id');
+
+        $countByUser = function (string $model) use ($rekapUserIds, $rekapFrom, $rekapTo) {
+            return $model::whereIn('user_id', $rekapUserIds)
+                ->whereBetween('waktu', [$rekapFrom, $rekapTo])
+                ->selectRaw('user_id, COUNT(*) as cnt')
+                ->groupBy('user_id')
+                ->pluck('cnt', 'user_id');
+        };
+
+        $akademikCounts   = $countByUser(\App\Models\Akademik::class);
+        $leadershipCounts = $countByUser(\App\Models\Leadership::class);
+        $karakterCounts   = $countByUser(\App\Models\Karakter::class);
+        $kreatifCounts    = $countByUser(\App\Models\Kreatif::class);
+
+        $rekapAll = $rekapUsers->map(function ($u) use ($akademikCounts, $leadershipCounts, $karakterCounts, $kreatifCounts) {
+            $akademik   = (int) ($akademikCounts[$u->id] ?? 0);
+            $leadership = (int) ($leadershipCounts[$u->id] ?? 0);
+            $karakter   = (int) ($karakterCounts[$u->id] ?? 0);
+            $kreatif    = (int) ($kreatifCounts[$u->id] ?? 0);
+
+            return [
+                'id'         => $u->id,
+                'name'       => $u->name,
+                'asrama'     => $u->asrama ?? '-',
+                'akademik'   => $akademik,
+                'leadership' => $leadership,
+                'karakter'   => $karakter,
+                'kreatif'    => $kreatif,
+                'total'      => $akademik + $leadership + $karakter + $kreatif,
+            ];
+        })->sortByDesc('total')->values();
+
+        $rekapTotal = $rekapAll->count();
+        $rekapItems = $rekapAll->slice(($rekapPage - 1) * $rekapPerPage, $rekapPerPage)->values();
+
         return Inertia::render('Super/Laporan', [
             'trend'       => $trendData->values(),
             'asramaPerf'  => $asramaPerf,
@@ -590,6 +638,19 @@ class SuperController extends Controller
                 'total_kegiatan' => \App\Models\Kegiatan::count(),
                 'persen_aktif'   => $totalWarga ? round(User::where('role', 'mahasiswa')->where('status_warga', 'aktif')->count() / $totalWarga * 100) : 0,
             ],
+            'rekap' => [
+                'items'    => $rekapItems,
+                'total'    => $rekapTotal,
+                'page'     => $rekapPage,
+                'per_page' => $rekapPerPage,
+                'last_page'=> (int) max(1, ceil($rekapTotal / $rekapPerPage)),
+            ],
+            'rekapFilters' => [
+                'asrama' => $rekapAsrama,
+                'from'   => $rekapFrom,
+                'to'     => $rekapTo,
+            ],
+            'asramas' => \App\Models\Asrama::orderBy('nama_asrama')->pluck('nama_asrama'),
         ]);
     }
 
