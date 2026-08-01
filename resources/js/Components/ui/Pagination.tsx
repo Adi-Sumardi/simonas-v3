@@ -46,7 +46,7 @@ export function Pagination({
                     <span className="text-xs">Per halaman:</span>
                     <select
                         value={perPage}
-                        onChange={e => { onPerPageChange(Number(e.target.value)); onPageChange(1); }}
+                        onChange={e => onPerPageChange(Number(e.target.value))}
                         className="glass-input text-xs py-1 px-2 min-w-0 w-16"
                     >
                         {perPageOptions.map(n => <option key={n} value={n}>{n}</option>)}

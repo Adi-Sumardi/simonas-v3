@@ -140,7 +140,7 @@ export default function Database({ alumni, asramas, filters }: DatabaseProps) {
                             totalItems={alumni.total}
                             perPage={alumni.per_page}
                             onPageChange={(p) => router.get('/alumni/database', { ...filters, page: p }, { preserveState: true })}
-                            onPerPageChange={() => {}} 
+                            onPerPageChange={(pp) => router.get('/alumni/database', { ...filters, per_page: pp, page: 1 }, { preserveState: true })} 
                         />
                     </div>
                 </>

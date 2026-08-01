@@ -140,7 +140,7 @@ export default function Hafalan({ hafalan, juzDist, stats }: Props) {
                 <Pagination
                     currentPage={page} totalPages={totalPages}
                     totalItems={filtered.length} perPage={perPage}
-                    onPageChange={setPage} onPerPageChange={setPerPage}
+                    onPageChange={setPage} onPerPageChange={(pp) => { setPerPage(pp); setPage(1); }}
                 />
             </div>
         </AppLayout>
