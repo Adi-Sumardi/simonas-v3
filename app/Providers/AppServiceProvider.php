@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Mail\Transport\SendagoTransport;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        Mail::extend('sendago', function (array $config) {
+            return new SendagoTransport($config['member_id'], $config['secret']);
+        });
     }
 }

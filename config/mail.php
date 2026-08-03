@@ -44,6 +44,12 @@ return [
             'timeout' => null,
         ],
 
+        'sendago' => [
+            'transport'  => 'sendago',
+            'member_id'  => env('SENDAGO_MEMBER_ID'),
+            'secret'     => env('SENDAGO_SECRET'),
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],

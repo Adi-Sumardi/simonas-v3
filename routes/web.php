@@ -27,11 +27,11 @@ Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirect']
 Route::get('/auth/{provider}/callback', [SocialiteController::class, 'callback'])
     ->where('provider', 'google')->name('socialite.callback');
 
-// Laravel built-in auth (login, register, logout, password reset)
-Auth::routes();
+// Laravel built-in auth (login, register, logout, password reset, email verification)
+Auth::routes(['verify' => true]);
 
 // ─── Authenticated ────────────────────────────────────────────
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
 
     // ── Notifications ─────────────────────────────────────────
     Route::get('/notifications', [\App\Http\Controllers\Web\NotificationController::class, 'index'])->name('notifications.index');

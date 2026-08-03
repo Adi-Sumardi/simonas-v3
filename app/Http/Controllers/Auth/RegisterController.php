@@ -3,10 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Providers\RouteServiceProvider;
 use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
@@ -44,40 +42,9 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    // protected $redirectTo = RouteServiceProvider::HOME;
     public function redirectTo()
     {
-        // $role = Auth::user()->role;
-
-        // switch($role) {
-        //     case 'super':
-        //         return '/super';
-        //     break;
-        //     case 'admin':
-        //         return '/admin';
-        //     break;
-        //     case 'mentor':
-        //         return '/mentor';
-        //     break;
-        //     case 'mahasiswa':
-        //         return '/mahasiswa';
-        //     break;
-        //     case 'alumni':
-        //         return '/alumni';
-        //     break;
-        // }
-
-        if(auth()->user()->role == 'super') {
-            return '/super';
-        } elseif (auth()->user()->role == 'admin') {
-            return '/admin';
-        } elseif (auth()->user()->role == 'mentor') {
-            return '/mentor';
-        } elseif (auth()->user()->role == 'mahasiswa') {
-            return '/mahasiswa-biodata';
-        } elseif (auth()->user()->role == 'alumni') {
-            return '/alumni';
-        }
+        return '/dashboard';
     }
 
     /**
