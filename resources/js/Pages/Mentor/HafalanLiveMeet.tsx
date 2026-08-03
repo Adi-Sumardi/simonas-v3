@@ -211,7 +211,7 @@ export default function HafalanLiveMeet({ token, wsUrl, roomName, pending_logs }
                             ) : (
                                 pending_logs.map((log) => {
                                     const isSelected = selectedLog?.id === log.id;
-                                    const initials = log.mahasiswa_name.split(' ').map(n => n[0]).slice(0, 2).join('');
+                                    const initials = (log.mahasiswa_name || '').split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('') || 'M';
                                     return (
                                         <button
                                             key={log.id}

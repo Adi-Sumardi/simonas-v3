@@ -20,14 +20,14 @@ class PenilaianController extends Controller
 
         $submissions = HafalanLog::whereIn('user_id', $menteeIds)
             ->with('user')
-            ->orderByRaw("FIELD(score, 'pending') DESC")   // pending first
+            ->orderByRaw("CASE WHEN score = 'pending' THEN 0 ELSE 1 END")   // pending first
             ->orderByDesc('created_at')
             ->get()
             ->map(fn($log) => [
                 'id'          => $log->id,
                 'warga_id'   => $log->user_id,
-                'warga_name' => $log->user->name,
-                'asrama'      => $log->user->asrama ?? '-',
+                'warga_name' => $log->user?->name ?? 'Mahasiswa',
+                'asrama'      => $log->user?->asrama ?? '-',
                 'surah'       => $log->surah,
                 'ayat_dari'   => $log->ayat_start,
                 'ayat_sampai' => $log->ayat_end,

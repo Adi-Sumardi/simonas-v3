@@ -24,13 +24,13 @@ class MentorKalenderController extends Controller
             ->get()
             ->map(fn($log) => [
                 'id'     => 'hafalan-' . $log->id,
-                'title'  => 'Setoran Hafalan — ' . ($log->user->name ?? 'Warga'),
+                'title'  => 'Setoran Hafalan — ' . ($log->user?->name ?? 'Warga'),
                 'date'   => $log->tested_at?->format('Y-m-d') ?? $log->created_at->format('Y-m-d'),
                 'time'   => $log->tested_at?->format('H:i') ?? '08:00',
                 'type'   => 'hafalan',
                 'color'  => $log->score === 'pending' ? '#f59e0b' : '#10b981',
-                'warga' => $log->user->name ?? null,
-                'asrama' => $log->user->asrama ?? null,
+                'warga' => $log->user?->name ?? null,
+                'asrama' => $log->user?->asrama ?? null,
             ]);
 
         // Build events from kegiatan (global events synced by admin)

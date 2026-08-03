@@ -201,7 +201,7 @@ export default function Penilaian({ submissions, stats }: Props) {
                         <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center font-black text-primary-container text-sm">
-                                    {s.warga_name.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
+                                    {(s.warga_name || '').split(' ').filter(Boolean).map((n: string) => n[0]).slice(0, 2).join('') || 'W'}
                                 </div>
                                 <div>
                                     <p className="font-bold text-on-surface text-sm">{s.warga_name}</p>

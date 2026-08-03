@@ -16,6 +16,7 @@ const TYPE_META: Record<string, { label: string; icon: string; bg: string; text:
     mentoring: { label: 'Mentoring',       icon: 'people',            bg: 'bg-blue-100',    text: 'text-blue-700',    border: 'border-blue-200' },
     evaluasi:  { label: 'Evaluasi',        icon: 'rate_review',       bg: 'bg-amber-100',   text: 'text-amber-700',   border: 'border-amber-200' },
     rapat:     { label: 'Rapat',           icon: 'groups',            bg: 'bg-purple-100',  text: 'text-purple-700',  border: 'border-purple-200' },
+    kegiatan:  { label: 'Kegiatan Asrama', icon: 'event',             bg: 'bg-indigo-100',  text: 'text-indigo-700',  border: 'border-indigo-200' },
 };
 
 const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
@@ -201,7 +202,7 @@ export default function MentorKalender({ events, upcoming, jadwal_setoran, today
                             {jadwal_setoran.map(j => (
                                 <div key={j.warga} className="flex items-center gap-3 p-2.5 rounded-xl bg-emerald-50/50 border border-emerald-100">
                                     <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-black text-emerald-600 flex-shrink-0">
-                                        {j.warga.split(' ').map(n=>n[0]).slice(0,2).join('')}
+                                        {(j.warga || '').split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('') || 'W'}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs font-bold text-on-surface">{j.warga}</p>

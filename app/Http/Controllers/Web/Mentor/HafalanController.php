@@ -37,9 +37,9 @@ class HafalanController extends Controller
                 'score'           => $log->score,
                 'notes'           => $log->notes,
                 'submitted_at'    => $log->created_at->diffForHumans(),
-                'mahasiswa_name'  => $log->user->name,
-                'mahasiswa_nim'   => $log->user->nim ?? $log->user->no_induk ?? '-',
-                'mahasiswa_avatar'=> $log->user->avatar,
+                'mahasiswa_name'  => $log->user?->name ?? 'Mahasiswa',
+                'mahasiswa_nim'   => $log->user?->nim ?? $log->user?->no_induk ?? '-',
+                'mahasiswa_avatar'=> $log->user?->avatar,
             ]);
 
         return Inertia::render('Mentor/HafalanPending', compact('pending_logs'));

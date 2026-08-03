@@ -50,21 +50,30 @@ class LiveMeetController extends Controller
             ->where('is_active', true)
             ->first();
 
-        // If no active meeting, redirect to pending page with error
+        // If no active meeting, auto-start a new session for the mentor
         if (!$meeting) {
-            return redirect()->route('mentor.hafalan.pending')
-                ->with('error', 'Tidak ada sesi Live Meet yang sedang aktif.');
+            $roomName = "meet_mentor_" . $mentor->id;
+            $meeting = LiveMeeting::create([
+                'mentor_id'  => $mentor->id,
+                'room_name'  => $roomName,
+                'is_active'  => true,
+                'started_at' => now(),
+            ]);
         }
 
-        // Generate token for the mentor
-        $token = $tokenService->generateToken(
-            $meeting->room_name,
-            "mentor_" . $mentor->id,
-            $mentor->name,
-            true
-        );
-
+        // Generate token for the mentor (gracefully handle unconfigured credentials)
+        $token = null;
         $wsUrl = config('livekit.host');
+        try {
+            $token = $tokenService->generateToken(
+                $meeting->room_name,
+                "mentor_" . $mentor->id,
+                $mentor->name,
+                true
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('LiveKit token generation failed: ' . $e->getMessage());
+        }
 
         // Fetch pending logs for the mentor's mentees
         $menteeIds = User::where('mentor_id', $mentor->id)
@@ -86,9 +95,9 @@ class LiveMeetController extends Controller
                 'score'           => $log->score,
                 'notes'           => $log->notes,
                 'submitted_at'    => $log->created_at->diffForHumans(),
-                'mahasiswa_name'  => $log->user->name,
-                'mahasiswa_nim'   => $log->user->nim ?? $log->user->no_induk ?? '-',
-                'mahasiswa_avatar'=> $log->user->avatar,
+                'mahasiswa_name'  => $log->user?->name ?? 'Mahasiswa',
+                'mahasiswa_nim'   => $log->user?->nim ?? $log->user?->no_induk ?? '-',
+                'mahasiswa_avatar'=> $log->user?->avatar,
             ]);
 
         return Inertia::render('Mentor/HafalanLiveMeet', [
