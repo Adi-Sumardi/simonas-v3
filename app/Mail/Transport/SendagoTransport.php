@@ -36,6 +36,7 @@ class SendagoTransport extends AbstractTransport
             'toAddr'   => $to[0]->getAddress(),
             'subject'  => (string) $email->getSubject(),
             'body'     => $this->extractBody($email->getHtmlBody()) ?? $email->getTextBody() ?? '',
+            'isHtml'   => $email->getHtmlBody() !== null,
         ]);
 
         if ($response->failed()) {
