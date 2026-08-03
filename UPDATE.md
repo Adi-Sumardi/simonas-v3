@@ -28,13 +28,13 @@ Tambahkan filter di halaman manajemen Warga:
 
 ---
 
-## 3. Log Book Mentoring
+## 3. Log Book Mentoring — ✅ Selesai & live
 
-Tambahkan menu **Log Book Mentoring**, termasuk section-nya di dashboard mentoring.
+Tabel baru `mentoring_logs` (tanggal, mentor, mentee, topik, tujuan, hasil diskusi, kendala, solusi, tindak lanjut).
 
-- [ ] Desain struktur data log book (apa yang dicatat per sesi mentoring)
-- [ ] Menu Log Book Mentoring (CRUD)
-- [ ] Section ringkasan di Dashboard Mentoring
+- [x] Desain struktur data log book
+- [x] Menu Log Book Mentoring — mentor: CRUD penuh (`/mentor/logbook`, filter per mentee); mahasiswa: read-only (`/mahasiswa/logbook`)
+- [x] Section ringkasan (3 log terbaru) di Dashboard mahasiswa & mentor
 
 ---
 
