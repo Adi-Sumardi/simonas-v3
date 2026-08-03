@@ -38,12 +38,15 @@ Tabel baru `mentoring_logs` (tanggal, mentor, mentee, topik, tujuan, hasil disku
 
 ---
 
-## 4. Statistik Penerimaan Beasiswa Per Bulan (Laporan)
+## 4. Statistik Penerimaan Beasiswa Per Bulan (Laporan) — 🔧 Sebagian selesai
 
-Tambahkan section **Statistik Penerimaan Beasiswa Per Bulan** di menu Laporan.
+Tabel `beasiswas` (user, mentor, sumber yayasan/eksternal, nominal, tanggal diajukan/diterima, status pending/approved/rejected).
 
-- [ ] Section statistik di halaman Laporan
-- [ ] **Tidak ikut di-export** (dikecualikan dari export PDF Laporan yang sudah ada)
+- [x] Section statistik + tabel di halaman Laporan (chart bulanan + list)
+- [x] **Tidak ikut di-export** (`print:hidden`, dikecualikan dari export PDF Laporan)
+- [x] Beasiswa eksternal (KIP-K, dsb) — admin input langsung, status approved
+- [x] Beasiswa Yayasan — approval oleh mentor mentee bersangkutan (`/mentor/beasiswa/pending`), sesuai aturan: **yang approve mahasiswa dapat Beasiswa Yayasan adalah mentornya**
+- [ ] **Auto-generate proposal bulanan** (belum dikerjakan, tunggu item #6): sistem cek tiap akhir bulan per mentee — total aktivitas ≥120, total kehadiran Kajian Ahad Pagi, total Sholat Subuh. Kalau 3 kriteria terpenuhi → sistem buat pengajuan Beasiswa Yayasan (status pending) otomatis untuk diapprove mentor. **Depends on**: item #6 Attendance Kegiatan (buat data Kajian Ahad Pagi) + pemisahan data Sholat Subuh dari `UserEvent` tipe shalat.
 
 ---
 
