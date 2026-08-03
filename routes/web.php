@@ -33,6 +33,13 @@ Auth::routes(['verify' => true]);
 // ─── Authenticated ────────────────────────────────────────────
 Route::middleware(['auth', 'verified'])->group(function () {
 
+    // ── Onboarding wizard (warga mahasiswa baru) ──────────────
+    Route::get('/onboarding',  [\App\Http\Controllers\Web\OnboardingController::class, 'show']) ->name('onboarding.show');
+    Route::post('/onboarding', [\App\Http\Controllers\Web\OnboardingController::class, 'store'])->name('onboarding.store');
+});
+
+Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function () {
+
     // ── Notifications ─────────────────────────────────────────
     Route::get('/notifications', [\App\Http\Controllers\Web\NotificationController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/read-all', [\App\Http\Controllers\Web\NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');

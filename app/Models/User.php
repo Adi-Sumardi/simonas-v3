@@ -53,6 +53,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'bio',
         'no_hp',
         'nim',
+        'semester',
+        'onboarding_completed_at',
+        'tgl_mulai_percobaan',
     ];
 
     protected $hidden = [

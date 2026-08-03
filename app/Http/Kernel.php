@@ -69,6 +69,7 @@ class Kernel extends HttpKernel
         'admin' => \App\Http\Middleware\Admin::class,
         'mentor' => \App\Http\Middleware\Mentor::class,
         'mahasiswa' => \App\Http\Middleware\Mahasiswa::class,
+        'onboarding.complete' => \App\Http\Middleware\EnsureOnboardingComplete::class,
         'alumni' => \App\Http\Middleware\Alumni::class,
         'yapinet.auth' => \App\Http\Middleware\EnsureYapinetApiKey::class,
     ];
