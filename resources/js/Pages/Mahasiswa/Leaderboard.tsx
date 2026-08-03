@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { Icon } from '@/Components/ui/Icon';
@@ -8,10 +8,10 @@ import { PageProps, LeaderboardEntry } from '@/types';
 interface LeaderboardPageProps extends PageProps {
     top3: LeaderboardEntry[];
     entries: LeaderboardEntry[];
-    period: 'weekly' | 'monthly' | 'all_time';
     asrama_filter: string;
     available_asrama: string[];
     current_user_rank?: LeaderboardEntry;
+    monthlyTarget: number;
 }
 
 const podiumColors = [
@@ -26,6 +26,7 @@ export default function Leaderboard({
     asrama_filter,
     available_asrama,
     current_user_rank,
+    monthlyTarget,
 }: LeaderboardPageProps) {
     const [activeAsrama, setActiveAsrama] = useState(asrama_filter);
     const [showAll, setShowAll] = useState(false);
@@ -34,7 +35,7 @@ export default function Leaderboard({
 
     function handleAsramaChange(a: string) {
         setActiveAsrama(a);
-        // In real app, trigger Inertia visit with filter
+        router.get('/mahasiswa/leaderboard', { asrama: a }, { preserveScroll: true, preserveState: true });
     }
 
     return (
@@ -45,7 +46,10 @@ export default function Leaderboard({
                 <div>
                     <h1 className="font-display text-display-lg text-primary leading-tight mb-2">Leaderboard</h1>
                     <p className="text-on-surface-variant text-body-md max-w-xl">
-                        Celebrating excellence and dedication within Digital Asrama YAPI.
+                        Peringkat berdasarkan jumlah aktivitas (akademik, leadership, karakter, kreativitas) bulan berjalan.
+                    </p>
+                    <p className="text-xs text-on-surface-variant mt-1">
+                        Target aktivitas/bulan: <b className="text-on-surface">{monthlyTarget}</b> &middot; &ge;{monthlyTarget} = Terpenuhi &middot; &lt;{monthlyTarget} = Belum Terpenuhi
                     </p>
                 </div>
 
@@ -100,7 +104,7 @@ export default function Leaderboard({
                                         {entry.name}
                                     </h3>
                                     <p className={`font-bold mb-2 ${entry.rank === 1 ? 'text-primary-container text-2xl mb-4' : 'text-primary text-lg'}`}>
-                                        {entry.points.toLocaleString('id-ID')} pts
+                                        {entry.points.toLocaleString('id-ID')} aktivitas
                                     </p>
                                     <div className="flex justify-center gap-2">
                                         {entry.badge && (
@@ -128,10 +132,10 @@ export default function Leaderboard({
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr className="bg-blue-50/30 border-b border-white/40">
-                                    {['Rank', 'Student Name', 'Dormitory', 'Total Points'].map((h, i) => (
+                                    {['Rank', 'Nama', 'Asrama', 'Total Aktivitas', 'Status'].map((h, i) => (
                                         <th
                                             key={h}
-                                            className={`px-8 py-5 text-label-caps text-on-surface-variant ${i === 3 ? 'text-right' : 'text-left'}`}
+                                            className={`px-8 py-5 text-label-caps text-on-surface-variant ${i === 3 ? 'text-right' : i === 4 ? 'text-center' : 'text-left'}`}
                                         >
                                             {h}
                                         </th>
@@ -160,7 +164,12 @@ export default function Leaderboard({
                                         </td>
                                         <td className="px-8 py-6 text-secondary">{entry.asrama}</td>
                                         <td className="px-8 py-6 text-right font-black text-primary-container">
-                                            {entry.points.toLocaleString('id-ID')} pts
+                                            {entry.points.toLocaleString('id-ID')}
+                                        </td>
+                                        <td className="px-8 py-6 text-center">
+                                            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${entry.terpenuhi ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                                {entry.terpenuhi ? 'Terpenuhi' : 'Belum Terpenuhi'}
+                                            </span>
                                         </td>
                                     </tr>
                                 ))}
@@ -195,7 +204,7 @@ export default function Leaderboard({
                         </div>
                     </div>
                     <span className="text-xl font-black text-primary-container">
-                        {current_user_rank.points.toLocaleString('id-ID')} pts
+                        {current_user_rank.points.toLocaleString('id-ID')} aktivitas
                     </span>
                 </div>
             )}

@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { AuthLayout } from '@/Layouts/AuthLayout';
 import { Button } from '@/Components/ui/Button';
 import { Input } from '@/Components/ui/Input';
@@ -64,6 +64,19 @@ export default function Onboarding({ user }: Props) {
         return stepFields[i].every(f => String(data[f] ?? '').trim() !== '');
     }
 
+    // Kalau backend nolak submit (validasi gagal), lompat ke step yang
+    // ada error-nya — supaya user gak "terlempar" balik ke step 1 tanpa tahu kenapa.
+    useEffect(() => {
+        const errorFields = Object.keys(errors);
+        if (errorFields.length === 0) return;
+
+        const stepWithError = Object.entries(stepFields).find(([, fields]) =>
+            fields.some(f => errorFields.includes(f as string))
+        );
+        if (stepWithError) setStep(Number(stepWithError[0]));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [errors]);
+
     function next() {
         if (isStepValid(step)) setStep(s => Math.min(s + 1, STEPS.length - 1));
     }
@@ -98,6 +111,13 @@ export default function Onboarding({ user }: Props) {
                         Lengkapi profil kamu dulu sebelum mulai pakai SIMONAS.
                     </p>
                 </div>
+
+                {Object.keys(errors).length > 0 && (
+                    <div className="mb-5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-start gap-2">
+                        <Icon name="error" className="text-lg flex-shrink-0" filled />
+                        <span>Ada data yang belum lengkap/valid, cek kembali form di bawah.</span>
+                    </div>
+                )}
 
                 {/* Progress steps */}
                 <div className="flex items-center justify-between mb-6">

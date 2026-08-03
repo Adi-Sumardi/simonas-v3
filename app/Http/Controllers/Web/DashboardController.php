@@ -109,7 +109,10 @@ class DashboardController extends Controller
         }
 
         $logTarget = (int) \App\Models\DailyTarget::val('study_hour_target', 23);
-        $totalPoints = $user->calculatePoints();
+        // Sama dengan metrik Leaderboard: total aktivitas (akademik+leadership+karakter+kreatif)
+        // bulan berjalan — bukan poin berbobot calculatePoints() yang lama, supaya angka di
+        // Dashboard & Leaderboard selalu konsisten.
+        $totalPoints = $monthLogsCount;
 
         // 1. Real Hafalan Data
         $hafalanRecord = \App\Models\Hafalan::where('user_id', $user->id)->first();
@@ -133,27 +136,21 @@ class DashboardController extends Controller
         }
         $recentActivities = $recent->sortByDesc(fn($r) => $r['created_at'])->take(3)->values();
 
-        // Bulk-compute points for all mahasiswa: O(activity_types) queries, not O(N * activity_types)
+        // Bulk-compute total aktivitas bulan berjalan untuk semua mahasiswa (buat ranking),
+        // pakai metrik yang sama persis dengan Leaderboard: akademik+leadership+karakter+kreatif.
         $studentIds = \App\Models\User::where('role', 'mahasiswa')->pluck('id');
         $allPoints  = array_fill_keys($studentIds->toArray(), 0);
-        $rules      = \App\Models\PointRule::activeRules();
 
-        if ($rules->isNotEmpty()) {
-            $bulkCounts = [
-                'akademik'   => \App\Models\Akademik::whereIn('user_id', $studentIds)->selectRaw('user_id, COUNT(*) as cnt')->groupBy('user_id')->pluck('cnt', 'user_id'),
-                'leadership' => \App\Models\Leadership::whereIn('user_id', $studentIds)->selectRaw('user_id, COUNT(*) as cnt')->groupBy('user_id')->pluck('cnt', 'user_id'),
-                'karakter'   => \App\Models\Karakter::whereIn('user_id', $studentIds)->selectRaw('user_id, COUNT(*) as cnt')->groupBy('user_id')->pluck('cnt', 'user_id'),
-                'kreatif'    => \App\Models\Kreatif::whereIn('user_id', $studentIds)->selectRaw('user_id, COUNT(*) as cnt')->groupBy('user_id')->pluck('cnt', 'user_id'),
-                'hafalan'    => \App\Models\HafalanLog::whereIn('user_id', $studentIds)->where('score', 'memtas')->selectRaw('user_id, COUNT(*) as cnt')->groupBy('user_id')->pluck('cnt', 'user_id'),
-            ];
-            foreach ($rules as $rule) {
-                $counts = $bulkCounts[$rule->activity_type] ?? collect();
-                foreach ($counts as $uid => $cnt) {
-                    $allPoints[$uid] = ($allPoints[$uid] ?? 0) + (int)$cnt * $rule->poin;
-                }
+        $bulkCounts = [
+            \App\Models\Akademik::whereIn('user_id', $studentIds)->whereBetween('waktu', [$startOfMonth, $endOfMonth])->selectRaw('user_id, COUNT(*) as cnt')->groupBy('user_id')->pluck('cnt', 'user_id'),
+            \App\Models\Leadership::whereIn('user_id', $studentIds)->whereBetween('waktu', [$startOfMonth, $endOfMonth])->selectRaw('user_id, COUNT(*) as cnt')->groupBy('user_id')->pluck('cnt', 'user_id'),
+            \App\Models\Karakter::whereIn('user_id', $studentIds)->whereBetween('waktu', [$startOfMonth, $endOfMonth])->selectRaw('user_id, COUNT(*) as cnt')->groupBy('user_id')->pluck('cnt', 'user_id'),
+            \App\Models\Kreatif::whereIn('user_id', $studentIds)->whereBetween('waktu', [$startOfMonth, $endOfMonth])->selectRaw('user_id, COUNT(*) as cnt')->groupBy('user_id')->pluck('cnt', 'user_id'),
+        ];
+        foreach ($bulkCounts as $counts) {
+            foreach ($counts as $uid => $cnt) {
+                $allPoints[$uid] = ($allPoints[$uid] ?? 0) + (int) $cnt;
             }
-        } else {
-            $allPoints[$user->id] = $totalPoints;
         }
 
         arsort($allPoints);

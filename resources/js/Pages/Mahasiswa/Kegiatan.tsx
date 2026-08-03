@@ -10,6 +10,7 @@ import { watermarkPhoto } from '@/lib/watermarkPhoto';
 interface KegiatanData {
     id: number;
     nama_kegiatan: string;
+    penyelenggara: string;
     waktu: string;
     tempat: string;
     jenis_kegiatan: string;
@@ -23,6 +24,15 @@ interface Props {
 }
 
 type Step = 'lokasi' | 'selfie' | 'foto_lokasi' | 'review' | 'done';
+
+const TIPE_META: Record<string, { icon: string; bg: string; text: string }> = {
+    akademik:  { icon: 'school',         bg: 'bg-blue-100',    text: 'text-blue-600' },
+    hafalan:   { icon: 'auto_stories',   bg: 'bg-emerald-100', text: 'text-emerald-600' },
+    kegiatan:  { icon: 'event',          bg: 'bg-purple-100',  text: 'text-purple-600' },
+    olahraga:  { icon: 'fitness_center', bg: 'bg-teal-100',    text: 'text-teal-600' },
+    sosial:    { icon: 'handshake',      bg: 'bg-rose-100',    text: 'text-rose-600' },
+    lainnya:   { icon: 'category',       bg: 'bg-gray-100',    text: 'text-gray-600' },
+};
 
 export default function MahasiswaKegiatan({ kegiatan }: Props) {
     const [absenTarget, setAbsenTarget] = useState<KegiatanData | null>(null);
@@ -119,35 +129,61 @@ export default function MahasiswaKegiatan({ kegiatan }: Props) {
             />
 
             {kegiatan.data.length === 0 ? (
-                <div className="glass-card rounded-2xl py-16 flex flex-col items-center gap-2 text-on-surface-variant">
-                    <Icon name="event_busy" className="text-4xl opacity-20" />
+                <div className="glass-card rounded-2xl py-16 flex flex-col items-center gap-2 text-on-surface-variant mb-6">
+                    <Icon name="event_busy" className="text-5xl opacity-20" />
                     <p className="text-sm font-semibold">Belum ada kegiatan</p>
                 </div>
             ) : (
-                <div className="space-y-3 mb-6">
-                    {kegiatan.data.map(k => {
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    {kegiatan.data.map((k, i) => {
+                        const meta = TIPE_META[k.jenis_kegiatan] ?? TIPE_META.kegiatan;
                         const eventDate = new Date(k.waktu);
+                        const isUpcoming = eventDate >= new Date();
+                        const idx = (kegiatan.current_page - 1) * kegiatan.per_page + i + 1;
+
                         return (
-                            <div key={k.id} className="glass-card rounded-2xl p-4 flex items-center gap-4">
-                                <div className="w-11 h-11 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
-                                    <Icon name="event" className="text-xl text-purple-600" filled />
+                            <div key={k.id} className="glass-card rounded-2xl p-5 flex flex-col gap-4 hover:shadow-xl hover:-translate-y-0.5 transition-all group relative overflow-hidden">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-[10px] font-black text-on-surface-variant bg-surface-container w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">{idx}</span>
+                                        <div className={`w-11 h-11 ${meta.bg} rounded-xl flex items-center justify-center`}>
+                                            <Icon name={meta.icon} className={`text-xl ${meta.text}`} filled />
+                                        </div>
+                                    </div>
+                                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-full ${isUpcoming ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                                        {isUpcoming ? '📅 MENDATANG' : '✅ SELESAI'}
+                                    </span>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-bold text-on-surface text-sm truncate">{k.nama_kegiatan}</p>
-                                    <p className="text-xs text-on-surface-variant">
-                                        {eventDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} &middot; {k.tempat}
-                                    </p>
+                                <div className="flex-1">
+                                    <h3 className="font-bold text-on-surface group-hover:text-primary transition-colors">{k.nama_kegiatan}</h3>
+                                    <div className="flex flex-col gap-1.5 mt-3">
+                                        <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                                            <Icon name="calendar_today" className="text-xs" />
+                                            {eventDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                            {' · '}{eventDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                                            <Icon name="location_on" className="text-xs" />
+                                            {k.tempat}
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                                            <Icon name="corporate_fare" className="text-xs" />
+                                            {k.penyelenggara}
+                                        </div>
+                                    </div>
                                 </div>
                                 {k.wajib_absen && (
-                                    k.sudah_absen ? (
-                                        <span className="text-xs font-bold px-3 py-2 rounded-lg bg-emerald-50 text-emerald-600 flex items-center gap-1 flex-shrink-0">
-                                            <Icon name="check_circle" className="text-sm" filled /> Sudah Absen
-                                        </span>
-                                    ) : (
-                                        <button onClick={() => openAbsen(k)} className="btn-primary px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 flex-shrink-0">
-                                            <Icon name="photo_camera" className="text-sm" /> Absen
-                                        </button>
-                                    )
+                                    <div className="pt-1">
+                                        {k.sudah_absen ? (
+                                            <span className="w-full py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-600 flex items-center justify-center gap-1.5">
+                                                <Icon name="check_circle" className="text-sm" filled /> Sudah Absen
+                                            </span>
+                                        ) : (
+                                            <button onClick={() => openAbsen(k)} className="btn-primary w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
+                                                <Icon name="photo_camera" className="text-sm" /> Absen Sekarang
+                                            </button>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         );

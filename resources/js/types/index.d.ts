@@ -67,6 +67,8 @@ export interface LeaderboardEntry {
     avatar?: string;
     points: number;
     badge?: string;
+    target?: number;
+    terpenuhi?: boolean;
 }
 
 // Mentor types
