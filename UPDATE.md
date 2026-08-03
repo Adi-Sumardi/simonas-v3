@@ -60,14 +60,15 @@ Menu baru **Data Master** — gabungan data warga mahasiswa & alumni, dengan fil
 
 ---
 
-## 6. Attendance Kegiatan
+## 6. Attendance Kegiatan — ✅ Selesai & live
 
 Fitur absensi untuk kegiatan (contoh: Kajian Ahad). Pendekatan **dinamis**: setiap admin/pengurus asrama membuat kegiatan bisa mencentang opsi "wajib absen" atau tidak.
 
-- [ ] Toggle "wajib absen" saat admin/pengurus asrama membuat kegiatan
-- [ ] Kalau dicentang → mahasiswa wajib melakukan absensi ke kegiatan tersebut
-- [ ] Rekap kehadiran per kegiatan: siapa saja yang absen, waktu absen, asrama mana
-- [ ] Upload/lampiran **foto kegiatan** pada rekap absensi
+- [x] Toggle "wajib absen" saat admin/pengurus asrama membuat kegiatan
+- [x] Kalau dicentang → mahasiswa wajib absen: selfie (kamera depan) + foto lokasi (kamera belakang), capture langsung (tidak bisa upload dari galeri), watermark jam+GPS dibakar ke foto (tidak bisa diedit)
+- [x] Rekap kehadiran per kegiatan: siapa saja yang absen, waktu absen, asrama mana, breakdown per asrama, link lokasi ke Google Maps
+- [x] Foto kegiatan (2 slot: selfie + lokasi) tersimpan BLOB, bisa dilihat di rekap
+- [x] Admin/pengurus asrama juga bisa catat kehadiran manual (untuk warga yang tidak bisa self check-in)
 
 ---
 
