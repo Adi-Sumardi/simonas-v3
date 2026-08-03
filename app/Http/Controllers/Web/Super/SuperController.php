@@ -948,6 +948,14 @@ class SuperController extends Controller
                 'mahasiswa' => (clone $base)->where('role', 'mahasiswa')->count(),
                 'alumni'    => (clone $base)->where('role', 'alumni')->count(),
             ],
+            'wilayahStats' => [
+                'provinces' => (clone $base)->whereNotNull('provinsi')
+                    ->selectRaw('UPPER(TRIM(provinsi)) as name, COUNT(*) as cnt')
+                    ->groupBy('name')->orderByDesc('cnt')->get(),
+                'regencies' => (clone $base)->whereNotNull('provinsi')->whereNotNull('kota')
+                    ->selectRaw('UPPER(TRIM(provinsi)) as province, INITCAP(TRIM(kota)) as kota, COUNT(*) as cnt')
+                    ->groupBy('province', 'kota')->orderByDesc('cnt')->get(),
+            ],
         ]);
     }
 

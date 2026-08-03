@@ -6,6 +6,7 @@ import { StatCard } from '@/Components/ui/StatCard';
 import { Pagination } from '@/Components/ui/Pagination';
 import { Icon } from '@/Components/ui/Icon';
 import { useDebounce } from '@/hooks/useDebounce';
+import { IndonesiaMap } from '@/Components/IndonesiaMap';
 
 interface DataItem {
     id: number;
@@ -26,9 +27,13 @@ interface Props {
     filters: Record<string, string>;
     options: { provinsi: string[]; kota: string[]; universitas: string[]; prodi: string[] };
     stats: { total: number; mahasiswa: number; alumni: number };
+    wilayahStats: {
+        provinces: { name: string; cnt: number }[];
+        regencies: { province: string; kota: string; cnt: number }[];
+    };
 }
 
-export default function DataMaster({ data, filters, options, stats }: Props) {
+export default function DataMaster({ data, filters, options, stats, wilayahStats }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [role, setRole] = useState(filters.role ?? '');
     const [provinsi, setProvinsi] = useState(filters.provinsi ?? '');
@@ -104,6 +109,8 @@ export default function DataMaster({ data, filters, options, stats }: Props) {
                     </button>
                 </div>
             </div>
+
+            <IndonesiaMap provinces={wilayahStats.provinces} regencies={wilayahStats.regencies} />
 
             <div className="glass-card rounded-2xl overflow-hidden mb-6">
                 <div className="overflow-x-auto">

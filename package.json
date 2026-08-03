@@ -11,6 +11,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
+    "@types/react-simple-maps": "^3.0.6",
     "@vitejs/plugin-react": "^4.3.0",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.0",
@@ -36,8 +37,12 @@
     "lucide-react": "^0.460.0",
     "material-symbols": "^0.44.4",
     "react-hook-form": "^7.53.0",
+    "react-simple-maps": "^3.0.0",
     "recharts": "^3.8.1",
     "tailwind-merge": "^2.5.0",
     "zod": "^3.23.0"
+  },
+  "overrides": {
+    "d3-color": "^3.1.0"
   }
 }
