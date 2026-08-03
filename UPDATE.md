@@ -50,13 +50,14 @@ Tabel `beasiswas` (user, mentor, sumber yayasan/eksternal, nominal, tanggal diaj
 
 ---
 
-## 5. Data Master (Mahasiswa + Alumni Gabungan)
+## 5. Data Master (Mahasiswa + Alumni Gabungan) — ✅ Selesai & live
 
-Menu baru **Data Master** — gabungan data warga mahasiswa & alumni, dengan filter:
+Menu baru **Data Master** (`/super/data-master`) — gabungan data warga mahasiswa & alumni, dengan filter:
 
-- [ ] Filter berdasarkan **wilayah/daerah**
-- [ ] Filter berdasarkan **asal kampus**
-- [ ] Filter berdasarkan **jurusan/program studi**
+- [x] Filter berdasarkan **wilayah/daerah** (provinsi & kota)
+- [x] Filter berdasarkan **asal kampus** (universitas)
+- [x] Filter berdasarkan **jurusan/program studi**
+- [x] Filter role (mahasiswa/alumni) + pencarian nama/NIM
 
 ---
 
