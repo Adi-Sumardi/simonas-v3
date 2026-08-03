@@ -230,6 +230,7 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         Route::get('/hafalan',    [App\Http\Controllers\Web\Super\SuperController::class, 'hafalan'])->name('hafalan.index');
         Route::get('/leaderboard',[App\Http\Controllers\Web\Super\SuperController::class, 'leaderboard'])->name('leaderboard.index');
         Route::get('/laporan',    [App\Http\Controllers\Web\Super\SuperController::class, 'laporan'])->name('laporan.index');
+        Route::get('/data-master', [App\Http\Controllers\Web\Super\SuperController::class, 'dataMaster'])->name('data-master.index');
 
         // Beasiswa
         Route::post('/beasiswa',           [App\Http\Controllers\Web\Super\SuperController::class, 'storeBeasiswa'])  ->name('beasiswa.store');

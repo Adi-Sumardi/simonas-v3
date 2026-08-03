@@ -890,6 +890,64 @@ class SuperController extends Controller
         return back()->with('success', 'Data beasiswa berhasil dihapus.');
     }
 
+    // ── Data Master ───────────────────────────────────────────
+    public function dataMaster(Request $request)
+    {
+        $query = User::whereIn('role', ['mahasiswa', 'alumni']);
+
+        if ($request->role) {
+            $query->where('role', $request->role);
+        }
+
+        if ($request->search) {
+            $s = $request->search;
+            $query->where(fn ($q) => $q->where('name', 'like', "%{$s}%")->orWhere('no_induk', 'like', "%{$s}%"));
+        }
+
+        if ($request->provinsi) {
+            $query->where('provinsi', $request->provinsi);
+        }
+
+        if ($request->kota) {
+            $query->where('kota', $request->kota);
+        }
+
+        if ($request->universitas) {
+            $query->where('universitas', $request->universitas);
+        }
+
+        if ($request->prodi) {
+            $query->where('prodi', $request->prodi);
+        }
+
+        $perPage = min((int) ($request->per_page ?? 15), 100);
+        $data = $query->select([
+                'id', 'name', 'role', 'no_induk', 'asrama', 'angkatan',
+                'provinsi', 'kota', 'universitas', 'fakultas', 'prodi', 'avatar',
+            ])
+            ->orderBy('name')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $base = User::whereIn('role', ['mahasiswa', 'alumni']);
+
+        return Inertia::render('Super/DataMaster', [
+            'data'    => $data,
+            'filters' => $request->only(['role', 'search', 'provinsi', 'kota', 'universitas', 'prodi', 'per_page']),
+            'options' => [
+                'provinsi'    => (clone $base)->whereNotNull('provinsi')->distinct()->orderBy('provinsi')->pluck('provinsi'),
+                'kota'        => (clone $base)->whereNotNull('kota')->distinct()->orderBy('kota')->pluck('kota'),
+                'universitas' => (clone $base)->whereNotNull('universitas')->distinct()->orderBy('universitas')->pluck('universitas'),
+                'prodi'       => (clone $base)->whereNotNull('prodi')->distinct()->orderBy('prodi')->pluck('prodi'),
+            ],
+            'stats' => [
+                'total'     => (clone $base)->count(),
+                'mahasiswa' => (clone $base)->where('role', 'mahasiswa')->count(),
+                'alumni'    => (clone $base)->where('role', 'alumni')->count(),
+            ],
+        ]);
+    }
+
     // ── Pengaturan ────────────────────────────────────────────
     public function pengaturan()
     {

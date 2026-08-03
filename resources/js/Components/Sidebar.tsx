@@ -66,6 +66,7 @@ const MENU_GROUPS: MenuGroup[] = [
             { label: 'Hafalan',           icon: 'menu_book',            href: '/super/hafalan' },
             { label: 'Leaderboard',       icon: 'leaderboard',          href: '/super/leaderboard' },
             { label: 'Laporan',           icon: 'bar_chart',            href: '/super/laporan' },
+            { label: 'Data Master',       icon: 'storage',              href: '/super/data-master' },
             { label: 'Pengaturan',        icon: 'settings',             href: '/super/pengaturan' },
         ],
     },
