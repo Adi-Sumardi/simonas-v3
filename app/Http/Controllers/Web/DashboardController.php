@@ -33,6 +33,7 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', array_merge([
             'role'        => $role,
             'permissions' => $user->getAllPermissions()->pluck('name'),
+            'showTour'    => (bool) $request->session()->get('show_tour', false),
         ], $payload));
     }
 

@@ -19,6 +19,8 @@ import { Icon } from '@/Components/ui/Icon';
 import { Link } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import { MahasiswaRadarChart } from '@/Components/MahasiswaRadarChart';
+import { OnboardingTourModal } from '@/Components/OnboardingTourModal';
+import { Role } from '@/lib/dashboardFeatures';
 
 // ─── Types per role ───────────────────────────────────────────
 
@@ -118,6 +120,7 @@ interface DashboardProps extends PageProps {
     students?: StudentData[];
     asramas?: string[];
     asrama_stats?: AsramaStat[];
+    showTour?: boolean;
 }
 
 // ─── Sub-dashboards per role ──────────────────────────────────
@@ -786,7 +789,7 @@ function AlumniDashboard({ stats }: { stats: AlumniStats }) {
 
 // ─── Main unified Dashboard ───────────────────────────────────
 
-export default function Dashboard({ role, permissions, stats, students = [], asramas = [], recent_activities = [], latest_jobs = [], asrama_stats = [] }: DashboardProps) {
+export default function Dashboard({ role, permissions, stats, students = [], asramas = [], recent_activities = [], latest_jobs = [], asrama_stats = [], showTour = false }: DashboardProps) {
     const greeting = (() => {
         const h = new Date().getHours();
         if (h < 12) return 'Selamat Pagi';
@@ -796,10 +799,13 @@ export default function Dashboard({ role, permissions, stats, students = [], asr
     })();
 
     const { auth } = usePage<PageProps>().props;
+    const [tourOpen, setTourOpen] = useState(showTour);
 
     return (
         <AppLayout searchPlaceholder="Cari...">
             <Head title="Dashboard" />
+
+            <OnboardingTourModal open={tourOpen} onClose={() => setTourOpen(false)} role={role as Role} />
 
             <PageHeader
                 title={`${greeting}, ${auth.user.name.split(' ')[0]} 👋`}

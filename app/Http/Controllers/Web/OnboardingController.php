@@ -59,6 +59,8 @@ class OnboardingController extends Controller
 
         $user->update($data);
 
-        return redirect()->route('dashboard')->with('success', 'Profil kamu sudah lengkap. Selamat datang di SIMONAS!');
+        return redirect()->route('dashboard')
+            ->with('success', 'Profil kamu sudah lengkap. Selamat datang di SIMONAS!')
+            ->with('show_tour', true);
     }
 }
