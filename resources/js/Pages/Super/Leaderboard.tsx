@@ -137,7 +137,7 @@ export default function Leaderboard({ entries, asramas, stats, filters, monthlyT
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead className="border-b border-white/40 bg-surface-container/30">
-                            <tr>{['#','Rank','Warga','Asrama','Total Aktivitas','Shalat','Hafalan','Akademik','Status'].map(h=>(
+                            <tr>{['#','Rank','Warga','Asrama','Total','Shalat','Hafalan','Aktivitas','Status'].map(h=>(
                                 <th key={h} className="text-left py-3 px-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{h}</th>
                             ))}</tr>
                         </thead>
