@@ -46,10 +46,10 @@ export default function Leaderboard({
                 <div>
                     <h1 className="font-display text-display-lg text-primary leading-tight mb-2">Leaderboard</h1>
                     <p className="text-on-surface-variant text-body-md max-w-xl">
-                        Peringkat berdasarkan jumlah aktivitas (akademik, leadership, karakter, kreativitas) bulan berjalan.
+                        Peringkat berdasarkan total poin (akademik, leadership, karakter, kreativitas) bulan berjalan.
                     </p>
                     <p className="text-xs text-on-surface-variant mt-1">
-                        Target aktivitas/bulan: <b className="text-on-surface">{monthlyTarget}</b> &middot; &ge;{monthlyTarget} = Terpenuhi &middot; &lt;{monthlyTarget} = Belum Terpenuhi
+                        Target poin/bulan: <b className="text-on-surface">{monthlyTarget}</b> &middot; &ge;{monthlyTarget} = Terpenuhi &middot; &lt;{monthlyTarget} = Belum Terpenuhi
                     </p>
                 </div>
 
@@ -104,7 +104,7 @@ export default function Leaderboard({
                                         {entry.name}
                                     </h3>
                                     <p className={`font-bold mb-2 ${entry.rank === 1 ? 'text-primary-container text-2xl mb-4' : 'text-primary text-lg'}`}>
-                                        {entry.points.toLocaleString('id-ID')} aktivitas
+                                        {entry.points.toLocaleString('id-ID')} poin
                                     </p>
                                     <div className="flex justify-center gap-2">
                                         {entry.badge && (
@@ -204,7 +204,7 @@ export default function Leaderboard({
                         </div>
                     </div>
                     <span className="text-xl font-black text-primary-container">
-                        {current_user_rank.points.toLocaleString('id-ID')} aktivitas
+                        {current_user_rank.points.toLocaleString('id-ID')} poin
                     </span>
                 </div>
             )}

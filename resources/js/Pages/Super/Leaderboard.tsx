@@ -59,7 +59,7 @@ export default function Leaderboard({ entries, asramas, stats, filters, monthlyT
     return (
         <AppLayout>
             <Head title="Leaderboard" />
-            <PageHeader title="Leaderboard Warga" subtitle="Peringkat berdasarkan jumlah aktivitas (akademik, leadership, karakter, kreativitas) periode berjalan"
+            <PageHeader title="Leaderboard Warga" subtitle="Peringkat berdasarkan total poin (akademik, leadership, karakter, kreativitas) periode berjalan"
                 breadcrumbs={[{ label:'Dashboard', href:'/dashboard' }, { label:'Leaderboard' }]} />
 
             {/* Date range filter */}
@@ -82,7 +82,7 @@ export default function Leaderboard({ entries, asramas, stats, filters, monthlyT
                     Bulan Ini
                 </button>
                 <span className="text-xs text-on-surface-variant ml-auto">
-                    Target aktivitas/bulan: <b className="text-on-surface">{monthlyTarget}</b> &middot; &ge;{monthlyTarget} = Terpenuhi &middot; &lt;{monthlyTarget} = Belum Terpenuhi
+                    Target poin/bulan: <b className="text-on-surface">{monthlyTarget}</b> &middot; &ge;{monthlyTarget} = Terpenuhi &middot; &lt;{monthlyTarget} = Belum Terpenuhi
                 </span>
             </div>
 
