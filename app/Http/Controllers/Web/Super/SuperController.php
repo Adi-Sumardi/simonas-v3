@@ -907,20 +907,13 @@ class SuperController extends Controller
             $query->where(fn ($q) => $q->where('name', 'like', "%{$s}%")->orWhere('no_induk', 'like', "%{$s}%"));
         }
 
-        if ($request->provinsi) {
-            $query->where('provinsi', $request->provinsi);
-        }
-
-        if ($request->kota) {
-            $query->where('kota', $request->kota);
-        }
-
-        if ($request->universitas) {
-            $query->where('universitas', $request->universitas);
-        }
-
-        if ($request->prodi) {
-            $query->where('prodi', $request->prodi);
+        // Data provinsi/kota/universitas/prodi diinput bebas (free-text) sehingga
+        // banyak variasi kapitalisasi/spasi untuk nilai yang sama (mis. "Jawa Barat",
+        // "JAWABARAT", "Jawa barat") — cocokkan case-insensitive & abaikan spasi tepi.
+        foreach (['provinsi', 'kota', 'universitas', 'prodi'] as $col) {
+            if ($request->$col) {
+                $query->whereRaw("LOWER(TRIM({$col})) = LOWER(TRIM(?))", [$request->$col]);
+            }
         }
 
         $perPage = min((int) ($request->per_page ?? 15), 100);
@@ -938,10 +931,10 @@ class SuperController extends Controller
             'data'    => $data,
             'filters' => $request->only(['role', 'search', 'provinsi', 'kota', 'universitas', 'prodi', 'per_page']),
             'options' => [
-                'provinsi'    => (clone $base)->whereNotNull('provinsi')->distinct()->orderBy('provinsi')->pluck('provinsi'),
-                'kota'        => (clone $base)->whereNotNull('kota')->distinct()->orderBy('kota')->pluck('kota'),
-                'universitas' => (clone $base)->whereNotNull('universitas')->distinct()->orderBy('universitas')->pluck('universitas'),
-                'prodi'       => (clone $base)->whereNotNull('prodi')->distinct()->orderBy('prodi')->pluck('prodi'),
+                'provinsi'    => $this->distinctNormalized($base, 'provinsi'),
+                'kota'        => $this->distinctNormalized($base, 'kota'),
+                'universitas' => $this->distinctNormalized($base, 'universitas'),
+                'prodi'       => $this->distinctNormalized($base, 'prodi'),
             ],
             'stats' => [
                 'total'     => (clone $base)->count(),
@@ -949,6 +942,20 @@ class SuperController extends Controller
                 'alumni'    => (clone $base)->where('role', 'alumni')->count(),
             ],
         ]);
+    }
+
+    // Kembalikan nilai unik ter-normalisasi (trim + INITCAP) dari kolom free-text
+    // supaya "JAWA BARAT" / "Jawa barat" / "Jawa Barat" muncul sebagai satu opsi saja.
+    private function distinctNormalized(\Illuminate\Database\Eloquent\Builder $base, string $column): array
+    {
+        return (clone $base)->whereNotNull($column)
+            ->selectRaw("INITCAP(TRIM({$column})) as label")
+            ->distinct()
+            ->orderBy('label')
+            ->pluck('label')
+            ->filter(fn ($v) => trim((string) $v) !== '')
+            ->values()
+            ->all();
     }
 
     // ── Pengaturan ────────────────────────────────────────────
