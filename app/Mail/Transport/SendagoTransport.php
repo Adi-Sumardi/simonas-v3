@@ -35,7 +35,7 @@ class SendagoTransport extends AbstractTransport
             'secret'   => $this->secret,
             'toAddr'   => $to[0]->getAddress(),
             'subject'  => (string) $email->getSubject(),
-            'body'     => $email->getHtmlBody() ?? $email->getTextBody() ?? '',
+            'body'     => $this->extractBody($email->getHtmlBody()) ?? $email->getTextBody() ?? '',
         ]);
 
         if ($response->failed()) {
@@ -46,5 +46,28 @@ class SendagoTransport extends AbstractTransport
     public function __toString(): string
     {
         return 'sendago';
+    }
+
+    /**
+     * Sendago menyisipkan `body` ke dalam template email mereka sendiri.
+     * Kalau kita kirim dokumen HTML penuh (<html><head>...<body>), hasilnya
+     * jadi <html>/<body> bersarang dan bikin gap kosong raksasa di Gmail.
+     * Jadi kita ambil isi <style> + isi <body> saja sebagai fragment.
+     */
+    private function extractBody(?string $html): ?string
+    {
+        if ($html === null) {
+            return null;
+        }
+
+        if (!preg_match('/<body[^>]*>(.*)<\/body>/is', $html, $bodyMatch)) {
+            return $html;
+        }
+
+        $style = preg_match('/<style[^>]*>(.*?)<\/style>/is', $html, $styleMatch)
+            ? '<style>' . $styleMatch[1] . '</style>'
+            : '';
+
+        return $style . $bodyMatch[1];
     }
 }
