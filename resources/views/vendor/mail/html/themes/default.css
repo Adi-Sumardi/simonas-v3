@@ -28,7 +28,7 @@ blockquote {
 }
 
 a {
-    color: #3869d4;
+    color: #2563eb;
 }
 
 a img {
@@ -98,22 +98,26 @@ img {
 /* Header */
 
 .header {
-    padding: 25px 0;
+    background-color: #eff6ff;
+    padding: 32px 0 28px;
     text-align: center;
 }
 
 .header a {
-    color: #3d4852;
-    font-size: 19px;
-    font-weight: bold;
+    color: #1d4ed8;
+    font-size: 20px;
+    font-weight: 800;
     text-decoration: none;
 }
 
 /* Logo */
 
 .logo {
-    height: 75px;
-    width: 75px;
+    height: 64px;
+    width: 64px;
+    border-radius: 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
 }
 
 /* Body */
@@ -231,11 +235,11 @@ img {
 
 .button-blue,
 .button-primary {
-    background-color: #2d3748;
-    border-bottom: 8px solid #2d3748;
-    border-left: 18px solid #2d3748;
-    border-right: 18px solid #2d3748;
-    border-top: 8px solid #2d3748;
+    background-color: #2563eb;
+    border-bottom: 8px solid #2563eb;
+    border-left: 18px solid #2563eb;
+    border-right: 18px solid #2563eb;
+    border-top: 8px solid #2563eb;
 }
 
 .button-green,
@@ -259,12 +263,12 @@ img {
 /* Panels */
 
 .panel {
-    border-left: #2d3748 solid 4px;
+    border-left: #2563eb solid 4px;
     margin: 21px 0;
 }
 
 .panel-content {
-    background-color: #edf2f7;
+    background-color: #eff6ff;
     color: #718096;
     padding: 16px;
 }

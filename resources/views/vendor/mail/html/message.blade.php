@@ -21,7 +21,8 @@
 {{-- Footer --}}
 @slot('footer')
 @component('mail::footer')
-© {{ date('Y') }} {{ config('app.name') }}. @lang('All rights reserved.')
+© {{ date('Y') }} SIMONAS Digital Asrama YAPI. @lang('All rights reserved.')<br>
+<span style="color:#cbd5e1;">Email ini dikirim otomatis, mohon tidak membalas ke alamat ini.</span>
 @endcomponent
 @endslot
 @endcomponent
