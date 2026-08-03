@@ -159,7 +159,7 @@ export default function Leaderboard({ entries, asramas, stats, filters, monthlyT
                                             </div>
                                         </td>
                                         <td className="py-3 px-4"><span className="text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-bold">{e.asrama}</span></td>
-                                        <td className="py-3 px-4 font-black text-primary-container">{e.total.toLocaleString()} <span className="text-on-surface-variant font-normal">/ {e.target}</span></td>
+                                        <td className="py-3 px-4 font-black text-primary-container">{e.total.toLocaleString()}</td>
                                         {[e.shalat, e.hafalan, e.akademik].map((v, vi) => (
                                             <td key={vi} className="py-3 px-4">
                                                 <span className={`text-xs font-bold px-2 py-1 rounded-full ${v>=85?'bg-emerald-50 text-emerald-600':v>=70?'bg-amber-50 text-amber-600':'bg-rose-50 text-rose-600'}`}>{v}</span>
