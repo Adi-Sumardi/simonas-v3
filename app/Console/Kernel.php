@@ -24,7 +24,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // Ajukan Beasiswa Yayasan otomatis untuk periode bulan lalu, tanggal 1 tiap bulan.
+        $schedule->command('app:generate-monthly-beasiswa-yayasan')
+            ->monthlyOn(1, '02:00')
+            ->withoutOverlapping();
     }
 
     /**
