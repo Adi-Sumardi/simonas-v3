@@ -77,12 +77,12 @@ export default function DataMaster({ data, filters, options, stats }: Props) {
                         <option value="mahasiswa">Mahasiswa</option>
                         <option value="alumni">Alumni</option>
                     </select>
-                    <select value={provinsi} onChange={e => setProvinsi(e.target.value)} className="glass-input text-sm py-2 min-w-[150px] flex-1">
-                        <option value="">Semua Wilayah/Provinsi</option>
+                    <select value={provinsi} onChange={e => { setProvinsi(e.target.value); setKota(''); }} className="glass-input text-sm py-2 min-w-[150px] flex-1">
+                        <option value="">Semua Provinsi</option>
                         {options.provinsi.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                     <select value={kota} onChange={e => setKota(e.target.value)} className="glass-input text-sm py-2 min-w-[150px] flex-1">
-                        <option value="">Semua Kota/Kabupaten</option>
+                        <option value="">{provinsi ? `Semua Kota/Kabupaten di ${provinsi}` : 'Semua Kota/Kabupaten'}</option>
                         {options.kota.map(k => <option key={k} value={k}>{k}</option>)}
                     </select>
                     <select value={universitas} onChange={e => setUniversitas(e.target.value)} className="glass-input text-sm py-2 min-w-[170px] flex-1">

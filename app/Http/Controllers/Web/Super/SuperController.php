@@ -927,12 +927,19 @@ class SuperController extends Controller
 
         $base = User::whereIn('role', ['mahasiswa', 'alumni']);
 
+        // Kota mengikuti provinsi yang dipilih (cascading) — hanya kota yang benar-benar
+        // pernah tercatat untuk provinsi itu di data users yang ditampilkan.
+        $baseForKota = clone $base;
+        if ($request->provinsi) {
+            $baseForKota->whereRaw('LOWER(TRIM(provinsi)) = LOWER(TRIM(?))', [$request->provinsi]);
+        }
+
         return Inertia::render('Super/DataMaster', [
             'data'    => $data,
             'filters' => $request->only(['role', 'search', 'provinsi', 'kota', 'universitas', 'prodi', 'per_page']),
             'options' => [
                 'provinsi'    => $this->distinctNormalized($base, 'provinsi'),
-                'kota'        => $this->distinctNormalized($base, 'kota'),
+                'kota'        => $this->distinctNormalized($baseForKota, 'kota'),
                 'universitas' => $this->distinctNormalized($base, 'universitas'),
                 'prodi'       => $this->distinctNormalized($base, 'prodi'),
             ],
