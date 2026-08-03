@@ -15,6 +15,29 @@ export default function ForgotPassword() {
         post('/password/email');
     }
 
+    if (status) {
+        return (
+            <AuthLayout>
+                <Head title="Link Reset Terkirim" />
+                <div className="glass-panel w-full max-w-md p-8 text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-primary-container flex items-center justify-center mx-auto mb-6 shadow-glow">
+                        <Icon name="mark_email_read" className="text-3xl text-white" filled />
+                    </div>
+                    <h1 className="font-display text-headline-md text-primary-container mb-3">Link Sudah Dikirim</h1>
+                    <p className="text-body-sm text-on-surface-variant leading-relaxed mb-8">
+                        {status} Silakan cek email Anda untuk melanjutkan reset password. Cek juga folder Spam/Promosi
+                        kalau belum kelihatan di Inbox.
+                    </p>
+                    <Link href="/login">
+                        <Button fullWidth size="lg">
+                            Kembali ke Login
+                        </Button>
+                    </Link>
+                </div>
+            </AuthLayout>
+        );
+    }
+
     return (
         <AuthLayout>
             <Head title="Lupa Password" />
@@ -28,13 +51,6 @@ export default function ForgotPassword() {
                         Masukkan email akunmu, kami kirim link buat reset password.
                     </p>
                 </div>
-
-                {status && (
-                    <div className="mb-5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm flex items-start gap-2">
-                        <Icon name="check_circle" className="text-lg flex-shrink-0" filled />
-                        <span>{status}</span>
-                    </div>
-                )}
 
                 <form onSubmit={submit} className="space-y-5">
                     <div>
