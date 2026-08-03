@@ -46,12 +46,21 @@ fi
 echo ""
 
 # ── 3. Migrate ────────────────────────────────────────────────────────────────
-echo "🗄️   [3/6] php artisan migrate --force..."
+echo "🗄️   [3/7] php artisan migrate --force..."
 $PHP artisan migrate --force
 echo ""
 
-# ── 4. Clear all cache ────────────────────────────────────────────────────────
-echo "🧹  [4/6] Clear cache..."
+# ── 4. Build Vite Assets ──────────────────────────────────────────────────────
+if command -v npm >/dev/null 2>&1; then
+    echo "🎨  [4/7] Building frontend assets (npm run build)..."
+    npm run build
+else
+    echo "⚠️   [4/7] npm tidak ditemukan, lewati build frontend."
+fi
+echo ""
+
+# ── 5. Clear all cache ────────────────────────────────────────────────────────
+echo "🧹  [5/7] Clear cache..."
 $PHP artisan cache:clear
 $PHP artisan config:clear
 $PHP artisan route:clear
