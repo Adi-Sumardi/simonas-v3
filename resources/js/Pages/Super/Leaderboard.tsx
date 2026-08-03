@@ -1,16 +1,42 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useState, useMemo } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { Pagination } from '@/Components/ui/Pagination';
+import { Icon } from '@/Components/ui/Icon';
 
-interface Entry { rank:number; id:number; name:string; asrama:string; points:number; shalat:number; hafalan:number; akademik:number; badge:string|null }
-interface Props { entries:Entry[]; asramas:string[]; stats:{ top_asrama:string; avg_points:number; total:number } }
+interface Entry {
+    rank:number; id:number; name:string; asrama:string; points:number;
+    shalat:number; hafalan:number; akademik:number; leadership:number; karakter:number; kreatif:number;
+    total:number; target:number; terpenuhi:boolean; badge:string|null;
+}
+interface Props {
+    entries:Entry[]; asramas:string[]; stats:{ top_asrama:string; avg_points:number; total:number };
+    filters:{ from:string; to:string }; monthlyTarget:number;
+}
 
-export default function Leaderboard({ entries, asramas, stats }: Props) {
+export default function Leaderboard({ entries, asramas, stats, filters, monthlyTarget }: Props) {
     const [filterAsrama, setFilter] = useState('');
     const [page, setPage]           = useState(1);
     const [perPage, setPerPage]     = useState(10);
+    const [from, setFrom]           = useState(filters.from);
+    const [to, setTo]               = useState(filters.to);
+
+    function applyDateFilter(overrides: Partial<{ from:string; to:string }> = {}) {
+        router.get('/super/leaderboard', {
+            from: overrides.from ?? from,
+            to:   overrides.to   ?? to,
+        }, { preserveScroll: true, preserveState: true, only: ['entries', 'asramas', 'stats', 'filters'] });
+    }
+
+    function resetDateFilter() {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+        const end   = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
+        setFrom(start);
+        setTo(end);
+        applyDateFilter({ from: start, to: end });
+    }
 
     const filtered = useMemo(() => {
         setPage(1);
@@ -33,8 +59,32 @@ export default function Leaderboard({ entries, asramas, stats }: Props) {
     return (
         <AppLayout>
             <Head title="Leaderboard" />
-            <PageHeader title="Leaderboard Warga" subtitle="Peringkat berdasarkan akumulasi poin dari semua dimensi"
+            <PageHeader title="Leaderboard Warga" subtitle="Peringkat berdasarkan jumlah aktivitas (akademik, leadership, karakter, kreativitas) periode berjalan"
                 breadcrumbs={[{ label:'Dashboard', href:'/dashboard' }, { label:'Leaderboard' }]} />
+
+            {/* Date range filter */}
+            <div className="glass-card rounded-2xl p-4 mb-6 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold text-on-surface-variant mr-1">Periode:</span>
+                <input
+                    type="date"
+                    value={from}
+                    onChange={e => { setFrom(e.target.value); applyDateFilter({ from: e.target.value }); }}
+                    className="glass-input text-xs py-2"
+                />
+                <span className="text-xs text-on-surface-variant">s/d</span>
+                <input
+                    type="date"
+                    value={to}
+                    onChange={e => { setTo(e.target.value); applyDateFilter({ to: e.target.value }); }}
+                    className="glass-input text-xs py-2"
+                />
+                <button onClick={resetDateFilter} className="text-xs font-bold px-3 py-2 rounded-lg bg-surface-container text-on-surface-variant hover:bg-white/60 transition-colors whitespace-nowrap">
+                    Bulan Ini
+                </button>
+                <span className="text-xs text-on-surface-variant ml-auto">
+                    Target aktivitas/bulan: <b className="text-on-surface">{monthlyTarget}</b> &middot; &ge;{monthlyTarget} = Terpenuhi &middot; &lt;{monthlyTarget} = Belum Terpenuhi
+                </span>
+            </div>
 
             {/* Podium top 3 */}
             {top3.length >= 3 && (
@@ -87,7 +137,7 @@ export default function Leaderboard({ entries, asramas, stats }: Props) {
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead className="border-b border-white/40 bg-surface-container/30">
-                            <tr>{['#','Rank','Warga','Asrama','Poin','Shalat','Hafalan','Akademik'].map(h=>(
+                            <tr>{['#','Rank','Warga','Asrama','Total Aktivitas','Shalat','Hafalan','Akademik','Status'].map(h=>(
                                 <th key={h} className="text-left py-3 px-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{h}</th>
                             ))}</tr>
                         </thead>
@@ -109,12 +159,18 @@ export default function Leaderboard({ entries, asramas, stats }: Props) {
                                             </div>
                                         </td>
                                         <td className="py-3 px-4"><span className="text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-bold">{e.asrama}</span></td>
-                                        <td className="py-3 px-4 font-black text-primary-container">{e.points.toLocaleString()}</td>
+                                        <td className="py-3 px-4 font-black text-primary-container">{e.total.toLocaleString()} <span className="text-on-surface-variant font-normal">/ {e.target}</span></td>
                                         {[e.shalat, e.hafalan, e.akademik].map((v, vi) => (
                                             <td key={vi} className="py-3 px-4">
                                                 <span className={`text-xs font-bold px-2 py-1 rounded-full ${v>=85?'bg-emerald-50 text-emerald-600':v>=70?'bg-amber-50 text-amber-600':'bg-rose-50 text-rose-600'}`}>{v}</span>
                                             </td>
                                         ))}
+                                        <td className="py-3 px-4">
+                                            <span className={`text-xs font-bold px-2 py-1 rounded-full inline-flex items-center gap-1 ${e.terpenuhi ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                                <Icon name={e.terpenuhi ? 'check_circle' : 'cancel'} className="text-sm" filled />
+                                                {e.terpenuhi ? 'Terpenuhi' : 'Belum Terpenuhi'}
+                                            </span>
+                                        </td>
                                     </tr>
                                 );
                             })}

@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class SuperController extends Controller
 {
+    // Target jumlah aktivitas (akademik+leadership+karakter+kreatif) per bulan.
+    private const MONTHLY_ACTIVITY_TARGET = 120;
+
     // ── Warga ─────────────────────────────────────────────────
     public function storeWarga(Request $request)
     {
@@ -494,24 +497,66 @@ class SuperController extends Controller
     }
 
     // ── Leaderboard ───────────────────────────────────────────
-    public function leaderboard()
+    public function leaderboard(Request $request)
     {
-        $students = \App\Models\User::where('role', 'mahasiswa')->get();
+        $from = $request->query('from') ?: now()->startOfMonth()->toDateString();
+        $to   = $request->query('to')   ?: now()->endOfMonth()->toDateString();
 
-        $entries = $students->map(function ($u) {
-            $shalat = (int) \App\Models\UserEvent::where('user_id', $u->id)->where('type', 'shalat')
-                ->get()->sum(fn ($e) => count($e->completed_at_dates ?? []));
-            $hafalan  = \App\Models\HafalanLog::where('user_id', $u->id)->where('score', 'memtas')->count();
-            $akademik = \App\Models\Akademik::where('user_id', $u->id)->count();
+        $students   = \App\Models\User::where('role', 'mahasiswa')->get();
+        $studentIds = $students->pluck('id');
+
+        $countByUser = function (string $model) use ($studentIds, $from, $to) {
+            return $model::whereIn('user_id', $studentIds)
+                ->whereBetween('waktu', [$from, $to])
+                ->selectRaw('user_id, COUNT(*) as cnt')
+                ->groupBy('user_id')
+                ->pluck('cnt', 'user_id');
+        };
+
+        $akademikCounts   = $countByUser(\App\Models\Akademik::class);
+        $leadershipCounts = $countByUser(\App\Models\Leadership::class);
+        $karakterCounts   = $countByUser(\App\Models\Karakter::class);
+        $kreatifCounts    = $countByUser(\App\Models\Kreatif::class);
+
+        $hafalanCounts = \App\Models\HafalanLog::whereIn('user_id', $studentIds)
+            ->where('score', 'memtas')
+            ->whereBetween('tested_at', [$from, $to])
+            ->selectRaw('user_id, COUNT(*) as cnt')
+            ->groupBy('user_id')
+            ->pluck('cnt', 'user_id');
+
+        $shalatEvents = \App\Models\UserEvent::whereIn('user_id', $studentIds)
+            ->where('type', 'shalat')
+            ->get()
+            ->groupBy('user_id');
+
+        $entries = $students->map(function ($u) use ($akademikCounts, $leadershipCounts, $karakterCounts, $kreatifCounts, $hafalanCounts, $shalatEvents, $from, $to) {
+            $akademik   = (int) ($akademikCounts[$u->id] ?? 0);
+            $leadership = (int) ($leadershipCounts[$u->id] ?? 0);
+            $karakter   = (int) ($karakterCounts[$u->id] ?? 0);
+            $kreatif    = (int) ($kreatifCounts[$u->id] ?? 0);
+            $total      = $akademik + $leadership + $karakter + $kreatif;
+
+            $shalat = ($shalatEvents[$u->id] ?? collect())->sum(function ($e) use ($from, $to) {
+                return collect($e->completed_at_dates ?? [])
+                    ->filter(fn ($d) => $d >= $from && $d <= $to)
+                    ->count();
+            });
 
             return [
-                'id'       => $u->id,
-                'name'     => $u->name,
-                'asrama'   => $u->asrama ?? '-',
-                'points'   => $u->calculatePoints(),
-                'shalat'   => $shalat,
-                'hafalan'  => $hafalan,
-                'akademik' => $akademik,
+                'id'         => $u->id,
+                'name'       => $u->name,
+                'asrama'     => $u->asrama ?? '-',
+                'points'     => $total,
+                'shalat'     => $shalat,
+                'hafalan'    => (int) ($hafalanCounts[$u->id] ?? 0),
+                'akademik'   => $akademik,
+                'leadership' => $leadership,
+                'karakter'   => $karakter,
+                'kreatif'    => $kreatif,
+                'total'      => $total,
+                'target'     => self::MONTHLY_ACTIVITY_TARGET,
+                'terpenuhi'  => $total >= self::MONTHLY_ACTIVITY_TARGET,
             ];
         })
             ->sortByDesc('points')
@@ -538,6 +583,11 @@ class SuperController extends Controller
                 'avg_points' => $entries->isNotEmpty() ? round($entries->avg('points')) : 0,
                 'total'      => $entries->count(),
             ],
+            'filters' => [
+                'from' => $from,
+                'to'   => $to,
+            ],
+            'monthlyTarget' => self::MONTHLY_ACTIVITY_TARGET,
         ]);
     }
 
@@ -614,6 +664,8 @@ class SuperController extends Controller
             $karakter   = (int) ($karakterCounts[$u->id] ?? 0);
             $kreatif    = (int) ($kreatifCounts[$u->id] ?? 0);
 
+            $total = $akademik + $leadership + $karakter + $kreatif;
+
             return [
                 'id'         => $u->id,
                 'name'       => $u->name,
@@ -622,7 +674,9 @@ class SuperController extends Controller
                 'leadership' => $leadership,
                 'karakter'   => $karakter,
                 'kreatif'    => $kreatif,
-                'total'      => $akademik + $leadership + $karakter + $kreatif,
+                'total'      => $total,
+                'target'     => self::MONTHLY_ACTIVITY_TARGET,
+                'terpenuhi'  => $total >= self::MONTHLY_ACTIVITY_TARGET,
             ];
         })->sortByDesc('total')->values();
 
@@ -651,6 +705,7 @@ class SuperController extends Controller
                 'to'     => $rekapTo,
             ],
             'asramas' => \App\Models\Asrama::orderBy('nama_asrama')->pluck('nama_asrama'),
+            'monthlyTarget' => self::MONTHLY_ACTIVITY_TARGET,
         ]);
     }
 

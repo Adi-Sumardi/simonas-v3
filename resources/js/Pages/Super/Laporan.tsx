@@ -12,6 +12,7 @@ interface AsramaPerf { asrama:string; avg:number; warga:number }
 interface RekapItem {
     id: number; name: string; asrama: string;
     akademik: number; leadership: number; karakter: number; kreatif: number; total: number;
+    target: number; terpenuhi: boolean;
 }
 interface Rekap { items: RekapItem[]; total: number; page: number; per_page: number; last_page: number }
 interface RekapFilters { asrama: string | null; from: string; to: string }
@@ -22,9 +23,10 @@ interface Props {
     rekap: Rekap;
     rekapFilters: RekapFilters;
     asramas: string[];
+    monthlyTarget: number;
 }
 
-export default function Laporan({ trend, asramaPerf, stats, rekap, rekapFilters, asramas }: Props) {
+export default function Laporan({ trend, asramaPerf, stats, rekap, rekapFilters, asramas, monthlyTarget }: Props) {
     const [rekapAsrama, setRekapAsrama] = useState(rekapFilters.asrama ?? '');
     const [rekapFrom, setRekapFrom]     = useState(rekapFilters.from);
     const [rekapTo, setRekapTo]         = useState(rekapFilters.to);
@@ -168,6 +170,9 @@ export default function Laporan({ trend, asramaPerf, stats, rekap, rekapFilters,
                     <div>
                         <h3 className="font-bold text-on-surface mb-1">Rekap Aktivitas Warga</h3>
                         <p className="text-xs text-on-surface-variant">Jumlah aktivitas per dimensi, bisa difilter per asrama & rentang tanggal</p>
+                        <p className="text-xs text-on-surface-variant mt-1">
+                            Target aktivitas/bulan: <b className="text-on-surface">{monthlyTarget}</b> &middot; &ge;{monthlyTarget} = Terpenuhi &middot; &lt;{monthlyTarget} = Belum Terpenuhi
+                        </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 print:hidden">
                         <select
@@ -215,6 +220,7 @@ export default function Laporan({ trend, asramaPerf, stats, rekap, rekapFilters,
                                     <th className="text-center px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Karakter Islami</th>
                                     <th className="text-center px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Kreativitas</th>
                                     <th className="text-center px-5 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Total</th>
+                                    <th className="text-center px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -228,6 +234,11 @@ export default function Laporan({ trend, asramaPerf, stats, rekap, rekapFilters,
                                         <td className="px-4 py-3 text-center">{r.karakter}</td>
                                         <td className="px-4 py-3 text-center">{r.kreatif}</td>
                                         <td className="px-5 py-3 text-center font-black text-primary-container">{r.total}</td>
+                                        <td className="px-4 py-3 text-center">
+                                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${r.terpenuhi ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                                {r.terpenuhi ? 'Terpenuhi' : 'Belum Terpenuhi'}
+                                            </span>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
