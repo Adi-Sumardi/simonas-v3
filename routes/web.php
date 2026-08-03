@@ -235,6 +235,8 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         Route::get('/leaderboard',[App\Http\Controllers\Web\Super\SuperController::class, 'leaderboard'])->name('leaderboard.index');
         Route::get('/laporan',    [App\Http\Controllers\Web\Super\SuperController::class, 'laporan'])->name('laporan.index');
         Route::get('/data-master', [App\Http\Controllers\Web\Super\SuperController::class, 'dataMaster'])->name('data-master.index');
+        Route::get('/data-master/cleanup', [App\Http\Controllers\Web\Super\SuperController::class, 'dataCleanup'])->name('data-master.cleanup');
+        Route::post('/data-master/cleanup/merge', [App\Http\Controllers\Web\Super\SuperController::class, 'mergeFieldValues'])->name('data-master.cleanup.merge');
 
         // Beasiswa
         Route::post('/beasiswa',           [App\Http\Controllers\Web\Super\SuperController::class, 'storeBeasiswa'])  ->name('beasiswa.store');

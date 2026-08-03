@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
@@ -56,6 +56,12 @@ export default function DataMaster({ data, filters, options, stats }: Props) {
                 title="Data Master"
                 subtitle="Gabungan data mahasiswa & alumni, bisa difilter berdasarkan wilayah, kampus, dan jurusan"
                 breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Data Master' }]}
+                actions={
+                    <Link href="/super/data-master/cleanup"
+                        className="flex items-center gap-1.5 text-xs font-bold px-4 py-2.5 rounded-xl bg-surface-container text-on-surface-variant hover:bg-white/60 transition-colors whitespace-nowrap">
+                        <Icon name="auto_fix_high" className="text-base" /> Bersihkan Duplikat Kampus/Prodi
+                    </Link>
+                }
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

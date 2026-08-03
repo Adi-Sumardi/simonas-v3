@@ -951,6 +951,136 @@ class SuperController extends Controller
         ]);
     }
 
+    // ── Data Master: bersihkan duplikat Universitas/Prodi (free-text, tidak ada
+    // dataset resmi PDDikti yang bisa diimpor otomatis — jadi disini cuma
+    // menyarankan kelompok nama yang mirip, admin yang memutuskan & konfirmasi
+    // penggabungannya) ─────────────────────────────────────────
+    public function dataCleanup(Request $request)
+    {
+        $field = $request->query('field', 'universitas');
+        abort_unless(in_array($field, ['universitas', 'prodi'], true), 404);
+
+        $counts = User::whereIn('role', ['mahasiswa', 'alumni'])
+            ->whereNotNull($field)
+            ->where($field, '!=', '')
+            ->selectRaw("TRIM({$field}) as val, COUNT(*) as cnt")
+            ->groupBy('val')
+            ->orderByDesc('cnt')
+            ->get();
+
+        return Inertia::render('Super/DataCleanup', [
+            'field'         => $field,
+            'groups'        => $this->clusterSimilarValues($counts),
+            'totalDistinct' => $counts->count(),
+        ]);
+    }
+
+    public function mergeFieldValues(Request $request)
+    {
+        $data = $request->validate([
+            'field'       => 'required|in:universitas,prodi',
+            'values'      => 'required|array|min:1',
+            'values.*'    => 'required|string',
+            'canonical'   => 'required|string|max:255',
+        ]);
+
+        User::whereIn($data['field'], $data['values'])->update([$data['field'] => $data['canonical']]);
+
+        return back()->with('success', 'Data berhasil digabungkan menjadi "' . $data['canonical'] . '".');
+    }
+
+    // Union-find sederhana: kelompokkan nilai-nilai yang mirip (kesamaan string
+    // tinggi, atau salah satunya kelihatan seperti singkatan dari yang lain).
+    private function clusterSimilarValues($counts): array
+    {
+        $items = $counts->map(fn ($r) => ['val' => $r->val, 'cnt' => (int) $r->cnt])->values()->all();
+        $n = count($items);
+        $parent = range(0, $n - 1);
+
+        $find = function (int $x) use (&$parent, &$find): int {
+            return $parent[$x] === $x ? $x : $parent[$x] = $find($parent[$x]);
+        };
+        $union = function (int $a, int $b) use (&$parent, $find): void {
+            $ra = $find($a);
+            $rb = $find($b);
+            if ($ra !== $rb) {
+                $parent[$ra] = $rb;
+            }
+        };
+
+        for ($i = 0; $i < $n; $i++) {
+            for ($j = $i + 1; $j < $n; $j++) {
+                if ($this->valuesAreSimilar($items[$i]['val'], $items[$j]['val'])) {
+                    $union($i, $j);
+                }
+            }
+        }
+
+        $clusters = [];
+        for ($i = 0; $i < $n; $i++) {
+            $clusters[$find($i)][] = $items[$i];
+        }
+
+        $groups = [];
+        foreach ($clusters as $members) {
+            if (count($members) < 2) {
+                continue;
+            }
+            usort($members, fn ($a, $b) => $b['cnt'] <=> $a['cnt']);
+            $groups[] = [
+                'suggested'   => $members[0]['val'],
+                'members'     => $members,
+                'total_users' => array_sum(array_column($members, 'cnt')),
+            ];
+        }
+        usort($groups, fn ($a, $b) => $b['total_users'] <=> $a['total_users']);
+
+        return $groups;
+    }
+
+    private function valuesAreSimilar(string $a, string $b): bool
+    {
+        $na = strtoupper(trim(preg_replace('/\s+/', ' ', $a)));
+        $nb = strtoupper(trim(preg_replace('/\s+/', ' ', $b)));
+        if ($na === $nb) {
+            return true;
+        }
+
+        similar_text($na, $nb, $pct);
+        if ($pct >= 55) {
+            return true;
+        }
+
+        return $this->looksLikeAcronymOf($a, $b) || $this->looksLikeAcronymOf($b, $a);
+    }
+
+    // $short dianggap singkatan dari $long kalau hurufnya cocok dengan huruf
+    // pertama tiap kata signifikan di $long (mis. "UNJ" ~ "Universitas Negeri Jakarta").
+    private function looksLikeAcronymOf(string $short, string $long): bool
+    {
+        $shortLetters = strtoupper(preg_replace('/[^A-Za-z]/', '', $short));
+        if (strlen($shortLetters) < 2 || strlen($shortLetters) > 8) {
+            return false;
+        }
+
+        $words = preg_split('/\s+/', trim($long));
+        if (count($words) < 2) {
+            return false;
+        }
+
+        $stopwords = ['DAN', 'DI', 'DE', 'THE', 'OF', 'UNTUK', 'ISLAM'];
+        $initials = '';
+        foreach ($words as $w) {
+            $w = strtoupper(preg_replace('/[^A-Za-z]/', '', $w));
+            if ($w === '' || in_array($w, $stopwords, true)) {
+                continue;
+            }
+            $initials .= $w[0];
+        }
+
+        return $initials === $shortLetters;
+    }
+
     // Kembalikan nilai unik ter-normalisasi (trim + INITCAP) dari kolom free-text
     // supaya "JAWA BARAT" / "Jawa barat" / "Jawa Barat" muncul sebagai satu opsi saja.
     private function distinctNormalized(\Illuminate\Database\Eloquent\Builder $base, string $column): array
