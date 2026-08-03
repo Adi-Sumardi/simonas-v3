@@ -1093,8 +1093,10 @@ class SuperController extends Controller
         if ($a === $b) {
             return true;
         }
+        // Token pendek (mis. akronim 4 huruf: STMI vs STAI) sengaja TIDAK di-fuzzy —
+        // beda 1 huruf di akronim pendek biasanya beda institusi sama sekali, bukan typo.
         $len = max(strlen($a), strlen($b));
-        if ($len < 4) {
+        if ($len < 6) {
             return false;
         }
 
@@ -1130,7 +1132,16 @@ class SuperController extends Controller
         $ta = $this->tokenize($a, $stopwords);
         $tb = $this->tokenize($b, $stopwords);
 
-        if (!empty($ta) && !empty($tb)) {
+        // Sisi yang cuma nyisa 1 token sengaja dibatasi ketat (harus sama-sama 1
+        // token) — kalau dibiarkan longgar ke sisi multi-token, satu kata generik
+        // yang lolos dari stopword dinamis (mis. "Islam", "Negeri") bisa nyambungin
+        // institusi yang gak berhubungan cuma karena kebetulan sama-sama punya kata itu.
+        if (count($ta) === 1 && count($tb) === 1) {
+            return $this->tokensFuzzyEqual($ta[0], $tb[0])
+                || $this->looksLikeAcronymOf($a, $b) || $this->looksLikeAcronymOf($b, $a);
+        }
+
+        if (count($ta) >= 2 && count($tb) >= 2) {
             $smaller = count($ta) <= count($tb) ? $ta : $tb;
             $larger  = count($ta) <= count($tb) ? $tb : $ta;
             $overlap = $this->fuzzyOverlapCount($smaller, $larger);
