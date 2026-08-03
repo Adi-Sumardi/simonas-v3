@@ -989,44 +989,37 @@ class SuperController extends Controller
         return back()->with('success', 'Data berhasil digabungkan menjadi "' . $data['canonical'] . '".');
     }
 
-    // Union-find sederhana: kelompokkan nilai-nilai yang mirip (kesamaan string
-    // tinggi, atau salah satunya kelihatan seperti singkatan dari yang lain).
+    // Greedy anchor-based clustering (bukan union-find) — union-find gampang
+    // "nyambung transitif" lewat kata generik (mis. "Universitas ... Jakarta")
+    // dan malah nge-gabung institusi yang gak berhubungan. Tiap kandidat cuma
+    // dibandingkan ke anchor tetap grupnya, bukan ke sesama anggota.
     private function clusterSimilarValues($counts): array
     {
         $items = $counts->map(fn ($r) => ['val' => $r->val, 'cnt' => (int) $r->cnt])->values()->all();
+        usort($items, fn ($a, $b) => $b['cnt'] <=> $a['cnt']);
         $n = count($items);
-        $parent = range(0, $n - 1);
+        $stopwords = $this->dynamicStopwords(array_column($items, 'val'));
 
-        $find = function (int $x) use (&$parent, &$find): int {
-            return $parent[$x] === $x ? $x : $parent[$x] = $find($parent[$x]);
-        };
-        $union = function (int $a, int $b) use (&$parent, $find): void {
-            $ra = $find($a);
-            $rb = $find($b);
-            if ($ra !== $rb) {
-                $parent[$ra] = $rb;
-            }
-        };
-
+        $used = array_fill(0, $n, false);
+        $groups = [];
         for ($i = 0; $i < $n; $i++) {
+            if ($used[$i]) {
+                continue;
+            }
+            $members = [$items[$i]];
+            $used[$i] = true;
             for ($j = $i + 1; $j < $n; $j++) {
-                if ($this->valuesAreSimilar($items[$i]['val'], $items[$j]['val'])) {
-                    $union($i, $j);
+                if ($used[$j]) {
+                    continue;
+                }
+                if ($this->valuesAreSimilar($items[$i]['val'], $items[$j]['val'], $stopwords)) {
+                    $members[] = $items[$j];
+                    $used[$j] = true;
                 }
             }
-        }
-
-        $clusters = [];
-        for ($i = 0; $i < $n; $i++) {
-            $clusters[$find($i)][] = $items[$i];
-        }
-
-        $groups = [];
-        foreach ($clusters as $members) {
             if (count($members) < 2) {
                 continue;
             }
-            usort($members, fn ($a, $b) => $b['cnt'] <=> $a['cnt']);
             $groups[] = [
                 'suggested'   => $members[0]['val'],
                 'members'     => $members,
@@ -1038,7 +1031,37 @@ class SuperController extends Controller
         return $groups;
     }
 
-    private function valuesAreSimilar(string $a, string $b): bool
+    // Kata yang muncul di banyak nilai berbeda (mis. "JAKARTA" karena semua warga
+    // di Jakarta) tidak diskriminatif untuk pembanding — dihitung dinamis per
+    // kolom, bukan daftar kata tetap yang gampang meleset per kasus.
+    private function dynamicStopwords(array $values): array
+    {
+        $docFreq = [];
+        foreach ($values as $v) {
+            foreach (array_unique($this->tokenize($v)) as $t) {
+                $docFreq[$t] = ($docFreq[$t] ?? 0) + 1;
+            }
+        }
+        $minFreq = max(3, (int) ceil(0.15 * count($values)));
+
+        return array_keys(array_filter($docFreq, fn ($c) => $c >= $minFreq));
+    }
+
+    private function tokenize(string $s, array $extraStopwords = []): array
+    {
+        $s = strtoupper(trim(preg_replace('/\s+/', ' ', $s)));
+        $s = preg_replace('/[^A-Z0-9 ]/', '', $s);
+        // Kata generik penunjuk jenis institusi/prodi — tidak diskriminatif.
+        $strip = ['UNIVERSITAS', 'UNIVERSITY', 'INSTITUT', 'SEKOLAH', 'TINGGI', 'POLITEKNIK', 'AKADEMI'];
+        $words = array_filter(
+            preg_split('/\s+/', $s),
+            fn ($w) => $w !== '' && !in_array($w, $strip, true) && !in_array($w, $extraStopwords, true)
+        );
+
+        return array_values(array_unique($words));
+    }
+
+    private function valuesAreSimilar(string $a, string $b, array $stopwords): bool
     {
         $na = strtoupper(trim(preg_replace('/\s+/', ' ', $a)));
         $nb = strtoupper(trim(preg_replace('/\s+/', ' ', $b)));
@@ -1046,8 +1069,25 @@ class SuperController extends Controller
             return true;
         }
 
-        similar_text($na, $nb, $pct);
-        if ($pct >= 55) {
+        $ta = $this->tokenize($a, $stopwords);
+        $tb = $this->tokenize($b, $stopwords);
+
+        if (count($ta) >= 2 && count($tb) >= 2) {
+            $smaller = count($ta) <= count($tb) ? $ta : $tb;
+            $larger  = count($ta) <= count($tb) ? $tb : $ta;
+            // Kata-kata di sisi yang lebih pendek harus (hampir) semuanya ada di
+            // sisi yang lebih panjang — "Teknik Elektro" cocok ke "Pendidikan
+            // Vokasional Teknik Elektro", tapi "Bahasa Arab" TIDAK cocok ke
+            // "Bahasa Inggris" cuma karena sama-sama mengandung "Bahasa".
+            if (count(array_diff($smaller, $larger)) === 0) {
+                return true;
+            }
+            $inter = count(array_intersect($ta, $tb));
+            $union = count(array_unique(array_merge($ta, $tb)));
+            if ($union > 0 && ($inter / $union) * 100 >= 60) {
+                return true;
+            }
+        } elseif (count($ta) === 1 && count($tb) === 1 && $ta === $tb) {
             return true;
         }
 
