@@ -44,13 +44,14 @@ interface PendingLog extends HafalanLog {
 }
 
 interface HafalanLiveMeetProps extends PageProps {
-    token: string;
-    wsUrl: string;
+    token?: string | null;
+    wsUrl?: string | null;
     roomName: string;
     pending_logs: PendingLog[];
+    livekit_error?: string | null;
 }
 
-export default function HafalanLiveMeet({ token, wsUrl, roomName, pending_logs }: HafalanLiveMeetProps) {
+export default function HafalanLiveMeet({ token, wsUrl, roomName, pending_logs, livekit_error }: HafalanLiveMeetProps) {
     const videoContainerRef = useRef<HTMLDivElement>(null);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [selectedLog, setSelectedLog] = useState<PendingLog | null>(null);
@@ -172,7 +173,7 @@ export default function HafalanLiveMeet({ token, wsUrl, roomName, pending_logs }
                             <Icon name={isFullscreen ? "fullscreen_exit" : "fullscreen"} className="text-lg" />
                         </button>
 
-                        {token ? (
+                        {token && wsUrl ? (
                             <LiveKitRoom
                                 video={true}
                                 audio={true}
@@ -185,9 +186,17 @@ export default function HafalanLiveMeet({ token, wsUrl, roomName, pending_logs }
                                 <VideoConference />
                             </LiveKitRoom>
                         ) : (
-                            <div className="flex-1 flex flex-col items-center justify-center text-white/60">
-                                <Icon name="videocam_off" className="text-5xl mb-2" />
-                                <p className="text-sm">Menghubungkan ke server LiveKit...</p>
+                            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-white/80">
+                                <Icon name="cloud_off" className="text-5xl text-amber-400 mb-3" />
+                                <h4 className="font-bold text-lg text-white mb-1">Server LiveKit Belum Dikonfigurasi</h4>
+                                <p className="text-xs text-white/70 max-w-md mb-4">
+                                    {livekit_error || 'Kredensial LiveKit (LIVEKIT_HOST, LIVEKIT_API_KEY, LIVEKIT_API_SECRET) belum diatur di file .env server produksi.'}
+                                </p>
+                                <div className="bg-white/10 text-white/80 text-[11px] font-mono p-3 rounded-lg text-left">
+                                    LIVEKIT_HOST=https://your-project.livekit.cloud<br />
+                                    LIVEKIT_API_KEY=your_api_key<br />
+                                    LIVEKIT_API_SECRET=your_api_secret
+                                </div>
                             </div>
                         )}
                     </div>

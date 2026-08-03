@@ -34,19 +34,33 @@ class MentorKalenderController extends Controller
             ]);
 
         // Build events from kegiatan (global events synced by admin)
-        $kegiatanEvents = Kegiatan::orderByDesc('waktu')
+        $kegiatanEvents = Kegiatan::orderByDesc('id')
             ->take(20)
             ->get()
-            ->map(fn($k) => [
-                'id'     => 'kegiatan-' . $k->id,
-                'title'  => $k->nama_kegiatan,
-                'date'   => $k->waktu ? (new \DateTime($k->waktu))->format('Y-m-d') : now()->format('Y-m-d'),
-                'time'   => $k->waktu ? (new \DateTime($k->waktu))->format('H:i') : '10:00',
-                'type'   => 'kegiatan',
-                'color'  => '#8b5cf6',
-                'warga' => null,
-                'asrama' => null,
-            ]);
+            ->map(function ($k) {
+                $date = $k->created_at?->format('Y-m-d') ?? now()->format('Y-m-d');
+                $time = '10:00';
+                if (!empty($k->waktu)) {
+                    try {
+                        $dt = new \DateTime($k->waktu);
+                        $date = $dt->format('Y-m-d');
+                        $time = $dt->format('H:i');
+                    } catch (\Throwable $e) {
+                        // Fall back to created_at date if custom text format
+                        $date = $k->created_at?->format('Y-m-d') ?? now()->format('Y-m-d');
+                    }
+                }
+                return [
+                    'id'     => 'kegiatan-' . $k->id,
+                    'title'  => $k->nama_kegiatan ?? 'Kegiatan',
+                    'date'   => $date,
+                    'time'   => $time,
+                    'type'   => 'kegiatan',
+                    'color'  => '#8b5cf6',
+                    'warga'  => null,
+                    'asrama' => null,
+                ];
+            });
 
         $events = $hafalanEvents->merge($kegiatanEvents)->sortBy('date')->values()->toArray();
 

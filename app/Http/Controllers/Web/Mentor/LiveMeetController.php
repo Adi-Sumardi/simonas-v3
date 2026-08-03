@@ -64,6 +64,7 @@ class LiveMeetController extends Controller
         // Generate token for the mentor (gracefully handle unconfigured credentials)
         $token = null;
         $wsUrl = config('livekit.host');
+        $livekit_error = null;
         try {
             $token = $tokenService->generateToken(
                 $meeting->room_name,
@@ -72,6 +73,7 @@ class LiveMeetController extends Controller
                 true
             );
         } catch (\Throwable $e) {
+            $livekit_error = $e->getMessage();
             \Illuminate\Support\Facades\Log::warning('LiveKit token generation failed: ' . $e->getMessage());
         }
 
@@ -101,10 +103,11 @@ class LiveMeetController extends Controller
             ]);
 
         return Inertia::render('Mentor/HafalanLiveMeet', [
-            'token'        => $token,
-            'wsUrl'        => $wsUrl,
-            'roomName'     => $meeting->room_name,
-            'pending_logs' => $pending_logs,
+            'token'         => $token,
+            'wsUrl'         => $wsUrl,
+            'roomName'      => $meeting->room_name,
+            'pending_logs'  => $pending_logs,
+            'livekit_error' => $livekit_error,
         ]);
     }
 
