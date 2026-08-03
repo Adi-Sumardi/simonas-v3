@@ -119,7 +119,7 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
                         {asramas.map(a => <option key={a} value={a}>{a}</option>)}
                     </select>
                     <select value={status} onChange={e => setStatus(e.target.value)} className="glass-input text-sm py-2.5 min-w-[120px] flex-1">
-                        <option value="">Semua Status</option>
+                        <option value="">Semua Akun</option>
                         <option value="aktif">Aktif</option>
                         <option value="nonaktif">Nonaktif</option>
                     </select>
@@ -130,7 +130,7 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
                         ))}
                     </select>
                     <select value={tingkat} onChange={e => setTingkat(e.target.value)} className="glass-input text-sm py-2.5 min-w-[150px] flex-1">
-                        <option value="">Semua Keanggotaan</option>
+                        <option value="">Semua Status</option>
                         <option value="percobaan">Percobaan</option>
                         <option value="tetap">Tetap</option>
                         <option value="senior">Senior</option>
@@ -151,7 +151,7 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
                     <table className="w-full text-sm">
                         <thead className="border-b border-white/40 bg-surface-container/30">
                             <tr>
-                                {['#','Nomor Induk Warga','Nama','Asrama','Angkatan','Semester','Keanggotaan','Hafalan','Skor','Status','Aksi'].map(h => (
+                                {['#','Nomor Induk Warga','Nama','Asrama','Angkatan','Semester','Status','Hafalan','Skor','Akun','Aksi'].map(h => (
                                     <th key={h} className="text-left py-3 px-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant whitespace-nowrap last:text-right">{h}</th>
                                 ))}
                             </tr>

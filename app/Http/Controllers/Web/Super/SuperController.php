@@ -30,6 +30,7 @@ class SuperController extends Controller
             'semester'             => 'nullable|integer|min:1|max:14',
             'tingkat_keanggotaan'  => 'nullable|string|in:percobaan,tetap,senior',
             'tgl_mulai_percobaan'  => 'nullable|date',
+            'tgl_akhir_percobaan'  => 'nullable|date',
         ]);
 
         $warga = User::create([
@@ -44,6 +45,7 @@ class SuperController extends Controller
             'semester'             => $data['semester'] ?? null,
             'tingkat_keanggotaan'  => $data['tingkat_keanggotaan'] ?? 'percobaan',
             'tgl_mulai_percobaan'  => $data['tgl_mulai_percobaan'] ?? null,
+            'tgl_akhir_percobaan'  => $data['tgl_akhir_percobaan'] ?? null,
         ]);
         $warga->assignRole('mahasiswa');
 
@@ -83,7 +85,7 @@ class SuperController extends Controller
         }
 
         $perPage = min((int)($request->per_page ?? 10), 100);
-        $warga = $query->select(['id','name','email','no_induk','asrama','status_warga','tingkat_keanggotaan','semester','tgl_mulai_percobaan','role','tgl_masuk','angkatan','avatar','no_telp'])
+        $warga = $query->select(['id','name','email','no_induk','asrama','status_warga','tingkat_keanggotaan','semester','tgl_mulai_percobaan','tgl_akhir_percobaan','role','tgl_masuk','angkatan','avatar','no_telp'])
             ->paginate($perPage)->withQueryString();
 
         return Inertia::render('Super/Warga', [
@@ -168,6 +170,7 @@ class SuperController extends Controller
             'semester'             => 'nullable|integer|min:1|max:14',
             'tingkat_keanggotaan'  => 'nullable|string|in:percobaan,tetap,senior',
             'tgl_mulai_percobaan'  => 'nullable|date',
+            'tgl_akhir_percobaan'  => 'nullable|date',
         ]);
 
         $warga->update($data);

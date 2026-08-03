@@ -17,6 +17,7 @@ interface Warga {
     semester: number | null;
     tingkat_keanggotaan: string | null;
     tgl_mulai_percobaan: string | null;
+    tgl_akhir_percobaan: string | null;
 }
 
 interface Props {
@@ -42,6 +43,7 @@ export default function WargaEdit({ warga, asramas }: Props) {
         semester: warga.semester ?? '',
         tingkat_keanggotaan: warga.tingkat_keanggotaan ?? 'percobaan',
         tgl_mulai_percobaan: warga.tgl_mulai_percobaan ?? '',
+        tgl_akhir_percobaan: warga.tgl_akhir_percobaan ?? '',
     });
 
     function submit(e: React.FormEvent) {
@@ -92,7 +94,7 @@ export default function WargaEdit({ warga, asramas }: Props) {
                         {errors.asrama && <p className="text-xs text-rose-500 mt-1">{errors.asrama}</p>}
                     </div>
                     <div>
-                        <FormLabel>Status</FormLabel>
+                        <FormLabel>Akun</FormLabel>
                         <select value={data.status_warga} onChange={e => setData('status_warga', e.target.value)} className="glass-input w-full text-sm py-2">
                             <option value="aktif">Aktif</option>
                             <option value="nonaktif">Nonaktif</option>
@@ -120,7 +122,7 @@ export default function WargaEdit({ warga, asramas }: Props) {
                         {errors.semester && <p className="text-xs text-rose-500 mt-1">{errors.semester}</p>}
                     </div>
                     <div>
-                        <FormLabel>Tingkat Keanggotaan</FormLabel>
+                        <FormLabel>Status</FormLabel>
                         <select value={data.tingkat_keanggotaan} onChange={e => setData('tingkat_keanggotaan', e.target.value)} className="glass-input w-full text-sm py-2">
                             <option value="percobaan">Percobaan</option>
                             <option value="tetap">Tetap</option>
@@ -132,6 +134,11 @@ export default function WargaEdit({ warga, asramas }: Props) {
                         <FormLabel>Tanggal Mulai Percobaan</FormLabel>
                         <input type="date" value={data.tgl_mulai_percobaan} onChange={e => setData('tgl_mulai_percobaan', e.target.value)} className="glass-input w-full text-sm" />
                         {errors.tgl_mulai_percobaan && <p className="text-xs text-rose-500 mt-1">{errors.tgl_mulai_percobaan}</p>}
+                    </div>
+                    <div>
+                        <FormLabel>Tanggal Akhir Percobaan</FormLabel>
+                        <input type="date" value={data.tgl_akhir_percobaan} onChange={e => setData('tgl_akhir_percobaan', e.target.value)} className="glass-input w-full text-sm" />
+                        {errors.tgl_akhir_percobaan && <p className="text-xs text-rose-500 mt-1">{errors.tgl_akhir_percobaan}</p>}
                     </div>
                     <div className="sm:col-span-2">
                         <FormLabel>Alamat</FormLabel>
