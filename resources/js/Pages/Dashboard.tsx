@@ -121,20 +121,23 @@ interface DashboardProps extends PageProps {
     asramas?: string[];
     asrama_stats?: AsramaStat[];
     showTour?: boolean;
+    logbook?: { total: number; recent: { id: number; tanggal: string; topik: string; mentee?: string }[] };
 }
 
 // ─── Sub-dashboards per role ──────────────────────────────────
 
-function MahasiswaDashboard({ 
-    stats, 
-    permissions, 
-    recent_activities = [], 
-    latest_jobs = [] 
-}: { 
-    stats: MahasiswaStats; 
-    permissions: string[]; 
-    recent_activities?: AktivitasItem[]; 
+function MahasiswaDashboard({
+    stats,
+    permissions,
+    recent_activities = [],
+    latest_jobs = [],
+    logbook,
+}: {
+    stats: MahasiswaStats;
+    permissions: string[];
+    recent_activities?: AktivitasItem[];
     latest_jobs?: AlumniJobItem[];
+    logbook?: { total: number; recent: { id: number; tanggal: string; topik: string }[] };
 }) {
     const s = stats;
     const shalatPct = Math.round((s.shalat.visual_done / s.shalat.total) * 100);
@@ -300,6 +303,34 @@ function MahasiswaDashboard({
                 </div>
             </div>
 
+            {/* Log Book Mentoring */}
+            <div className="glass-card p-6 rounded-2xl">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-display text-headline-md">Log Book Mentoring</h3>
+                    <Link href="/mahasiswa/logbook" className="text-primary-container text-body-sm font-semibold hover:underline">Lihat Semua</Link>
+                </div>
+                {!logbook || logbook.recent.length === 0 ? (
+                    <div className="flex flex-col items-center py-6 text-on-surface-variant gap-2">
+                        <Icon name="menu_book" className="text-4xl opacity-30" />
+                        <p className="text-body-sm">Belum ada catatan mentoring.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-2">
+                        {logbook.recent.map(log => (
+                            <div key={log.id} className="flex items-center gap-3 p-3 hover:bg-primary/5 rounded-xl transition-all">
+                                <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                    <Icon name="menu_book" className="text-lg text-primary" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-bold text-on-surface truncate">{log.topik}</p>
+                                </div>
+                                <span className="text-[10px] font-medium text-outline flex-shrink-0">{log.tanggal}</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
             {/* Peluang Karir & Magang dari Alumni */}
             <div className="glass-card p-6 rounded-2xl">
                 <div className="flex justify-between items-center mb-6">
@@ -434,7 +465,7 @@ function MahasiswaDashboard({
     );
 }
 
-function MentorDashboard({ stats, permissions }: { stats: MentorStats; permissions: string[] }) {
+function MentorDashboard({ stats, permissions, logbook }: { stats: MentorStats; permissions: string[]; logbook?: { total: number; recent: { id: number; tanggal: string; topik: string; mentee?: string }[] } }) {
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5">
@@ -520,6 +551,37 @@ function MentorDashboard({ stats, permissions }: { stats: MentorStats; permissio
                                 ))
                             )}
                         </div>
+                    </div>
+
+                    {/* Log Book Mentoring */}
+                    <div className="glass-card p-5 sm:p-6 rounded-2xl">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-display text-title-sm sm:text-headline-md">Log Book Mentoring</h3>
+                            <Link href="/mentor/logbook" className="text-primary-container text-[10px] sm:text-xs font-bold hover:bg-primary-container/10 px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 border border-primary-container/20 flex-shrink-0">
+                                <span className="hidden xs:inline">Semua</span> <Icon name="chevron_right" className="text-sm" />
+                            </Link>
+                        </div>
+                        {!logbook || logbook.recent.length === 0 ? (
+                            <div className="py-8 flex flex-col items-center justify-center text-on-surface-variant opacity-40 border-2 border-dashed border-surface-container rounded-2xl">
+                                <Icon name="menu_book" className="text-4xl mb-2" />
+                                <p className="text-sm font-bold">Belum ada log mentoring</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {logbook.recent.map(log => (
+                                    <div key={log.id} className="flex items-center gap-3 p-3 hover:bg-primary/5 rounded-xl transition-all">
+                                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                            <Icon name="menu_book" className="text-lg text-primary" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-bold text-on-surface truncate">{log.topik}</p>
+                                            <p className="text-[10px] text-on-surface-variant truncate">{log.mentee}</p>
+                                        </div>
+                                        <span className="text-[10px] font-medium text-outline flex-shrink-0">{log.tanggal}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -789,7 +851,7 @@ function AlumniDashboard({ stats }: { stats: AlumniStats }) {
 
 // ─── Main unified Dashboard ───────────────────────────────────
 
-export default function Dashboard({ role, permissions, stats, students = [], asramas = [], recent_activities = [], latest_jobs = [], asrama_stats = [], showTour = false }: DashboardProps) {
+export default function Dashboard({ role, permissions, stats, students = [], asramas = [], recent_activities = [], latest_jobs = [], asrama_stats = [], showTour = false, logbook }: DashboardProps) {
     const greeting = (() => {
         const h = new Date().getHours();
         if (h < 12) return 'Selamat Pagi';
@@ -813,15 +875,16 @@ export default function Dashboard({ role, permissions, stats, students = [], asr
             />
 
             {role === 'mahasiswa' && (
-                <MahasiswaDashboard 
-                    stats={stats as MahasiswaStats} 
-                    permissions={permissions} 
+                <MahasiswaDashboard
+                    stats={stats as MahasiswaStats}
+                    permissions={permissions}
                     recent_activities={recent_activities}
                     latest_jobs={latest_jobs}
+                    logbook={logbook}
                 />
             )}
             {role === 'mentor' && (
-                <MentorDashboard stats={stats as MentorStats} permissions={permissions} />
+                <MentorDashboard stats={stats as MentorStats} permissions={permissions} logbook={logbook} />
             )}
             {(role === 'super' || role === 'admin') && (
                 <SuperDashboard

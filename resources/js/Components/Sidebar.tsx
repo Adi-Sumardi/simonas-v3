@@ -38,6 +38,7 @@ const MENU_GROUPS: MenuGroup[] = [
             { label: 'Hafalan',     icon: 'auto_stories',    href: '/mahasiswa/hafalan',     permission: 'log-hafalan' },
             { label: 'Leaderboard', icon: 'military_tech',   href: '/mahasiswa/leaderboard', permission: 'view-leaderboard' },
             { label: 'Kalender',    icon: 'calendar_month',  href: '/mahasiswa/kalender' },
+            { label: 'Log Book Mentoring', icon: 'menu_book', href: '/mahasiswa/logbook' },
         ],
     },
     {
@@ -48,6 +49,7 @@ const MENU_GROUPS: MenuGroup[] = [
             { label: 'Hafalan Pending', icon: 'pending_actions', href: '/mentor/hafalan/pending', permission: 'nilai-santri' },
             { label: 'Penilaian',       icon: 'rate_review',     href: '/mentor/penilaian' },
             { label: 'Kalender',        icon: 'calendar_month',  href: '/mentor/kalender' },
+            { label: 'Log Book Mentoring', icon: 'menu_book', href: '/mentor/logbook' },
         ],
     },
     {

@@ -165,7 +165,21 @@ class DashboardController extends Controller
             $toNext = max(0, ($allPoints[$sortedIds[$rank - 2]] ?? 0) - $totalPoints + 1);
         }
 
+        $recentLogbook = \App\Models\MentoringLog::where('mentee_id', $user->id)
+            ->latest('tanggal')
+            ->take(3)
+            ->get(['id', 'tanggal', 'topik', 'mentor_id'])
+            ->map(fn ($l) => [
+                'id' => $l->id,
+                'tanggal' => $l->tanggal->format('d M Y'),
+                'topik' => $l->topik,
+            ]);
+
         return [
+            'logbook' => [
+                'total' => \App\Models\MentoringLog::where('mentee_id', $user->id)->count(),
+                'recent' => $recentLogbook,
+            ],
             'stats' => [
                 'shalat' => [
                     'completed'   => $completedOnTime,
@@ -270,7 +284,23 @@ class DashboardController extends Controller
             ];
         });
 
+        $recentLogbook = \App\Models\MentoringLog::where('mentor_id', $user->id)
+            ->with('mentee:id,name')
+            ->latest('tanggal')
+            ->take(3)
+            ->get()
+            ->map(fn ($l) => [
+                'id' => $l->id,
+                'tanggal' => $l->tanggal->format('d M Y'),
+                'topik' => $l->topik,
+                'mentee' => $l->mentee->name ?? '-',
+            ]);
+
         return [
+            'logbook' => [
+                'total' => \App\Models\MentoringLog::where('mentor_id', $user->id)->count(),
+                'recent' => $recentLogbook,
+            ],
             'stats' => [
                 'total_mentees'        => $totalMentees,
                 'avg_performance'      => round($avgPerformance, 1),

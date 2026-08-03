@@ -74,6 +74,9 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         Route::delete('/hafalan/log/{log}',     [MahasiswaHafalan::class, 'destroyLog'])->name('hafalan.log.destroy');
         Route::post('/hafalan/bookmark',        [MahasiswaHafalan::class, 'bookmark'])  ->name('hafalan.bookmark');
 
+        // ── Log Book Mentoring (read-only) ────────────────────────
+        Route::get('/logbook', [\App\Http\Controllers\Web\Mahasiswa\LogbookController::class, 'index'])->name('logbook.index');
+
         // ── Leaderboard ──────────────────────────────────────────
         Route::get('/leaderboard',              [LeaderboardController::class, 'index'])->name('leaderboard.index');
 
@@ -153,6 +156,12 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
 
         // Kalender
         Route::get('/kalender', [\App\Http\Controllers\Web\Mentor\MentorKalenderController::class, 'index'])->name('kalender.index');
+
+        // Log Book Mentoring
+        Route::get('/logbook',           [\App\Http\Controllers\Web\Mentor\LogbookController::class, 'index'])  ->name('logbook.index');
+        Route::post('/logbook',          [\App\Http\Controllers\Web\Mentor\LogbookController::class, 'store'])  ->name('logbook.store');
+        Route::put('/logbook/{log}',     [\App\Http\Controllers\Web\Mentor\LogbookController::class, 'update']) ->name('logbook.update');
+        Route::delete('/logbook/{log}',  [\App\Http\Controllers\Web\Mentor\LogbookController::class, 'destroy'])->name('logbook.destroy');
 
         // Live Meet
         Route::post('/live-meet/start', [\App\Http\Controllers\Web\Mentor\LiveMeetController::class, 'start'])->name('live-meet.start');
