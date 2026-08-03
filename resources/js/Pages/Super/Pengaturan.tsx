@@ -118,7 +118,7 @@ function FormLabel({ children }: { children: React.ReactNode }) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export default function Pengaturan({ settings, asramas, pointRules, dailyTargets, activityTypes, komponens, aspekList, komponenPenilaian }: Props) {
+export default function Pengaturan({ settings, asramas, pointRules, dailyTargets, activityTypes, komponenPenilaian }: Props) {
     const { data, setData, post, processing } = useForm({ ...settings });
 
     // ── Asrama state ──────────────────────────────────────────────────────────
@@ -141,13 +141,7 @@ export default function Pengaturan({ settings, asramas, pointRules, dailyTargets
     const [editTarget, setEditTarget]           = useState<DailyTarget|null>(null);
     const targetForm = useForm<{ label:string; key:string; value:string; unit:string; description:string }>({ label: '', key: '', value: '', unit: '', description: '' });
 
-    // ── Komponen state (lama) ────────────────────────────────────────────────────
-    const [komponenTab, setKomponenTab]         = useState(aspekList[0]);
-    const [showKomponenModal, setShowKomponenModal] = useState(false);
-    const [editKomponen, setEditKomponen]       = useState<Komponen|null>(null);
-    const komponenForm = useForm<{ kode:string; nama_komponen:string; aspek:string; bobot:string }>({ kode: '', nama_komponen: '', aspek: aspekList[0], bobot: '1' });
-
-    // ── Komponen Penilaian Baru (3-level) state ─────────────────────────────────
+    // ── Komponen Penilaian (3-level) state ─────────────────────────────────
     const ASPEK_ICONS: Record<string,string> = { akademik:'📚', leadership:'👑', karakter_islami:'🕌', kreatifitas:'🎨' };
     const [kpTab, setKpTab]                     = useState<string>(komponenPenilaian[0]?.kode ?? 'akademik');
     const [expandedSub, setExpandedSub]         = useState<number|null>(null);
@@ -201,25 +195,6 @@ export default function Pengaturan({ settings, asramas, pointRules, dailyTargets
         else if (jenisSubAspekId) jenisForm.post(`/super/sub-aspek/${jenisSubAspekId}/jenis`, { onSuccess: () => setShowJenisModal(false) });
     }
     function deleteJenis(id: number) { if (confirm('Hapus jenis kegiatan ini?')) router.delete(`/super/jenis/${id}`, { preserveScroll: true }); }
-
-    // ── Komponen handlers ─────────────────────────────────────────────────────
-    function openAddKomponen() {
-        komponenForm.clearErrors();
-        komponenForm.setData({ kode: '', nama_komponen: '', aspek: komponenTab, bobot: '1' });
-        setEditKomponen(null);
-        setShowKomponenModal(true);
-    }
-    function openEditKomponen(k: Komponen) {
-        komponenForm.clearErrors();
-        komponenForm.setData({ kode: k.kode, nama_komponen: k.nama_komponen, aspek: k.aspek, bobot: String(k.bobot) });
-        setEditKomponen(k);
-        setShowKomponenModal(true);
-    }
-    function submitKomponen() {
-        if (editKomponen) komponenForm.put(`/super/komponen/${editKomponen.id}`, { onSuccess: () => setShowKomponenModal(false) });
-        else               komponenForm.post('/super/komponen', { onSuccess: () => setShowKomponenModal(false) });
-    }
-    function deleteKomponen(id: number) { if (confirm('Hapus komponen ini?')) router.delete(`/super/komponen/${id}`, { preserveScroll: true }); }
 
     // ── Asrama handlers ───────────────────────────────────────────────────────
     function openAddAsrama() { asramaForm.reset(); setEditAsrama(null); setShowAsramaModal(true); }
@@ -536,83 +511,8 @@ export default function Pengaturan({ settings, asramas, pointRules, dailyTargets
                     </div>
                 </Section>
 
-                {/* ── Komponen Penilaian ───────────────────────────────────────── */}
-                <Section title="Komponen Penilaian" icon="rule"
-                    action={
-                        <button onClick={openAddKomponen} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-container text-white text-xs font-bold hover:opacity-90 transition-opacity">
-                            <Icon name="add" className="text-sm" /> Tambah Komponen
-                        </button>
-                    }>
-                    <p className="text-xs text-on-surface-variant -mt-3">
-                        Komponen dipakai warga saat mengisi log akademik/leadership/karakter/kreativitas. Bobot menentukan kontribusi tiap komponen ke penilaian.
-                    </p>
-
-                    <div className="flex gap-2 flex-wrap -mt-1">
-                        {aspekList.map(a => (
-                            <button
-                                key={a}
-                                onClick={() => setKomponenTab(a)}
-                                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors ${komponenTab === a ? 'bg-primary-container text-white' : 'bg-surface-container/40 text-on-surface-variant hover:bg-surface-container/70'}`}
-                            >
-                                {a}
-                            </button>
-                        ))}
-                    </div>
-
-                    {(() => {
-                        const rows = komponens.filter(k => k.aspek === komponenTab);
-                        if (rows.length === 0) {
-                            return <div className="text-center py-8 text-on-surface-variant text-sm">Belum ada komponen untuk aspek {komponenTab}.</div>;
-                        }
-                        return (
-                            <div className="overflow-x-auto -mx-6">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="border-b border-white/40">
-                                            <th className="text-left px-6 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Kode</th>
-                                            <th className="text-left px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Nama Komponen</th>
-                                            <th className="text-center px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Bobot</th>
-                                            <th className="px-6 py-2.5" />
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {rows.map(k => (
-                                            <tr key={k.id} className="border-b border-white/20 transition-colors hover:bg-white/20">
-                                                <td className="px-6 py-3 font-mono text-xs text-on-surface-variant">{k.kode}</td>
-                                                <td className="px-4 py-3 font-semibold text-on-surface">{k.nama_komponen}</td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <span className="font-black text-lg text-amber-600">{k.bobot}</span>
-                                                </td>
-                                                <td className="px-6 py-3">
-                                                    <div className="flex gap-1 justify-end">
-                                                        <button onClick={() => openEditKomponen(k)} className="w-7 h-7 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-blue-50 text-blue-600 transition-colors">
-                                                            <Icon name="edit" className="text-xs" />
-                                                        </button>
-                                                        <button onClick={() => deleteKomponen(k.id)} className="w-7 h-7 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-rose-50 text-rose-500 transition-colors">
-                                                            <Icon name="delete" className="text-xs" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        );
-                    })()}
-
-                    <div className="mt-2 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                        <p className="text-xs font-bold text-amber-700 flex items-center gap-2">
-                            <Icon name="info" className="text-sm" filled /> Cara kerja
-                        </p>
-                        <p className="text-xs text-amber-600 mt-1 leading-relaxed">
-                            Bobot tiap komponen dijumlahkan sebagai skor aktivitas warga di dimensi terkait, menggantikan hitungan jumlah aktivitas polos. Perubahan langsung berlaku untuk penilaian baru.
-                        </p>
-                    </div>
-                </Section>
-
-                {/* ── Komponen Penilaian Baru (3-Level) ────────────────────────── */}
-                <Section title="Komponen Penilaian (Baru)" icon="inventory_2">
+                {/* ── Komponen Penilaian (3-Level) ────────────────────────── */}
+                <Section title="Komponen Penilaian" icon="inventory_2">
                     <p className="text-xs text-on-surface-variant -mt-3">
                         Sistem penilaian 3-level: <strong>Aspek Utama</strong> (4, tetap) → <strong>Sub-Aspek</strong> (dinamis) → <strong>Jenis Kegiatan</strong> dengan poin berlevel Internal (A/P/F/U) & Eksternal (W/N/I).
                     </p>
@@ -856,44 +756,6 @@ export default function Pengaturan({ settings, asramas, pointRules, dailyTargets
                             {targetForm.processing ? 'Menyimpan...' : (editTarget ? 'Simpan' : 'Tambah')}
                         </button>
                         <button onClick={() => setShowTargetModal(false)} className="px-6 py-3 rounded-xl font-bold text-sm bg-zinc-100 text-on-surface-variant">Batal</button>
-                    </div>
-                </ModalShell>
-            )}
-
-            {/* ── Komponen Modal ─────────────────────────────────────────────── */}
-            {showKomponenModal && (
-                <ModalShell title={editKomponen ? 'Edit Komponen' : 'Tambah Komponen'} onClose={() => setShowKomponenModal(false)}>
-                    <div className="p-6 space-y-4">
-                        <div>
-                            <FormLabel>Aspek *</FormLabel>
-                            <select value={komponenForm.data.aspek} onChange={e => komponenForm.setData('aspek', e.target.value)} className="glass-input w-full text-sm py-2">
-                                {aspekList.map(a => <option key={a} value={a}>{a}</option>)}
-                            </select>
-                            {komponenForm.errors.aspek && <p className="text-xs text-rose-500 mt-1">{komponenForm.errors.aspek}</p>}
-                        </div>
-                        <div>
-                            <FormLabel>Nama Komponen *</FormLabel>
-                            <input value={komponenForm.data.nama_komponen} onChange={e => komponenForm.setData('nama_komponen', e.target.value)} className="glass-input w-full text-sm" placeholder="cth. Mengikuti kegiatan mentoring" />
-                            {komponenForm.errors.nama_komponen && <p className="text-xs text-rose-500 mt-1">{komponenForm.errors.nama_komponen}</p>}
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <FormLabel>Kode *</FormLabel>
-                                <input value={komponenForm.data.kode} onChange={e => komponenForm.setData('kode', e.target.value)} className="glass-input w-full text-sm font-mono" placeholder="cth. 1009" />
-                                {komponenForm.errors.kode && <p className="text-xs text-rose-500 mt-1">{komponenForm.errors.kode}</p>}
-                            </div>
-                            <div>
-                                <FormLabel>Bobot Nilai *</FormLabel>
-                                <input type="number" min={0} value={komponenForm.data.bobot} onChange={e => komponenForm.setData('bobot', e.target.value)} className="glass-input w-full text-sm text-center" placeholder="1" />
-                                {komponenForm.errors.bobot && <p className="text-xs text-rose-500 mt-1">{komponenForm.errors.bobot}</p>}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="p-6 pt-0 flex gap-3">
-                        <button onClick={submitKomponen} disabled={komponenForm.processing} className="btn-primary flex-1 py-3 rounded-xl font-bold text-sm">
-                            {komponenForm.processing ? 'Menyimpan...' : (editKomponen ? 'Simpan' : 'Tambah')}
-                        </button>
-                        <button onClick={() => setShowKomponenModal(false)} className="px-6 py-3 rounded-xl font-bold text-sm bg-zinc-100 text-on-surface-variant">Batal</button>
                     </div>
                 </ModalShell>
             )}

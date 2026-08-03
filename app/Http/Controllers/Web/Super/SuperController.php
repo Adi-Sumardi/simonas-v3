@@ -607,10 +607,12 @@ class SuperController extends Controller
         $students   = \App\Models\User::where('role', 'mahasiswa')->get();
         $studentIds = $students->pluck('id');
 
+        // Total POIN (dari Komponen Penilaian: Jenis Kegiatan x Level yang dipilih),
+        // bukan lagi jumlah aktivitas mentah.
         $countByUser = function (string $model) use ($studentIds, $from, $to) {
             return $model::whereIn('user_id', $studentIds)
                 ->whereBetween('waktu', [$from, $to])
-                ->selectRaw('user_id, COUNT(*) as cnt')
+                ->selectRaw('user_id, SUM(poin) as cnt')
                 ->groupBy('user_id')
                 ->pluck('cnt', 'user_id');
         };
@@ -747,10 +749,11 @@ class SuperController extends Controller
         $rekapUsers = $rekapQuery->select(['id', 'name', 'asrama'])->get();
         $rekapUserIds = $rekapUsers->pluck('id');
 
+        // Total POIN (Komponen Penilaian: Jenis Kegiatan x Level), bukan jumlah aktivitas mentah.
         $countByUser = function (string $model) use ($rekapUserIds, $rekapFrom, $rekapTo) {
             return $model::whereIn('user_id', $rekapUserIds)
                 ->whereBetween('waktu', [$rekapFrom, $rekapTo])
-                ->selectRaw('user_id, COUNT(*) as cnt')
+                ->selectRaw('user_id, SUM(poin) as cnt')
                 ->groupBy('user_id')
                 ->pluck('cnt', 'user_id');
         };

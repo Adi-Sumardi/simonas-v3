@@ -15,6 +15,7 @@ type Kategori = 'akademik' | 'leadership' | 'karakter' | 'kreativitas';
 interface KomponenItem { id: number; nama: string; kode: string; }
 interface AktivitasItem {
     id: number; kategori: Kategori; kegiatan: string; komponen: string; komponen_id?: number;
+    sub_aspek_id?: number | null; jenis_kegiatan_id?: number | null; level_kegiatan?: string | null; poin?: number;
     tipe_kegiatan?: string; image?: string | null; image_name?: string | null;
     waktu: string; tempat: string; keterangan?: string; nilai?: string; created_at: string;
 }
@@ -58,13 +59,6 @@ const KAT_META: Record<Kategori, { label: string; icon: string; color: string; b
 };
 
 // Komponen aspek → kategori mapping
-const ASPEK_MAP: Record<Kategori, string[]> = {
-    akademik:    ['Akademik'],
-    leadership:  ['Leadership'],
-    karakter:    ['Karakter Islami'],
-    kreativitas: ['Kreativitas', 'Kewirausahaan'], // both aspeks combined
-};
-
 // Poin level labels
 const LEVEL_LABELS: Record<string, string> = {
     a: 'Asrama (A)', p: 'Prodi (P)', f: 'Fakultas (F)', u: 'Universitas (U)',
@@ -73,7 +67,7 @@ const LEVEL_LABELS: Record<string, string> = {
 
 // ─── Form Modal ───────────────────────────────────────────────────────────────
 function AktivitasModal({
-    activeKat, komponens, editItem, onClose, komponenPenilaian,
+    activeKat, editItem, onClose, komponenPenilaian,
 }: {
     activeKat: Kategori;
     komponens: Record<string, KomponenItem[]>;
@@ -84,7 +78,6 @@ function AktivitasModal({
     const [form, setForm] = useState<any>({
         kategori:      editItem?.kategori    ?? activeKat,
         kegiatan:      editItem?.kegiatan    ?? '',
-        komponen_id:   editItem?.komponen_id ?? '',
         tipe_kegiatan: editItem?.tipe_kegiatan ?? '',
         waktu:         editItem?.waktu       ?? '',
         tempat:        editItem?.tempat      ?? '',
@@ -112,17 +105,33 @@ function AktivitasModal({
     // Fetch sub-aspek when aspek changes
     useEffect(() => {
         if (!currentAspek) return;
-        setSubAspeks([]); setSelectedSub(''); setJenisOptions([]); setSelectedJenis(null); setSelectedLevel('');
+        setSubAspeks([]); setJenisOptions([]);
+        const prefillSub = editItem?.sub_aspek_id ? String(editItem.sub_aspek_id) : '';
+        setSelectedSub(prefillSub);
+        if (!prefillSub) { setSelectedJenis(null); setSelectedLevel(''); }
         fetch(`/mahasiswa/komponen-penilaian/sub-aspek?aspek_id=${currentAspek.id}`)
             .then(r => r.json()).then(setSubAspeks).catch(() => {});
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [form.kategori]);
 
     // Fetch jenis when sub-aspek changes
     useEffect(() => {
         if (!selectedSub) { setJenisOptions([]); setSelectedJenis(null); setSelectedLevel(''); return; }
         fetch(`/mahasiswa/komponen-penilaian/jenis?sub_aspek_id=${selectedSub}`)
-            .then(r => r.json()).then(setJenisOptions).catch(() => {});
-        setSelectedJenis(null); setSelectedLevel('');
+            .then(r => r.json())
+            .then((list: KPJenis[]) => {
+                setJenisOptions(list);
+                if (editItem?.jenis_kegiatan_id && String(editItem.sub_aspek_id) === selectedSub) {
+                    const found = list.find(j => j.id === editItem.jenis_kegiatan_id) ?? null;
+                    setSelectedJenis(found);
+                    setSelectedLevel(editItem.level_kegiatan ?? '');
+                } else {
+                    setSelectedJenis(null);
+                    setSelectedLevel('');
+                }
+            })
+            .catch(() => {});
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedSub]);
 
     // When jenis selected, get poin for chosen level
@@ -135,10 +144,8 @@ function AktivitasModal({
         ? (selectedJenis as any)[`poin_${selectedLevel}`]
         : null;
 
-    const aspeks = ASPEK_MAP[form.kategori as Kategori];
-    // Flatten all matching aspeks (kreativitas has 2)
-    const availKomponen: KomponenItem[] = aspeks.flatMap(a => komponens[a] ?? []);
     const meta = KAT_META[form.kategori as Kategori];
+    const isKomponenValid = !!(selectedSub && selectedJenis && selectedLevel);
 
     function set(field: string, val: any) { setForm((p: any) => ({ ...p, [field]: val })); }
 
@@ -153,6 +160,7 @@ function AktivitasModal({
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
+        if (!isKomponenValid) return;
         setSaving(true);
 
         const method = editItem ? 'put' : 'post';
@@ -161,9 +169,9 @@ function AktivitasModal({
         // Use router.post with forceFormData for file uploads even on PUT (Laravel spoofing)
         router.post(url, {
             ...form,
-            sub_aspek_id:      selectedSub || null,
-            jenis_kegiatan_id: selectedJenis?.id || null,
-            level_kegiatan:    selectedLevel || null,
+            sub_aspek_id:      selectedSub,
+            jenis_kegiatan_id: selectedJenis?.id,
+            level_kegiatan:    selectedLevel,
             _method: method.toUpperCase(),
         }, {
             forceFormData: true,
@@ -183,7 +191,8 @@ function AktivitasModal({
                         className="px-5 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-black/10 transition-colors">
                         Batal
                     </button>
-                    <button form="aktivitas-form" type="submit" disabled={saving}
+                    <button form="aktivitas-form" type="submit" disabled={saving || !isKomponenValid}
+                        title={!isKomponenValid ? 'Pilih Sub-Aspek, Jenis Kegiatan, dan Cakupan/Level dulu' : undefined}
                         className="px-5 py-2.5 rounded-xl font-bold text-sm text-white bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all disabled:opacity-50 flex items-center gap-2">
                         <Icon name="save" className="text-base" />
                         {saving ? 'Menyimpan...' : editItem ? 'Simpan' : 'Log Aktivitas'}
@@ -202,15 +211,15 @@ function AktivitasModal({
                     </select>
                 </div>
 
-                {/* Komponen Penilaian Baru (cascade 3-level) */}
+                {/* Komponen Penilaian (cascade 3-level: Sub-Aspek → Jenis Kegiatan → Level) */}
                 <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 space-y-3">
                     <p className="text-[10px] font-black uppercase tracking-widest text-indigo-700 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-indigo-600 inline-block" /> Sistem Penilaian Baru
+                        <span className="w-2 h-2 rounded-full bg-indigo-600 inline-block" /> Komponen Penilaian *
                     </p>
 
                     {/* Sub-Aspek */}
                     <div>
-                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1 block">Sub-Aspek</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1 block">Sub-Aspek *</label>
                         <select
                             value={selectedSub}
                             onChange={e => setSelectedSub(e.target.value)}
@@ -283,24 +292,6 @@ function AktivitasModal({
                             <p className="text-xs text-amber-700">{selectedJenis.keterangan_bukti}</p>
                         </div>
                     )}
-                </div>
-
-                {/* Komponen lama (dipertahankan untuk kompatibilitas) */}
-                <div>
-                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Komponen *</label>
-                    <select value={form.komponen_id} onChange={e => set('komponen_id', e.target.value)}
-                        className={`glass-input w-full text-sm ${errors.komponen_id ? 'border-rose-400' : ''}`}>
-                        <option value="">— Pilih komponen —</option>
-                        {availKomponen.map(k => (
-                            <option key={k.id} value={k.id}>[{k.kode}] {k.nama}</option>
-                        ))}
-                    </select>
-                    {availKomponen.length === 0 && (
-                        <p className="text-[10px] text-amber-600 mt-1 flex items-center gap-1">
-                            <Icon name="warning" className="text-xs" /> Belum ada data komponen untuk kategori ini.
-                        </p>
-                    )}
-                    {errors.komponen_id && <p className="text-xs text-rose-500 mt-1">{errors.komponen_id}</p>}
                 </div>
 
                 {/* Tipe Kegiatan (Optional) */}

@@ -92,12 +92,14 @@ class GenerateMonthlyBeasiswaYayasan extends Command
         return self::SUCCESS;
     }
 
+    // Total POIN (Komponen Penilaian: Jenis Kegiatan x Level), bukan jumlah aktivitas mentah —
+    // konsisten dengan metrik Leaderboard/Dashboard/Rekap.
     private function countAktivitas(int $userId, Carbon $from, Carbon $to): int
     {
         $models = [Akademik::class, Leadership::class, Karakter::class, Kreatif::class];
         $total = 0;
         foreach ($models as $model) {
-            $total += $model::where('user_id', $userId)->whereBetween('waktu', [$from, $to])->count();
+            $total += (int) $model::where('user_id', $userId)->whereBetween('waktu', [$from, $to])->sum('poin');
         }
         return $total;
     }

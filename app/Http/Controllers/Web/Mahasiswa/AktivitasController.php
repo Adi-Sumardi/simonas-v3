@@ -132,10 +132,9 @@ class AktivitasController extends Controller
         $data = $request->validate([
             'kategori'          => self::VALID_CATS,
             'kegiatan'          => 'required|string|max:255',
-            'komponen_id'       => 'nullable|exists:komponens,id',
-            'sub_aspek_id'      => 'nullable|exists:komponen_penilaian_sub_aspek,id',
-            'jenis_kegiatan_id' => 'nullable|exists:komponen_penilaian_jenis,id',
-            'level_kegiatan'    => 'nullable|string|in:a,p,f,u,w,n,i',
+            'sub_aspek_id'      => 'required|exists:komponen_penilaian_sub_aspek,id',
+            'jenis_kegiatan_id' => 'required|exists:komponen_penilaian_jenis,id',
+            'level_kegiatan'    => 'required|string|in:a,p,f,u,w,n,i',
             'tipe_kegiatan'     => 'nullable|string|in:Prestasi,Unggulan',
             'waktu'             => 'required|date',
             'tempat'            => 'required|string|max:255',
@@ -145,17 +144,16 @@ class AktivitasController extends Controller
 
         $model = self::CATS[$data['kategori']]['model'];
         $file  = $this->processUpload($request->file('image'));
-        $poin  = $this->calculatePoin($data['jenis_kegiatan_id'] ?? null, $data['level_kegiatan'] ?? null);
+        $poin  = $this->calculatePoin($data['jenis_kegiatan_id'], $data['level_kegiatan']);
 
         $model::create([
             'user_id'           => Auth::id(),
             'nama_warga'        => Auth::user()->name,
             'asrama'            => Auth::user()->asrama ?? '-',
             'kegiatan'          => $data['kegiatan'],
-            'komponen_id'       => $data['komponen_id'] ?? null,
-            'sub_aspek_id'      => $data['sub_aspek_id'] ?? null,
-            'jenis_kegiatan_id' => $data['jenis_kegiatan_id'] ?? null,
-            'level_kegiatan'    => $data['level_kegiatan'] ?? null,
+            'sub_aspek_id'      => $data['sub_aspek_id'],
+            'jenis_kegiatan_id' => $data['jenis_kegiatan_id'],
+            'level_kegiatan'    => $data['level_kegiatan'],
             'poin'              => $poin,
             'tipe_kegiatan'     => $data['tipe_kegiatan'] ?? null,
             'waktu'             => $data['waktu'],
@@ -175,10 +173,9 @@ class AktivitasController extends Controller
         $data = $request->validate([
             'kategori'          => self::VALID_CATS,
             'kegiatan'          => 'required|string|max:255',
-            'komponen_id'       => 'nullable|exists:komponens,id',
-            'sub_aspek_id'      => 'nullable|exists:komponen_penilaian_sub_aspek,id',
-            'jenis_kegiatan_id' => 'nullable|exists:komponen_penilaian_jenis,id',
-            'level_kegiatan'    => 'nullable|string|in:a,p,f,u,w,n,i',
+            'sub_aspek_id'      => 'required|exists:komponen_penilaian_sub_aspek,id',
+            'jenis_kegiatan_id' => 'required|exists:komponen_penilaian_jenis,id',
+            'level_kegiatan'    => 'required|string|in:a,p,f,u,w,n,i',
             'tipe_kegiatan'     => 'nullable|string|in:Prestasi,Unggulan',
             'waktu'             => 'required|date',
             'tempat'            => 'required|string|max:255',
@@ -189,14 +186,13 @@ class AktivitasController extends Controller
         $model  = self::CATS[$data['kategori']]['model'];
         $record = $model::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
 
-        $poin = $this->calculatePoin($data['jenis_kegiatan_id'] ?? null, $data['level_kegiatan'] ?? null);
+        $poin = $this->calculatePoin($data['jenis_kegiatan_id'], $data['level_kegiatan']);
 
         $updateData = [
             'kegiatan'          => $data['kegiatan'],
-            'komponen_id'       => $data['komponen_id'] ?? null,
-            'sub_aspek_id'      => $data['sub_aspek_id'] ?? null,
-            'jenis_kegiatan_id' => $data['jenis_kegiatan_id'] ?? null,
-            'level_kegiatan'    => $data['level_kegiatan'] ?? null,
+            'sub_aspek_id'      => $data['sub_aspek_id'],
+            'jenis_kegiatan_id' => $data['jenis_kegiatan_id'],
+            'level_kegiatan'    => $data['level_kegiatan'],
             'poin'              => $poin,
             'tipe_kegiatan'     => $data['tipe_kegiatan'] ?? null,
             'waktu'             => $data['waktu'],

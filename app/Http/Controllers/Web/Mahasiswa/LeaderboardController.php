@@ -29,10 +29,11 @@ class LeaderboardController extends Controller
         $students = $query->get();
         $studentIds = $students->pluck('id');
 
+        // Total POIN (Komponen Penilaian: Jenis Kegiatan x Level), bukan jumlah aktivitas mentah.
         $countByUser = function (string $model) use ($studentIds, $from, $to) {
             return $model::whereIn('user_id', $studentIds)
                 ->whereBetween('waktu', [$from, $to])
-                ->selectRaw('user_id, COUNT(*) as cnt')
+                ->selectRaw('user_id, SUM(poin) as cnt')
                 ->groupBy('user_id')
                 ->pluck('cnt', 'user_id');
         };
