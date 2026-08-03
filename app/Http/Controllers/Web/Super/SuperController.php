@@ -708,6 +708,41 @@ class SuperController extends Controller
         $rekapTotal = $rekapAll->count();
         $rekapItems = $rekapAll->slice(($rekapPage - 1) * $rekapPerPage, $rekapPerPage)->values();
 
+        // ── Statistik Penerimaan Beasiswa Per Bulan (12 bulan terakhir) ──
+        $beasiswaTrend = collect(range(11, 0))->map(function ($i) use ($months) {
+            $month = now()->subMonths($i);
+            $count = \App\Models\Beasiswa::where('status', 'approved')
+                ->whereYear('tanggal_diterima', $month->year)
+                ->whereMonth('tanggal_diterima', $month->month)
+                ->count();
+            $nominal = \App\Models\Beasiswa::where('status', 'approved')
+                ->whereYear('tanggal_diterima', $month->year)
+                ->whereMonth('tanggal_diterima', $month->month)
+                ->sum('nominal');
+
+            return [
+                'bulan'   => $months[$month->month - 1] . ' ' . $month->format('y'),
+                'jumlah'  => $count,
+                'nominal' => (float) $nominal,
+            ];
+        })->values();
+
+        $beasiswaRecent = \App\Models\Beasiswa::with('user:id,name,asrama')
+            ->latest('tanggal_diajukan')
+            ->take(15)
+            ->get()
+            ->map(fn ($b) => [
+                'id'               => $b->id,
+                'nama_warga'       => $b->user->name ?? '-',
+                'asrama'           => $b->user->asrama ?? '-',
+                'nama_beasiswa'    => $b->nama_beasiswa,
+                'sumber'           => $b->sumber,
+                'nominal'          => (float) $b->nominal,
+                'tanggal_diajukan' => $b->tanggal_diajukan->format('Y-m-d'),
+                'tanggal_diterima' => $b->tanggal_diterima?->format('Y-m-d'),
+                'status'           => $b->status,
+            ]);
+
         return Inertia::render('Super/Laporan', [
             'trend'       => $trendData->values(),
             'asramaPerf'  => $asramaPerf,
@@ -731,7 +766,51 @@ class SuperController extends Controller
             ],
             'asramas' => \App\Models\Asrama::orderBy('nama_asrama')->pluck('nama_asrama'),
             'monthlyTarget' => self::MONTHLY_ACTIVITY_TARGET,
+            'beasiswa' => [
+                'trend'         => $beasiswaTrend,
+                'recent'        => $beasiswaRecent,
+                'wargaOptions'  => User::where('role', 'mahasiswa')->orderBy('name')->get(['id', 'name']),
+            ],
         ]);
+    }
+
+    // ── Beasiswa ──────────────────────────────────────────────
+    public function storeBeasiswa(Request $request)
+    {
+        $data = $request->validate([
+            'user_id'          => 'required|exists:users,id',
+            'nama_beasiswa'    => 'required|string|max:255',
+            'sumber'           => 'required|string|in:yayasan,eksternal',
+            'nominal'          => 'nullable|numeric|min:0',
+            'tanggal_diajukan' => 'required|date',
+            'tanggal_diterima' => 'nullable|date',
+        ]);
+
+        $isYayasan = $data['sumber'] === 'yayasan';
+        $mentee = User::findOrFail($data['user_id']);
+
+        \App\Models\Beasiswa::create([
+            'user_id'          => $data['user_id'],
+            'mentor_id'        => $isYayasan ? $mentee->mentor_id : null,
+            'created_by'       => $request->user()->id,
+            'nama_beasiswa'    => $data['nama_beasiswa'],
+            'sumber'           => $data['sumber'],
+            'nominal'          => $data['nominal'] ?? null,
+            'tanggal_diajukan' => $data['tanggal_diajukan'],
+            'tanggal_diterima' => $isYayasan ? null : ($data['tanggal_diterima'] ?? $data['tanggal_diajukan']),
+            'status'           => $isYayasan ? 'pending' : 'approved',
+        ]);
+
+        return back()->with('success', $isYayasan
+            ? 'Beasiswa Yayasan diajukan, menunggu persetujuan mentor.'
+            : 'Data beasiswa berhasil disimpan.');
+    }
+
+    public function destroyBeasiswa(\App\Models\Beasiswa $beasiswa)
+    {
+        $beasiswa->delete();
+
+        return back()->with('success', 'Data beasiswa berhasil dihapus.');
     }
 
     // ── Pengaturan ────────────────────────────────────────────
@@ -740,13 +819,16 @@ class SuperController extends Controller
         $s = \App\Models\AppSetting::allValues();
 
         return Inertia::render('Super/Pengaturan', [
-            'asramas'      => \App\Models\Asrama::with('jabatans')->orderBy('nama_asrama')->get(),
-            'pointRules'   => \App\Models\PointRule::orderBy('id')->get(),
-            'dailyTargets' => \App\Models\DailyTarget::orderBy('id')->get(),
-            'activityTypes'=> \App\Models\PointRule::TYPES,
-            'komponens'    => \App\Models\Komponen::orderBy('aspek')->orderBy('kode')->get(),
-            'aspekList'    => \App\Models\Komponen::ASPEK,
-            'settings'     => [
+            'asramas'           => \App\Models\Asrama::with('jabatans')->orderBy('nama_asrama')->get(),
+            'pointRules'        => \App\Models\PointRule::orderBy('id')->get(),
+            'dailyTargets'      => \App\Models\DailyTarget::orderBy('id')->get(),
+            'activityTypes'     => \App\Models\PointRule::TYPES,
+            'komponens'         => \App\Models\Komponen::orderBy('aspek')->orderBy('kode')->get(),
+            'aspekList'         => \App\Models\Komponen::ASPEK,
+            // Komponen Penilaian baru (3-level)
+            'komponenPenilaian' => \App\Models\KomponenPenilaianAspek::with(['subAspeks.jenisKegiatans'])
+                                        ->orderBy('urutan')->get(),
+            'settings'          => [
                 'app_name'         => config('app.name', 'SIMONAS'),
                 'app_url'          => config('app.url'),
                 'mail_driver'      => env('MAIL_MAILER', 'smtp'),
@@ -841,6 +923,74 @@ class SuperController extends Controller
             return back()->with('error', 'Komponen tidak bisa dihapus karena masih dipakai di data penilaian.');
         }
         return back()->with('success', 'Komponen dihapus.');
+    }
+
+    // ── Komponen Penilaian — Sub-Aspek CRUD ──────────────────
+    public function storeSubAspek(Request $request)
+    {
+        $data = $request->validate([
+            'aspek_id'       => 'required|exists:komponen_penilaian_aspek,id',
+            'nama_sub_aspek' => 'required|string|max:150',
+            'urutan'         => 'nullable|integer|min:0',
+        ]);
+        $data['urutan'] = $data['urutan'] ?? 0;
+        \App\Models\KomponenPenilaianSubAspek::create($data);
+        return back()->with('success', 'Sub-Aspek berhasil ditambahkan.');
+    }
+
+    public function updateSubAspek(Request $request, \App\Models\KomponenPenilaianSubAspek $subAspek)
+    {
+        $data = $request->validate([
+            'nama_sub_aspek' => 'required|string|max:150',
+            'urutan'         => 'nullable|integer|min:0',
+        ]);
+        $subAspek->update($data);
+        return back()->with('success', 'Sub-Aspek berhasil diperbarui.');
+    }
+
+    public function destroySubAspek(\App\Models\KomponenPenilaianSubAspek $subAspek)
+    {
+        $subAspek->delete(); // jenis ikut terhapus (cascadeOnDelete)
+        return back()->with('success', 'Sub-Aspek dihapus.');
+    }
+
+    // ── Komponen Penilaian — Jenis Kegiatan CRUD ─────────────
+    private function jenisRules(): array
+    {
+        return [
+            'nama_kegiatan'   => 'required|string|max:200',
+            'urutan'          => 'nullable|integer|min:0',
+            'poin_a'          => 'nullable|integer|min:0|max:20',
+            'poin_p'          => 'nullable|integer|min:0|max:20',
+            'poin_f'          => 'nullable|integer|min:0|max:20',
+            'poin_u'          => 'nullable|integer|min:0|max:20',
+            'poin_w'          => 'nullable|integer|min:0|max:20',
+            'poin_n'          => 'nullable|integer|min:0|max:20',
+            'poin_i'          => 'nullable|integer|min:0|max:20',
+            'keterangan_bukti'=> 'nullable|string|max:500',
+        ];
+    }
+
+    public function storeJenis(Request $request, \App\Models\KomponenPenilaianSubAspek $subAspek)
+    {
+        $data = $request->validate($this->jenisRules());
+        $data['sub_aspek_id'] = $subAspek->id;
+        $data['urutan'] = $data['urutan'] ?? 0;
+        \App\Models\KomponenPenilaianJenis::create($data);
+        return back()->with('success', 'Jenis kegiatan berhasil ditambahkan.');
+    }
+
+    public function updateJenis(Request $request, \App\Models\KomponenPenilaianJenis $jenis)
+    {
+        $data = $request->validate($this->jenisRules());
+        $jenis->update($data);
+        return back()->with('success', 'Jenis kegiatan berhasil diperbarui.');
+    }
+
+    public function destroyJenis(\App\Models\KomponenPenilaianJenis $jenis)
+    {
+        $jenis->delete();
+        return back()->with('success', 'Jenis kegiatan dihapus.');
     }
 
     // ── Daily Targets CRUD ────────────────────────────────────

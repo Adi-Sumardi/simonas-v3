@@ -77,6 +77,10 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         // ── Log Book Mentoring (read-only) ────────────────────────
         Route::get('/logbook', [\App\Http\Controllers\Web\Mahasiswa\LogbookController::class, 'index'])->name('logbook.index');
 
+        // ── Komponen Penilaian JSON API (untuk cascade form aktivitas) ──
+        Route::get('/komponen-penilaian/sub-aspek', [\App\Http\Controllers\Web\Mahasiswa\AktivitasController::class, 'getSubAspek'])->name('komponen.sub-aspek');
+        Route::get('/komponen-penilaian/jenis',     [\App\Http\Controllers\Web\Mahasiswa\AktivitasController::class, 'getJenis'])    ->name('komponen.jenis');
+
         // ── Leaderboard ──────────────────────────────────────────
         Route::get('/leaderboard',              [LeaderboardController::class, 'index'])->name('leaderboard.index');
 
@@ -150,6 +154,11 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         Route::get('/hafalan/pending',    [MentorHafalan::class, 'pending'])->name('hafalan.pending');
         Route::patch('/hafalan/log/{id}', [MentorHafalan::class, 'score'])->name('hafalan.score');
 
+        // Beasiswa Yayasan — approval mentor
+        Route::get('/beasiswa/pending',            [\App\Http\Controllers\Web\Mentor\BeasiswaController::class, 'pending']) ->name('beasiswa.pending');
+        Route::patch('/beasiswa/{beasiswa}/approve',[\App\Http\Controllers\Web\Mentor\BeasiswaController::class, 'approve'])->name('beasiswa.approve');
+        Route::patch('/beasiswa/{beasiswa}/reject', [\App\Http\Controllers\Web\Mentor\BeasiswaController::class, 'reject']) ->name('beasiswa.reject');
+
         // Penilaian (hafalan scoring from list view)
         Route::get('/penilaian',       [\App\Http\Controllers\Web\Mentor\PenilaianController::class,      'index'])->name('penilaian.index');
         Route::post('/penilaian/{id}', [\App\Http\Controllers\Web\Mentor\PenilaianController::class,      'store'])->name('penilaian.store');
@@ -209,6 +218,10 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         Route::get('/hafalan',    [App\Http\Controllers\Web\Super\SuperController::class, 'hafalan'])->name('hafalan.index');
         Route::get('/leaderboard',[App\Http\Controllers\Web\Super\SuperController::class, 'leaderboard'])->name('leaderboard.index');
         Route::get('/laporan',    [App\Http\Controllers\Web\Super\SuperController::class, 'laporan'])->name('laporan.index');
+
+        // Beasiswa
+        Route::post('/beasiswa',           [App\Http\Controllers\Web\Super\SuperController::class, 'storeBeasiswa'])  ->name('beasiswa.store');
+        Route::delete('/beasiswa/{beasiswa}', [App\Http\Controllers\Web\Super\SuperController::class, 'destroyBeasiswa'])->name('beasiswa.destroy');
         Route::get('/pengaturan', [App\Http\Controllers\Web\Super\SuperController::class, 'pengaturan'])->name('pengaturan.index');
         Route::post('/pengaturan', [App\Http\Controllers\Web\Super\SuperController::class, 'updatePengaturan'])->name('pengaturan.update');
 
@@ -230,10 +243,18 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         Route::put('/asrama/{asrama}/jabatan/{jabatan}', [App\Http\Controllers\Web\Super\SuperController::class, 'updateJabatan']) ->name('asrama.jabatan.update');
         Route::delete('/asrama/{asrama}/jabatan/{jabatan}',[App\Http\Controllers\Web\Super\SuperController::class, 'destroyJabatan'])->name('asrama.jabatan.destroy');
 
-        // Komponen CRUD
+        // Komponen CRUD (lama — tetap dipertahankan)
         Route::post('/komponen',              [App\Http\Controllers\Web\Super\SuperController::class, 'storeKomponen'])  ->name('komponen.store');
         Route::put('/komponen/{komponen}',    [App\Http\Controllers\Web\Super\SuperController::class, 'updateKomponen']) ->name('komponen.update');
         Route::delete('/komponen/{komponen}', [App\Http\Controllers\Web\Super\SuperController::class, 'destroyKomponen'])->name('komponen.destroy');
+
+        // Komponen Penilaian Baru (3-level: Aspek → Sub-Aspek → Jenis)
+        Route::post('/sub-aspek',                         [App\Http\Controllers\Web\Super\SuperController::class, 'storeSubAspek'])   ->name('sub-aspek.store');
+        Route::put('/sub-aspek/{subAspek}',               [App\Http\Controllers\Web\Super\SuperController::class, 'updateSubAspek'])  ->name('sub-aspek.update');
+        Route::delete('/sub-aspek/{subAspek}',            [App\Http\Controllers\Web\Super\SuperController::class, 'destroySubAspek']) ->name('sub-aspek.destroy');
+        Route::post('/sub-aspek/{subAspek}/jenis',        [App\Http\Controllers\Web\Super\SuperController::class, 'storeJenis'])      ->name('jenis.store');
+        Route::put('/jenis/{jenis}',                      [App\Http\Controllers\Web\Super\SuperController::class, 'updateJenis'])     ->name('jenis.update');
+        Route::delete('/jenis/{jenis}',                   [App\Http\Controllers\Web\Super\SuperController::class, 'destroyJenis'])    ->name('jenis.destroy');
 
         // Warga detail/edit
         Route::get('/warga/{id}',        [App\Http\Controllers\Web\Super\SuperController::class, 'wargaDetail']) ->name('warga.detail');

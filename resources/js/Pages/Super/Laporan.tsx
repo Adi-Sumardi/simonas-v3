@@ -1,10 +1,11 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { StatCard } from '@/Components/ui/StatCard';
 import { Pagination } from '@/Components/ui/Pagination';
 import { Icon } from '@/Components/ui/Icon';
+import { Modal } from '@/Components/ui/Modal';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 interface TrendData { bulan:string; shalat:number; hafalan:number; akademik:number; kegiatan:number }
@@ -16,6 +17,14 @@ interface RekapItem {
 }
 interface Rekap { items: RekapItem[]; total: number; page: number; per_page: number; last_page: number }
 interface RekapFilters { asrama: string | null; from: string; to: string }
+interface BeasiswaTrend { bulan: string; jumlah: number; nominal: number }
+interface BeasiswaItem {
+    id: number; nama_warga: string; asrama: string; nama_beasiswa: string;
+    sumber: 'yayasan' | 'eksternal'; nominal: number;
+    tanggal_diajukan: string; tanggal_diterima: string | null;
+    status: 'pending' | 'approved' | 'rejected';
+}
+interface Beasiswa { trend: BeasiswaTrend[]; recent: BeasiswaItem[]; wargaOptions: { id: number; name: string }[] }
 interface Props {
     trend: TrendData[];
     asramaPerf: AsramaPerf[];
@@ -24,9 +33,40 @@ interface Props {
     rekapFilters: RekapFilters;
     asramas: string[];
     monthlyTarget: number;
+    beasiswa: Beasiswa;
 }
 
-export default function Laporan({ trend, asramaPerf, stats, rekap, rekapFilters, asramas, monthlyTarget }: Props) {
+const STATUS_LABEL: Record<string, string> = { pending: 'Menunggu Mentor', approved: 'Disetujui', rejected: 'Ditolak' };
+const STATUS_COLOR: Record<string, string> = {
+    pending: 'bg-amber-50 text-amber-600',
+    approved: 'bg-emerald-50 text-emerald-600',
+    rejected: 'bg-rose-50 text-rose-600',
+};
+
+export default function Laporan({ trend, asramaPerf, stats, rekap, rekapFilters, asramas, monthlyTarget, beasiswa }: Props) {
+    const [showBeasiswaModal, setShowBeasiswaModal] = useState(false);
+    const beasiswaForm = useForm({
+        user_id: '',
+        nama_beasiswa: '',
+        sumber: 'eksternal',
+        nominal: '',
+        tanggal_diajukan: new Date().toISOString().slice(0, 10),
+        tanggal_diterima: new Date().toISOString().slice(0, 10),
+    });
+
+    function submitBeasiswa(e: React.FormEvent) {
+        e.preventDefault();
+        beasiswaForm.post('/super/beasiswa', {
+            preserveScroll: true,
+            onSuccess: () => { beasiswaForm.reset(); setShowBeasiswaModal(false); },
+        });
+    }
+
+    function deleteBeasiswa(id: number) {
+        if (!confirm('Hapus data beasiswa ini?')) return;
+        router.delete(`/super/beasiswa/${id}`, { preserveScroll: true });
+    }
+
     const [rekapAsrama, setRekapAsrama] = useState(rekapFilters.asrama ?? '');
     const [rekapFrom, setRekapFrom]     = useState(rekapFilters.from);
     const [rekapTo, setRekapTo]         = useState(rekapFilters.to);
@@ -262,6 +302,126 @@ export default function Laporan({ trend, asramaPerf, stats, rekap, rekapFilters,
                     />
                 </div>
             </div>
+
+            {/* Statistik Penerimaan Beasiswa Per Bulan — tidak ikut export PDF */}
+            <div className="glass-card rounded-2xl p-5 mt-6 print:hidden">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-5">
+                    <div>
+                        <h3 className="font-bold text-on-surface mb-1">Statistik Penerimaan Beasiswa Per Bulan</h3>
+                        <p className="text-xs text-on-surface-variant">
+                            Beasiswa Yayasan butuh persetujuan mentor sebelum terhitung "diterima". Beasiswa eksternal langsung tercatat.
+                        </p>
+                    </div>
+                    <button onClick={() => setShowBeasiswaModal(true)} className="btn-primary flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap">
+                        <Icon name="add" className="text-lg" /> Tambah Beasiswa
+                    </button>
+                </div>
+
+                <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={beasiswa.trend} margin={{ top: 5, right: 20, bottom: 5, left: -15 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                        <XAxis dataKey="bulan" tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                        <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                        <Tooltip contentStyle={{ borderRadius: 12, fontSize: 11 }} />
+                        <Bar dataKey="jumlah" fill="#10b981" radius={[6, 6, 0, 0]} name="Jumlah Penerima" />
+                    </BarChart>
+                </ResponsiveContainer>
+
+                {beasiswa.recent.length === 0 ? (
+                    <div className="text-center py-10 text-on-surface-variant text-sm">Belum ada data beasiswa.</div>
+                ) : (
+                    <div className="overflow-x-auto -mx-5 mt-4">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b border-white/40">
+                                    <th className="text-left px-5 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Warga</th>
+                                    <th className="text-left px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Nama Beasiswa</th>
+                                    <th className="text-left px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Sumber</th>
+                                    <th className="text-right px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Nominal</th>
+                                    <th className="text-left px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Diterima</th>
+                                    <th className="text-center px-4 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Status</th>
+                                    <th className="text-right px-5 py-2.5 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {beasiswa.recent.map(b => (
+                                    <tr key={b.id} className="border-b border-white/20 hover:bg-white/20 transition-colors">
+                                        <td className="px-5 py-3">
+                                            <p className="font-semibold text-on-surface">{b.nama_warga}</p>
+                                            <p className="text-xs text-on-surface-variant">{b.asrama}</p>
+                                        </td>
+                                        <td className="px-4 py-3 text-on-surface-variant">{b.nama_beasiswa}</td>
+                                        <td className="px-4 py-3">
+                                            <span className={`text-xs px-2 py-1 rounded-full font-bold ${b.sumber === 'yayasan' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'}`}>
+                                                {b.sumber === 'yayasan' ? 'Yayasan' : 'Eksternal'}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 text-right text-on-surface-variant">
+                                            {b.nominal ? `Rp${b.nominal.toLocaleString('id-ID')}` : '-'}
+                                        </td>
+                                        <td className="px-4 py-3 text-on-surface-variant">{b.tanggal_diterima ?? '-'}</td>
+                                        <td className="px-4 py-3 text-center">
+                                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${STATUS_COLOR[b.status]}`}>{STATUS_LABEL[b.status]}</span>
+                                        </td>
+                                        <td className="px-5 py-3 text-right">
+                                            <button onClick={() => deleteBeasiswa(b.id)} className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 inline-flex items-center justify-center transition-colors">
+                                                <Icon name="delete" className="text-sm" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            <Modal open={showBeasiswaModal} onClose={() => setShowBeasiswaModal(false)} title="Tambah Data Beasiswa" icon="volunteer_activism">
+                <form onSubmit={submitBeasiswa} className="space-y-4">
+                    <div>
+                        <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1.5 block">Warga *</label>
+                        <select value={beasiswaForm.data.user_id} onChange={e => beasiswaForm.setData('user_id', e.target.value)} className="glass-input w-full text-sm py-2">
+                            <option value="">— Pilih Warga —</option>
+                            {beasiswa.wargaOptions.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                        </select>
+                        {beasiswaForm.errors.user_id && <p className="text-xs text-rose-500 mt-1">{beasiswaForm.errors.user_id}</p>}
+                    </div>
+                    <div>
+                        <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1.5 block">Nama Beasiswa *</label>
+                        <input value={beasiswaForm.data.nama_beasiswa} onChange={e => beasiswaForm.setData('nama_beasiswa', e.target.value)} className="glass-input w-full text-sm" placeholder="cth. KIP-Kuliah, Beasiswa Yayasan" />
+                        {beasiswaForm.errors.nama_beasiswa && <p className="text-xs text-rose-500 mt-1">{beasiswaForm.errors.nama_beasiswa}</p>}
+                    </div>
+                    <div>
+                        <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1.5 block">Sumber *</label>
+                        <select value={beasiswaForm.data.sumber} onChange={e => beasiswaForm.setData('sumber', e.target.value)} className="glass-input w-full text-sm py-2">
+                            <option value="eksternal">Eksternal (langsung tercatat)</option>
+                            <option value="yayasan">Yayasan (butuh persetujuan mentor)</option>
+                        </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1.5 block">Nominal</label>
+                            <input type="number" min={0} value={beasiswaForm.data.nominal} onChange={e => beasiswaForm.setData('nominal', e.target.value)} className="glass-input w-full text-sm" />
+                        </div>
+                        <div>
+                            <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1.5 block">Tanggal Diajukan *</label>
+                            <input type="date" value={beasiswaForm.data.tanggal_diajukan} onChange={e => beasiswaForm.setData('tanggal_diajukan', e.target.value)} className="glass-input w-full text-sm" />
+                        </div>
+                    </div>
+                    {beasiswaForm.data.sumber === 'eksternal' && (
+                        <div>
+                            <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest mb-1.5 block">Tanggal Diterima</label>
+                            <input type="date" value={beasiswaForm.data.tanggal_diterima} onChange={e => beasiswaForm.setData('tanggal_diterima', e.target.value)} className="glass-input w-full text-sm" />
+                        </div>
+                    )}
+                    <div className="flex gap-3 pt-2">
+                        <button type="submit" disabled={beasiswaForm.processing} className="btn-primary flex-1 py-3 rounded-xl font-bold text-sm">
+                            {beasiswaForm.processing ? 'Menyimpan...' : 'Simpan'}
+                        </button>
+                        <button type="button" onClick={() => setShowBeasiswaModal(false)} className="px-6 py-3 rounded-xl font-bold text-sm bg-zinc-100 text-on-surface-variant">Batal</button>
+                    </div>
+                </form>
+            </Modal>
         </AppLayout>
     );
 }

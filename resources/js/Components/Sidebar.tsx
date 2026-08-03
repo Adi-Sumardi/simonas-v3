@@ -50,6 +50,7 @@ const MENU_GROUPS: MenuGroup[] = [
             { label: 'Penilaian',       icon: 'rate_review',     href: '/mentor/penilaian' },
             { label: 'Kalender',        icon: 'calendar_month',  href: '/mentor/kalender' },
             { label: 'Log Book Mentoring', icon: 'menu_book', href: '/mentor/logbook' },
+            { label: 'Beasiswa Yayasan', icon: 'volunteer_activism', href: '/mentor/beasiswa/pending' },
         ],
     },
     {
