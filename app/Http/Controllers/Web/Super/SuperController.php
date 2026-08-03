@@ -1055,18 +1055,68 @@ class SuperController extends Controller
         return array_keys(array_filter($docFreq, fn ($c) => $c >= $minFreq));
     }
 
+    // Kata di daftar strip ini juga di-fuzzy-match (bukan cuma exact) — typo di
+    // kata penunjuk jenis institusi itu sendiri (mis. "Uninversitas") tetap harus
+    // ke-strip, jangan sampai malah dihitung sebagai token unik tersendiri.
+    private function isStripWord(string $w, array $strip): bool
+    {
+        if (in_array($w, $strip, true)) {
+            return true;
+        }
+        foreach ($strip as $sw) {
+            if (strlen($w) >= 8 && abs(strlen($w) - strlen($sw)) <= 2 && levenshtein($w, $sw) <= 2) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function tokenize(string $s, array $extraStopwords = []): array
     {
         $s = strtoupper(trim(preg_replace('/\s+/', ' ', $s)));
-        $s = preg_replace('/[^A-Z0-9 ]/', '', $s);
-        // Kata generik penunjuk jenis institusi/prodi — tidak diskriminatif.
+        // Non-alfanumerik jadi spasi (bukan dihapus) — biar "Al-Azhar" == "Al Azhar".
+        $s = trim(preg_replace('/\s+/', ' ', preg_replace('/[^A-Z0-9]+/', ' ', $s)));
         $strip = ['UNIVERSITAS', 'UNIVERSITY', 'INSTITUT', 'SEKOLAH', 'TINGGI', 'POLITEKNIK', 'AKADEMI'];
         $words = array_filter(
-            preg_split('/\s+/', $s),
-            fn ($w) => $w !== '' && !in_array($w, $strip, true) && !in_array($w, $extraStopwords, true)
+            explode(' ', $s),
+            fn ($w) => $w !== '' && !$this->isStripWord($w, $strip) && !in_array($w, $extraStopwords, true)
         );
 
         return array_values(array_unique($words));
+    }
+
+    // Dua token dianggap "sama" kalau identik, atau cuma beda dikit (typo)
+    // relatif panjang katanya — mis. "Sjafruddin" ~ "Sajfruddin".
+    private function tokensFuzzyEqual(string $a, string $b): bool
+    {
+        if ($a === $b) {
+            return true;
+        }
+        $len = max(strlen($a), strlen($b));
+        if ($len < 4) {
+            return false;
+        }
+
+        return levenshtein($a, $b) <= ($len >= 9 ? 2 : 1);
+    }
+
+    // Berapa banyak token di $small yang punya pasangan fuzzy di $large (greedy, 1:1).
+    private function fuzzyOverlapCount(array $small, array $large): int
+    {
+        $used = array_fill(0, count($large), false);
+        $count = 0;
+        foreach ($small as $ta) {
+            foreach ($large as $j => $tb) {
+                if (!$used[$j] && $this->tokensFuzzyEqual($ta, $tb)) {
+                    $used[$j] = true;
+                    $count++;
+                    break;
+                }
+            }
+        }
+
+        return $count;
     }
 
     private function valuesAreSimilar(string $a, string $b, array $stopwords): bool
@@ -1080,23 +1130,21 @@ class SuperController extends Controller
         $ta = $this->tokenize($a, $stopwords);
         $tb = $this->tokenize($b, $stopwords);
 
-        if (count($ta) >= 2 && count($tb) >= 2) {
+        if (!empty($ta) && !empty($tb)) {
             $smaller = count($ta) <= count($tb) ? $ta : $tb;
             $larger  = count($ta) <= count($tb) ? $tb : $ta;
+            $overlap = $this->fuzzyOverlapCount($smaller, $larger);
             // Kata-kata di sisi yang lebih pendek harus (hampir) semuanya ada di
             // sisi yang lebih panjang — "Teknik Elektro" cocok ke "Pendidikan
             // Vokasional Teknik Elektro", tapi "Bahasa Arab" TIDAK cocok ke
             // "Bahasa Inggris" cuma karena sama-sama mengandung "Bahasa".
-            if (count(array_diff($smaller, $larger)) === 0) {
+            if ($overlap === count($smaller)) {
                 return true;
             }
-            $inter = count(array_intersect($ta, $tb));
-            $union = count(array_unique(array_merge($ta, $tb)));
-            if ($union > 0 && ($inter / $union) * 100 >= 60) {
+            $union = count($smaller) + count($larger) - $overlap;
+            if ($union > 0 && ($overlap / $union) * 100 >= 60) {
                 return true;
             }
-        } elseif (count($ta) === 1 && count($tb) === 1 && $ta === $tb) {
-            return true;
         }
 
         return $this->looksLikeAcronymOf($a, $b) || $this->looksLikeAcronymOf($b, $a);
