@@ -5,6 +5,7 @@ import { Button } from '@/Components/ui/Button';
 import { Input } from '@/Components/ui/Input';
 import { Label } from '@/Components/ui/Label';
 import { Icon } from '@/Components/ui/Icon';
+import { useProvinces, useRegencies } from '@/hooks/useWilayah';
 
 interface UserData {
     name: string;
@@ -37,6 +38,7 @@ export default function Onboarding({ user }: Props) {
     const isMahasiswa = user.role === 'mahasiswa';
     const [step, setStep] = useState(0);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const provinces = useProvinces();
 
     const { data, setData, post, processing, errors } = useForm({
         no_hp: user.no_hp ?? '',
@@ -53,6 +55,7 @@ export default function Onboarding({ user }: Props) {
         no_telp: user.no_telp ?? '',
         avatar: null as File | null,
     });
+    const regencies = useRegencies(data.provinsi);
 
     const stepFields: Record<number, (keyof typeof data)[]> = {
         0: ['no_hp'],
@@ -206,11 +209,23 @@ export default function Onboarding({ user }: Props) {
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <Label htmlFor="provinsi">Provinsi</Label>
-                                    <Input id="provinsi" value={data.provinsi} onChange={e => setData('provinsi', e.target.value)} error={errors.provinsi} />
+                                    <select id="provinsi" className="glass-input w-full text-sm py-2.5"
+                                        value={data.provinsi}
+                                        onChange={e => { setData('provinsi', e.target.value); setData('kota', ''); }}>
+                                        <option value="">Pilih Provinsi</option>
+                                        {provinces.map(p => <option key={p} value={p}>{p}</option>)}
+                                    </select>
+                                    {errors.provinsi && <p className="mt-1 text-body-sm text-error">{errors.provinsi}</p>}
                                 </div>
                                 <div>
                                     <Label htmlFor="kota">Kota/Kabupaten</Label>
-                                    <Input id="kota" value={data.kota} onChange={e => setData('kota', e.target.value)} error={errors.kota} />
+                                    <select id="kota" className="glass-input w-full text-sm py-2.5"
+                                        value={data.kota} onChange={e => setData('kota', e.target.value)}
+                                        disabled={!data.provinsi}>
+                                        <option value="">{data.provinsi ? 'Pilih Kota/Kabupaten' : 'Pilih provinsi dulu'}</option>
+                                        {regencies.map(k => <option key={k} value={k}>{k}</option>)}
+                                    </select>
+                                    {errors.kota && <p className="mt-1 text-body-sm text-error">{errors.kota}</p>}
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3">

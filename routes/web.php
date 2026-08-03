@@ -36,6 +36,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ── Onboarding wizard (warga mahasiswa baru) ──────────────
     Route::get('/onboarding',  [\App\Http\Controllers\Web\OnboardingController::class, 'show']) ->name('onboarding.show');
     Route::post('/onboarding', [\App\Http\Controllers\Web\OnboardingController::class, 'store'])->name('onboarding.store');
+
+    // ── Wilayah (referensi provinsi/kota untuk dropdown cascading) ──
+    Route::get('/wilayah/provinces',  [\App\Http\Controllers\Web\WilayahController::class, 'provinces']) ->name('wilayah.provinces');
+    Route::get('/wilayah/regencies',  [\App\Http\Controllers\Web\WilayahController::class, 'regencies']) ->name('wilayah.regencies');
 });
 
 Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function () {
