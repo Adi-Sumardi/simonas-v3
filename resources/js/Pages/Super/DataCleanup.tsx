@@ -45,7 +45,7 @@ export default function DataCleanup({ field, groups, totalDistinct }: Props) {
             )}
 
             <div className="space-y-4">
-                {groups.map((g, i) => <GroupCard key={i} field={field} group={g} />)}
+                {groups.map(g => <GroupCard key={g.members.map(m => m.val).join('|')} field={field} group={g} />)}
             </div>
         </AppLayout>
     );
