@@ -38,6 +38,7 @@ const MENU_GROUPS: MenuGroup[] = [
             { label: 'Hafalan',     icon: 'auto_stories',    href: '/mahasiswa/hafalan',     permission: 'log-hafalan' },
             { label: 'Leaderboard', icon: 'military_tech',   href: '/mahasiswa/leaderboard', permission: 'view-leaderboard' },
             { label: 'Kalender',    icon: 'calendar_month',  href: '/mahasiswa/kalender' },
+            { label: 'Kegiatan',    icon: 'event',           href: '/mahasiswa/kegiatan' },
             { label: 'Log Book Mentoring', icon: 'menu_book', href: '/mahasiswa/logbook' },
         ],
     },

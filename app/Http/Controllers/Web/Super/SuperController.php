@@ -445,10 +445,12 @@ class SuperController extends Controller
             'tujuan'        => 'nullable|string',
             'penyelenggara' => 'required|string|max:255',
             'jenis_kegiatan'=> 'required|string',
+            'wajib_absen'   => 'nullable|boolean',
             'waktu'         => 'required|date',
             'tempat'        => 'required|string|max:255',
             'keterangan'    => 'nullable|string',
         ]);
+        $data['wajib_absen'] = $request->boolean('wajib_absen');
 
         DB::transaction(function() use ($data) {
             $kegiatan = Kegiatan::create($data);
@@ -472,6 +474,81 @@ class SuperController extends Controller
         });
 
         return back()->with('success', 'Kegiatan berhasil dibuat dan disinkronkan ke kalender mahasiswa.');
+    }
+
+    public function updateKegiatan(Request $request, Kegiatan $kegiatan)
+    {
+        $data = $request->validate([
+            'nama_kegiatan' => 'required|string|max:255',
+            'tujuan'        => 'nullable|string',
+            'penyelenggara' => 'required|string|max:255',
+            'jenis_kegiatan'=> 'required|string',
+            'wajib_absen'   => 'nullable|boolean',
+            'waktu'         => 'required|date',
+            'tempat'        => 'required|string|max:255',
+            'keterangan'    => 'nullable|string',
+        ]);
+        $data['wajib_absen'] = $request->boolean('wajib_absen');
+
+        $kegiatan->update($data);
+
+        return back()->with('success', 'Kegiatan berhasil diperbarui.');
+    }
+
+    public function destroyKegiatan(Kegiatan $kegiatan)
+    {
+        $kegiatan->delete();
+
+        return back()->with('success', 'Kegiatan berhasil dihapus.');
+    }
+
+    public function kegiatanAttendance(Kegiatan $kegiatan)
+    {
+        $items = $kegiatan->attendances()
+            ->with('user:id,name,avatar,asrama')
+            ->orderByDesc('waktu_absen')
+            ->get()
+            ->map(fn (\App\Models\KegiatanAttendance $a) => [
+                'id'          => $a->id,
+                'user'        => $a->user->only(['id', 'name', 'avatar', 'asrama']),
+                'asrama'      => $a->asrama,
+                'waktu_absen' => $a->waktu_absen->format('Y-m-d H:i'),
+                'latitude'    => $a->latitude,
+                'longitude'   => $a->longitude,
+                'alamat'      => $a->alamat,
+                'selfie_url'  => $a->file_selfie_data ? route('files.show', ['table' => 'kegiatan_attendances', 'id' => $a->id, 'slot' => 'selfie']) : null,
+                'lokasi_url'  => $a->file_lokasi_data ? route('files.show', ['table' => 'kegiatan_attendances', 'id' => $a->id, 'slot' => 'lokasi']) : null,
+            ]);
+
+        return Inertia::render('Super/KegiatanAttendance', [
+            'kegiatan' => $kegiatan,
+            'items'    => $items,
+            'asramas'  => \App\Models\Asrama::orderBy('nama_asrama')->pluck('nama_asrama'),
+            'warga'    => User::where('role', 'mahasiswa')->orderBy('name')->get(['id', 'name']),
+        ]);
+    }
+
+    public function storeKegiatanAttendance(Request $request, Kegiatan $kegiatan)
+    {
+        $data = $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $mahasiswa = User::findOrFail($data['user_id']);
+
+        \App\Models\KegiatanAttendance::firstOrCreate(
+            ['kegiatan_id' => $kegiatan->id, 'user_id' => $mahasiswa->id],
+            ['asrama' => $mahasiswa->asrama, 'waktu_absen' => now(), 'dicatat_oleh' => $request->user()->id]
+        );
+
+        return back()->with('success', 'Kehadiran berhasil dicatat.');
+    }
+
+    public function destroyKegiatanAttendance(\App\Models\KegiatanAttendance $attendance)
+    {
+        $attendance->delete();
+
+        return back()->with('success', 'Data kehadiran berhasil dihapus.');
     }
 
     // ── Hafalan ───────────────────────────────────────────────

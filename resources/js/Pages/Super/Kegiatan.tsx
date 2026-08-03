@@ -14,6 +14,7 @@ interface KegiatanData {
     jenis_kegiatan: string;
     penyelenggara: string;
     keterangan: string;
+    wajib_absen: boolean;
 }
 
 interface Props {
@@ -45,6 +46,7 @@ export default function Kegiatan({ kegiatan, stats, filters }: Props) {
         tujuan: '',
         penyelenggara: 'Asrama SIMONAS',
         jenis_kegiatan: 'kegiatan',
+        wajib_absen: false,
         waktu: '',
         tempat: '',
         keterangan: '',
@@ -152,8 +154,10 @@ export default function Kegiatan({ kegiatan, stats, filters }: Props) {
                             </div>
                             <div className="flex gap-2 pt-1">
                                 <button onClick={() => setSelectedKegiatan(k)} className="flex-1 py-2 rounded-xl text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-white transition-colors">Detail</button>
-                                {isUpcoming && (
-                                    <button className="flex-1 py-2 rounded-xl text-xs font-bold bg-primary-container/10 text-primary-container hover:bg-primary-container hover:text-white transition-all">Edit</button>
+                                {k.wajib_absen && (
+                                    <a href={`/super/kegiatan/${k.id}/attendance`} className="flex-1 py-2 rounded-xl text-xs font-bold bg-primary-container/10 text-primary-container hover:bg-primary-container hover:text-white transition-all text-center">
+                                        Absensi
+                                    </a>
                                 )}
                             </div>
                         </div>
@@ -223,6 +227,11 @@ export default function Kegiatan({ kegiatan, stats, filters }: Props) {
                         <textarea value={data.keterangan} onChange={e => setData('keterangan', e.target.value)}
                             placeholder="Deskripsi singkat kegiatan..." className="glass-input w-full h-24 resize-none" />
                     </div>
+
+                    <label className="flex items-center gap-2 bg-surface-container/50 rounded-xl p-3 cursor-pointer">
+                        <input type="checkbox" checked={data.wajib_absen} onChange={e => setData('wajib_absen', e.target.checked)} className="w-4 h-4 accent-primary-container" />
+                        <span className="text-xs font-bold text-on-surface">Wajib Absen — mahasiswa harus check-in kehadiran (selfie + foto lokasi)</span>
+                    </label>
 
                     <div className="flex gap-3 pt-4">
                         <button type="button" onClick={() => setIsCreateModalOpen(false)} className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-surface-container text-on-surface-variant hover:bg-white transition-colors">Batal</button>

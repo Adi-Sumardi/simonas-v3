@@ -54,8 +54,8 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         ->name('user.changePassword');
 
     // ── File (bukti kegiatan, disimpan sebagai BLOB di database) ──
-    Route::get('/files/{table}/{id}', [\App\Http\Controllers\Web\FileController::class, 'show'])
-        ->where(['table' => 'akademiks|leaderships|karakters|kreatifs', 'id' => '[0-9]+'])
+    Route::get('/files/{table}/{id}/{slot?}', [\App\Http\Controllers\Web\FileController::class, 'show'])
+        ->where(['table' => 'akademiks|leaderships|karakters|kreatifs|kegiatan_attendances', 'id' => '[0-9]+', 'slot' => 'selfie|lokasi'])
         ->name('files.show');
 
     // ── Mahasiswa (permission-gated) ──────────────────────────
@@ -76,6 +76,10 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
 
         // ── Log Book Mentoring (read-only) ────────────────────────
         Route::get('/logbook', [\App\Http\Controllers\Web\Mahasiswa\LogbookController::class, 'index'])->name('logbook.index');
+
+        // ── Kegiatan & Absensi ─────────────────────────────────────
+        Route::get('/kegiatan',                    [\App\Http\Controllers\Web\Mahasiswa\KegiatanController::class, 'index'])  ->name('kegiatan.index');
+        Route::post('/kegiatan/{kegiatan}/checkin', [\App\Http\Controllers\Web\Mahasiswa\KegiatanController::class, 'checkin'])->name('kegiatan.checkin');
 
         // ── Komponen Penilaian JSON API (untuk cascade form aktivitas) ──
         Route::get('/komponen-penilaian/sub-aspek', [\App\Http\Controllers\Web\Mahasiswa\AktivitasController::class, 'getSubAspek'])->name('komponen.sub-aspek');
@@ -182,6 +186,9 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
     Route::middleware('can:access-pengurus-asrama')->prefix('pengurus-asrama')->name('pengurus-asrama.')->group(function () {
         Route::get('/kegiatan',                    [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'kegiatanIndex'])    ->name('kegiatan.index');
         Route::post('/kegiatan',                   [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'kegiatanStore'])    ->name('kegiatan.store');
+        Route::get('/kegiatan/{kegiatan}/attendance',            [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'kegiatanAttendance'])       ->name('kegiatan.attendance');
+        Route::post('/kegiatan/{kegiatan}/attendance',           [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'storeKegiatanAttendance'])  ->name('kegiatan.attendance.store');
+        Route::delete('/kegiatan/{kegiatan}/attendance/{attendance}', [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'destroyKegiatanAttendance'])->name('kegiatan.attendance.destroy');
         Route::put('/kegiatan/{kegiatan}',         [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'kegiatanUpdate'])   ->name('kegiatan.update');
         Route::delete('/kegiatan/{kegiatan}',      [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'kegiatanDestroy'])  ->name('kegiatan.destroy');
 
@@ -215,6 +222,11 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         Route::get('/alumni',     [App\Http\Controllers\Web\Super\SuperController::class, 'alumni'])->name('alumni.index');
         Route::get('/kegiatan',   [App\Http\Controllers\Web\Super\SuperController::class, 'kegiatan'])->name('kegiatan.index');
         Route::post('/kegiatan',  [App\Http\Controllers\Web\Super\SuperController::class, 'storeKegiatan'])->name('kegiatan.store');
+        Route::put('/kegiatan/{kegiatan}',    [App\Http\Controllers\Web\Super\SuperController::class, 'updateKegiatan']) ->name('kegiatan.update');
+        Route::delete('/kegiatan/{kegiatan}', [App\Http\Controllers\Web\Super\SuperController::class, 'destroyKegiatan'])->name('kegiatan.destroy');
+        Route::get('/kegiatan/{kegiatan}/attendance',            [App\Http\Controllers\Web\Super\SuperController::class, 'kegiatanAttendance'])       ->name('kegiatan.attendance');
+        Route::post('/kegiatan/{kegiatan}/attendance',           [App\Http\Controllers\Web\Super\SuperController::class, 'storeKegiatanAttendance'])  ->name('kegiatan.attendance.store');
+        Route::delete('/kegiatan/{kegiatan}/attendance/{attendance}', [App\Http\Controllers\Web\Super\SuperController::class, 'destroyKegiatanAttendance'])->name('kegiatan.attendance.destroy');
         Route::get('/hafalan',    [App\Http\Controllers\Web\Super\SuperController::class, 'hafalan'])->name('hafalan.index');
         Route::get('/leaderboard',[App\Http\Controllers\Web\Super\SuperController::class, 'leaderboard'])->name('leaderboard.index');
         Route::get('/laporan',    [App\Http\Controllers\Web\Super\SuperController::class, 'laporan'])->name('laporan.index');

@@ -16,6 +16,7 @@ interface KegiatanData {
     penyelenggara: string;
     keterangan: string;
     asrama: string;
+    wajib_absen: boolean;
 }
 
 interface Props {
@@ -44,6 +45,7 @@ const emptyForm = {
     nama_kegiatan:  '',
     tujuan:         '',
     jenis_kegiatan: 'kegiatan',
+    wajib_absen:    false,
     waktu:          '',
     tempat:         '',
     keterangan:     '',
@@ -69,6 +71,7 @@ export default function KegiatanAsrama({ kegiatan, asrama, stats, filters }: Pro
             nama_kegiatan:  k.nama_kegiatan,
             tujuan:         k.tujuan,
             jenis_kegiatan: k.jenis_kegiatan,
+            wajib_absen:    k.wajib_absen,
             waktu:          k.waktu?.slice(0, 16) ?? '',
             tempat:         k.tempat,
             keterangan:     k.keterangan ?? '',
@@ -240,6 +243,15 @@ export default function KegiatanAsrama({ kegiatan, asrama, stats, filters }: Pro
                                         </td>
                                         <td className="px-5 py-3.5">
                                             <div className="flex items-center gap-1 justify-end">
+                                                {k.wajib_absen && (
+                                                    <a
+                                                        href={`/pengurus-asrama/kegiatan/${k.id}/attendance`}
+                                                        className="p-1.5 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors"
+                                                        title="Absensi"
+                                                    >
+                                                        <Icon name="how_to_reg" className="text-lg" />
+                                                    </a>
+                                                )}
                                                 <button
                                                     onClick={() => openEdit(k)}
                                                     className="p-1.5 text-primary-container hover:bg-primary/10 rounded-lg transition-colors"
@@ -354,6 +366,11 @@ export default function KegiatanAsrama({ kegiatan, asrama, stats, filters }: Pro
                             placeholder="Keterangan tambahan..."
                         />
                     </div>
+
+                    <label className="flex items-center gap-2 bg-surface-container/50 rounded-xl p-3 cursor-pointer">
+                        <input type="checkbox" checked={data.wajib_absen} onChange={e => setData('wajib_absen', e.target.checked)} className="w-4 h-4 accent-primary-container" />
+                        <span className="text-xs font-bold text-on-surface">Wajib Absen — mahasiswa harus check-in kehadiran (selfie + foto lokasi)</span>
+                    </label>
 
                     <div className="flex justify-end gap-3 pt-2">
                         <button
