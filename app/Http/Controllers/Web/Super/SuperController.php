@@ -20,24 +20,30 @@ class SuperController extends Controller
     public function storeWarga(Request $request)
     {
         $data = $request->validate([
-            'name'         => 'required|string|max:255',
-            'email'        => 'required|email|max:255|unique:users,email',
-            'password'     => 'required|string|min:8',
-            'no_induk'     => 'nullable|string|max:50',
-            'asrama'       => 'nullable|string|max:255',
-            'status_warga' => 'nullable|string|in:aktif,nonaktif',
-            'angkatan'     => 'nullable|string|max:10',
+            'name'                 => 'required|string|max:255',
+            'email'                => 'required|email|max:255|unique:users,email',
+            'password'             => 'required|string|min:8',
+            'no_induk'             => 'nullable|string|max:50',
+            'asrama'               => 'nullable|string|max:255',
+            'status_warga'         => 'nullable|string|in:aktif,nonaktif',
+            'angkatan'             => 'nullable|string|max:10',
+            'semester'             => 'nullable|integer|min:1|max:14',
+            'tingkat_keanggotaan'  => 'nullable|string|in:percobaan,tetap,senior',
+            'tgl_mulai_percobaan'  => 'nullable|date',
         ]);
 
         $warga = User::create([
-            'name'         => $data['name'],
-            'email'        => $data['email'],
-            'password'     => \Illuminate\Support\Facades\Hash::make($data['password']),
-            'role'         => 'mahasiswa',
-            'no_induk'     => $data['no_induk'] ?? null,
-            'asrama'       => $data['asrama'] ?? null,
-            'status_warga' => $data['status_warga'] ?? 'aktif',
-            'angkatan'     => $data['angkatan'] ?? null,
+            'name'                 => $data['name'],
+            'email'                => $data['email'],
+            'password'             => \Illuminate\Support\Facades\Hash::make($data['password']),
+            'role'                 => 'mahasiswa',
+            'no_induk'             => $data['no_induk'] ?? null,
+            'asrama'               => $data['asrama'] ?? null,
+            'status_warga'         => $data['status_warga'] ?? 'aktif',
+            'angkatan'             => $data['angkatan'] ?? null,
+            'semester'             => $data['semester'] ?? null,
+            'tingkat_keanggotaan'  => $data['tingkat_keanggotaan'] ?? 'percobaan',
+            'tgl_mulai_percobaan'  => $data['tgl_mulai_percobaan'] ?? null,
         ]);
         $warga->assignRole('mahasiswa');
 
@@ -63,8 +69,21 @@ class SuperController extends Controller
             $query->where('status_warga', $request->status);
         }
 
+        if ($request->semester) {
+            $query->where('semester', $request->semester);
+        }
+
+        if ($request->tingkat) {
+            $query->where('tingkat_keanggotaan', $request->tingkat);
+        }
+
+        if ($request->percobaan_min_bulan) {
+            $query->whereNotNull('tgl_mulai_percobaan')
+                ->where('tgl_mulai_percobaan', '<=', now()->subMonths((int) $request->percobaan_min_bulan));
+        }
+
         $perPage = min((int)($request->per_page ?? 10), 100);
-        $warga = $query->select(['id','name','email','no_induk','asrama','status_warga','role','tgl_masuk','angkatan','avatar','no_telp'])
+        $warga = $query->select(['id','name','email','no_induk','asrama','status_warga','tingkat_keanggotaan','semester','tgl_mulai_percobaan','role','tgl_masuk','angkatan','avatar','no_telp'])
             ->paginate($perPage)->withQueryString();
 
         return Inertia::render('Super/Warga', [
@@ -76,7 +95,7 @@ class SuperController extends Controller
                 'nonaktif'=> User::where('role', 'mahasiswa')->where('status_warga', 'nonaktif')->count(),
                 'avg_skor'=> 85,
             ],
-            'filters' => $request->only(['search', 'asrama', 'status', 'per_page']),
+            'filters' => $request->only(['search', 'asrama', 'status', 'per_page', 'semester', 'tingkat', 'percobaan_min_bulan']),
         ]);
     }
 
@@ -137,15 +156,18 @@ class SuperController extends Controller
         $warga = User::where('role', 'mahasiswa')->findOrFail($id);
 
         $data = $request->validate([
-            'name'         => 'required|string|max:255',
-            'email'        => 'required|email|max:255|unique:users,email,' . $warga->id,
-            'no_induk'     => 'nullable|string|max:50',
-            'asrama'       => 'nullable|string|max:255',
-            'status_warga' => 'nullable|string|in:aktif,nonaktif',
-            'tgl_masuk'    => 'nullable|date',
-            'angkatan'     => 'nullable|string|max:10',
-            'no_telp'      => 'nullable|string|max:30',
-            'alamat'       => 'nullable|string|max:500',
+            'name'                 => 'required|string|max:255',
+            'email'                => 'required|email|max:255|unique:users,email,' . $warga->id,
+            'no_induk'             => 'nullable|string|max:50',
+            'asrama'               => 'nullable|string|max:255',
+            'status_warga'         => 'nullable|string|in:aktif,nonaktif',
+            'tgl_masuk'            => 'nullable|date',
+            'angkatan'             => 'nullable|string|max:10',
+            'no_telp'              => 'nullable|string|max:30',
+            'alamat'               => 'nullable|string|max:500',
+            'semester'             => 'nullable|integer|min:1|max:14',
+            'tingkat_keanggotaan'  => 'nullable|string|in:percobaan,tetap,senior',
+            'tgl_mulai_percobaan'  => 'nullable|date',
         ]);
 
         $warga->update($data);

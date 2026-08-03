@@ -14,10 +14,18 @@ interface WargaData {
     asrama: string;
     angkatan: number;
     status_warga: string;
+    tingkat_keanggotaan: string | null;
+    semester: number | null;
     hafalan_juz: number;
     skor: number;
     mentor: string;
 }
+
+const TINGKAT_LABEL: Record<string, string> = {
+    percobaan: 'Percobaan',
+    tetap: 'Tetap',
+    senior: 'Senior',
+};
 
 interface Props {
     warga: {
@@ -36,6 +44,9 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [asrama, setAsrama] = useState(filters.asrama || '');
     const [status, setStatus] = useState(filters.status || '');
+    const [semester, setSemester] = useState(filters.semester || '');
+    const [tingkat, setTingkat] = useState(filters.tingkat || '');
+    const [percobaanMinBulan, setPercobaanMinBulan] = useState(filters.percobaan_min_bulan || '');
     const [showAddModal, setShowAddModal] = useState(false);
     const addForm = useForm({ name: '', email: '', password: '', no_induk: '', asrama: '', status_warga: 'aktif', angkatan: '' });
 
@@ -54,12 +65,15 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
             search: debouncedSearch,
             asrama,
             status,
+            semester,
+            tingkat,
+            percobaan_min_bulan: percobaanMinBulan,
             per_page: warga.per_page
         }, {
             preserveState: true,
             replace: true
         });
-    }, [debouncedSearch, asrama, status]);
+    }, [debouncedSearch, asrama, status, semester, tingkat, percobaanMinBulan]);
 
     const handlePageChange = (newPage: number) => {
         router.get('/super/warga', {
@@ -109,6 +123,25 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
                         <option value="aktif">Aktif</option>
                         <option value="nonaktif">Nonaktif</option>
                     </select>
+                    <select value={semester} onChange={e => setSemester(e.target.value)} className="glass-input text-sm py-2.5 min-w-[130px] flex-1">
+                        <option value="">Semua Semester</option>
+                        {Array.from({ length: 14 }, (_, i) => i + 1).map(s => (
+                            <option key={s} value={s}>Semester {s}</option>
+                        ))}
+                    </select>
+                    <select value={tingkat} onChange={e => setTingkat(e.target.value)} className="glass-input text-sm py-2.5 min-w-[150px] flex-1">
+                        <option value="">Semua Keanggotaan</option>
+                        <option value="percobaan">Percobaan</option>
+                        <option value="tetap">Tetap</option>
+                        <option value="senior">Senior</option>
+                    </select>
+                    <select value={percobaanMinBulan} onChange={e => setPercobaanMinBulan(e.target.value)} className="glass-input text-sm py-2.5 min-w-[170px] flex-1">
+                        <option value="">Semua Lama Percobaan</option>
+                        <option value="1">Percobaan &ge; 1 bulan</option>
+                        <option value="3">Percobaan &ge; 3 bulan</option>
+                        <option value="6">Percobaan &ge; 6 bulan</option>
+                        <option value="12">Percobaan &ge; 12 bulan</option>
+                    </select>
                 </div>
             </div>
 
@@ -118,7 +151,7 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
                     <table className="w-full text-sm">
                         <thead className="border-b border-white/40 bg-surface-container/30">
                             <tr>
-                                {['#','Nomor Induk Warga','Nama','Asrama','Angkatan','Hafalan','Skor','Status','Aksi'].map(h => (
+                                {['#','Nomor Induk Warga','Nama','Asrama','Angkatan','Semester','Keanggotaan','Hafalan','Skor','Status','Aksi'].map(h => (
                                     <th key={h} className="text-left py-3 px-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant whitespace-nowrap last:text-right">{h}</th>
                                 ))}
                             </tr>
@@ -142,6 +175,13 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
                                         <span className="text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-bold">{w.asrama}</span>
                                     </td>
                                     <td className="py-3 px-4 text-on-surface-variant">{w.angkatan}</td>
+                                    <td className="py-3 px-4 text-on-surface-variant">{w.semester ?? '-'}</td>
+                                    <td className="py-3 px-4">
+                                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                                            w.tingkat_keanggotaan === 'senior' ? 'bg-purple-50 text-purple-600' :
+                                            w.tingkat_keanggotaan === 'tetap' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'
+                                        }`}>{TINGKAT_LABEL[w.tingkat_keanggotaan ?? ''] ?? '-'}</span>
+                                    </td>
                                     <td className="py-3 px-4">
                                         <span className="text-xs font-bold text-emerald-600">Juz {w.hafalan_juz || 0}</span>
                                     </td>

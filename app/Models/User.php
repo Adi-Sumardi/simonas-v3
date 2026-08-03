@@ -56,6 +56,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'semester',
         'onboarding_completed_at',
         'tgl_mulai_percobaan',
+        'tingkat_keanggotaan',
     ];
 
     protected $hidden = [

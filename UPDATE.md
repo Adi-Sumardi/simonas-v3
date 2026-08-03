@@ -1,26 +1,30 @@
 # Rencana Update SIMONAS
 
-Backlog fitur yang diminta untuk dikerjakan setelah ini. Status: **belum dikerjakan**, baru didaftar untuk referensi & prioritas ke depan.
+Backlog fitur. Status per item ditandai di checklist masing-masing.
 
 ---
 
-## 1. Onboarding Wizard
+## 1. Onboarding Wizard — ✅ Selesai & live
 
-Desain alur onboarding wizard untuk warga baru (kemungkinan saat registrasi/aktivasi akun pertama kali). Perlu didesain dulu (alur langkah, data apa saja yang diisi) sebelum implementasi.
+Wizard 4 langkah muncul untuk semua role (mahasiswa/mentor/super/alumni) yang belum onboarding, wajib dilewati sebelum akses aplikasi (karena app ini baru — warga lama tetap kena, tidak di-backfill).
 
-- [ ] Desain alur wizard (langkah-langkah, data yang dikumpulkan)
-- [ ] Review desain bareng sebelum coding
-- [ ] Implementasi
+- [x] Desain alur wizard (langkah-langkah, data yang dikumpulkan)
+- [x] Review desain bareng sebelum coding
+- [x] Implementasi — form wizard (Kontak & Foto, Data Akademik, Alamat & Kontak Darurat) + migration kolom `semester`, `onboarding_completed_at`, `tgl_mulai_percobaan`
+- [x] Revisi: "Kenalan Fitur" dipindah dari step wizard jadi **modal popup carousel** yang muncul otomatis di Dashboard sekali setelah onboarding selesai, isinya beda per role
 
 ---
 
-## 2. Filter Tambahan di Menu Warga
+## 2. Filter Tambahan di Menu Warga — 🔧 Sedang dikerjakan
 
 Tambahkan filter di halaman manajemen Warga:
 
-- [ ] Filter berdasarkan **semester kuliah**
-- [ ] Filter berdasarkan **status warga**
-- [ ] Filter berdasarkan **lama menjadi warga percobaan** (butuh klarifikasi: field/kolom apa yang jadi acuan "warga percobaan" dan durasinya)
+- [x] Klarifikasi skema: status keanggotaan (percobaan/tetap/senior) jadi kolom baru `tingkat_keanggotaan`, terpisah dari `status_warga` (aktif/nonaktif) — migration & backend filter sudah jalan
+- [x] Filter berdasarkan **semester kuliah**
+- [x] Filter berdasarkan **status warga** (sudah ada sebelumnya)
+- [x] Filter berdasarkan **tingkat keanggotaan** (percobaan/tetap/senior)
+- [x] Filter berdasarkan **lama menjadi warga percobaan** (berdasarkan `tgl_mulai_percobaan`, opsi ≥1/3/6/12 bulan)
+- [ ] Final check UI (kolom tabel, badge) & deploy ke production
 
 ---
 
