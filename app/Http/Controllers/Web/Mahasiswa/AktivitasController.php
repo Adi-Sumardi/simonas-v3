@@ -55,21 +55,27 @@ class AktivitasController extends Controller
                 $query->where('tipe_kegiatan', $tipe);
             }
 
-            $items = $query->latest()->get()->map(fn($r) => [
-                'id'            => $r->id,
-                'kategori'      => $cat,
-                'kegiatan'      => $r->kegiatan ?? $r->nama_kegiatan ?? '-',
-                'komponen'      => optional($r->komponen)->nama_komponen ?? $r->komponen ?? '-',
-                'komponen_id'   => $r->komponen_id,
-                'tipe_kegiatan' => $r->tipe_kegiatan,
-                'image'         => $r->file_data ? route('files.show', ['table' => self::tableFor($cat), 'id' => $r->id]) : null,
-                'image_name'    => $r->file,
-                'waktu'         => $r->waktu,
-                'tempat'        => $r->tempat,
-                'keterangan'    => $r->keterangan,
-                'nilai'         => $r->nilai,
-                'created_at'    => $r->created_at?->format('d M Y'),
-            ]);
+            $items = $query->latest()->get()->map(function($r) use ($cat) {
+                return [
+                    'id'                => $r->id,
+                    'kategori'          => $cat,
+                    'kegiatan'          => $r->kegiatan ?? $r->nama_kegiatan ?? '-',
+                    'komponen'          => optional($r->komponen)->nama_komponen ?? $r->komponen ?? '-',
+                    'komponen_id'       => $r->komponen_id,
+                    'sub_aspek_id'      => $r->sub_aspek_id,
+                    'jenis_kegiatan_id' => $r->jenis_kegiatan_id,
+                    'level_kegiatan'    => $r->level_kegiatan,
+                    'poin'              => $r->poin ?? 0,
+                    'tipe_kegiatan'     => $r->tipe_kegiatan,
+                    'image'             => $r->file_data ? route('files.show', ['table' => self::tableFor($cat), 'id' => $r->id]) : null,
+                    'image_name'        => $r->file,
+                    'waktu'             => $r->waktu,
+                    'tempat'            => $r->tempat,
+                    'keterangan'        => $r->keterangan,
+                    'nilai'             => $r->nilai,
+                    'created_at'        => $r->created_at?->format('d M Y'),
+                ];
+            });
             $all = $all->merge($items);
         }
 
@@ -91,10 +97,13 @@ class AktivitasController extends Controller
             ])->values());
 
         return Inertia::render('Mahasiswa/Aktivitas/Index', [
-            'items'      => $paged,
-            'komponens'  => $komponens,
-            'categories' => array_keys(self::CATS),
-            'pagination' => [
+            'items'             => $paged,
+            'komponens'         => $komponens,
+            'categories'        => array_keys(self::CATS),
+            // Komponen Penilaian baru untuk cascade form
+            'komponenPenilaian' => \App\Models\KomponenPenilaianAspek::select('id','kode','nama_aspek','urutan')
+                                    ->orderBy('urutan')->get(),
+            'pagination'        => [
                 'current_page' => $page,
                 'per_page'     => $perPage,
                 'total'        => $total,
@@ -111,36 +120,51 @@ class AktivitasController extends Controller
     // bukan cuma ekstensi, jadi file .heic/.mp4 yang di-rename tetap ditolak.
     private const ALLOWED_UPLOAD_RULE = 'file|mimes:jpg,jpeg,png,pdf|max:20480'; // 20MB mentah, sebelum dikompres
 
+    private function calculatePoin(?int $jenisId, ?string $level): int
+    {
+        if (!$jenisId || !$level) return 0;
+        $jenis = \App\Models\KomponenPenilaianJenis::find($jenisId);
+        return $jenis ? ($jenis->getPoinByLevel($level) ?? 0) : 0;
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
-            'kategori'      => self::VALID_CATS,
-            'kegiatan'      => 'required|string|max:255',
-            'komponen_id'   => 'nullable|exists:komponens,id',
-            'tipe_kegiatan' => 'nullable|string|in:Prestasi,Unggulan',
-            'waktu'         => 'required|date',
-            'tempat'        => 'required|string|max:255',
-            'keterangan'    => 'nullable|string|max:1000',
-            'image'         => 'required|' . self::ALLOWED_UPLOAD_RULE,
+            'kategori'          => self::VALID_CATS,
+            'kegiatan'          => 'required|string|max:255',
+            'komponen_id'       => 'nullable|exists:komponens,id',
+            'sub_aspek_id'      => 'nullable|exists:komponen_penilaian_sub_aspek,id',
+            'jenis_kegiatan_id' => 'nullable|exists:komponen_penilaian_jenis,id',
+            'level_kegiatan'    => 'nullable|string|in:a,p,f,u,w,n,i',
+            'tipe_kegiatan'     => 'nullable|string|in:Prestasi,Unggulan',
+            'waktu'             => 'required|date',
+            'tempat'            => 'required|string|max:255',
+            'keterangan'        => 'nullable|string|max:1000',
+            'image'             => 'required|' . self::ALLOWED_UPLOAD_RULE,
         ]);
 
         $model = self::CATS[$data['kategori']]['model'];
         $file  = $this->processUpload($request->file('image'));
+        $poin  = $this->calculatePoin($data['jenis_kegiatan_id'] ?? null, $data['level_kegiatan'] ?? null);
 
         $model::create([
-            'user_id'       => Auth::id(),
-            'nama_warga'    => Auth::user()->name,
-            'asrama'        => Auth::user()->asrama ?? '-',
-            'kegiatan'      => $data['kegiatan'],
-            'komponen_id'   => $data['komponen_id'] ?? null,
-            'tipe_kegiatan' => $data['tipe_kegiatan'] ?? null,
-            'waktu'         => $data['waktu'],
-            'tempat'        => $data['tempat'],
-            'keterangan'    => $data['keterangan'] ?? null,
-            'file'          => $file['name'],
-            'file_data'     => $this->binaryExpr($file['data']),
-            'file_mime'     => $file['mime'],
-            'file_size'     => $file['size'],
+            'user_id'           => Auth::id(),
+            'nama_warga'        => Auth::user()->name,
+            'asrama'            => Auth::user()->asrama ?? '-',
+            'kegiatan'          => $data['kegiatan'],
+            'komponen_id'       => $data['komponen_id'] ?? null,
+            'sub_aspek_id'      => $data['sub_aspek_id'] ?? null,
+            'jenis_kegiatan_id' => $data['jenis_kegiatan_id'] ?? null,
+            'level_kegiatan'    => $data['level_kegiatan'] ?? null,
+            'poin'              => $poin,
+            'tipe_kegiatan'     => $data['tipe_kegiatan'] ?? null,
+            'waktu'             => $data['waktu'],
+            'tempat'            => $data['tempat'],
+            'keterangan'        => $data['keterangan'] ?? null,
+            'file'              => $file['name'],
+            'file_data'         => $this->binaryExpr($file['data']),
+            'file_mime'         => $file['mime'],
+            'file_size'         => $file['size'],
         ]);
 
         return back()->with('success', 'Aktivitas berhasil ditambahkan.');
@@ -149,26 +173,35 @@ class AktivitasController extends Controller
     public function update(Request $request, int $id)
     {
         $data = $request->validate([
-            'kategori'      => self::VALID_CATS,
-            'kegiatan'      => 'required|string|max:255',
-            'komponen_id'   => 'nullable|exists:komponens,id',
-            'tipe_kegiatan' => 'nullable|string|in:Prestasi,Unggulan',
-            'waktu'         => 'required|date',
-            'tempat'        => 'required|string|max:255',
-            'keterangan'    => 'nullable|string|max:1000',
-            'image'         => 'nullable|' . self::ALLOWED_UPLOAD_RULE,
+            'kategori'          => self::VALID_CATS,
+            'kegiatan'          => 'required|string|max:255',
+            'komponen_id'       => 'nullable|exists:komponens,id',
+            'sub_aspek_id'      => 'nullable|exists:komponen_penilaian_sub_aspek,id',
+            'jenis_kegiatan_id' => 'nullable|exists:komponen_penilaian_jenis,id',
+            'level_kegiatan'    => 'nullable|string|in:a,p,f,u,w,n,i',
+            'tipe_kegiatan'     => 'nullable|string|in:Prestasi,Unggulan',
+            'waktu'             => 'required|date',
+            'tempat'            => 'required|string|max:255',
+            'keterangan'        => 'nullable|string|max:1000',
+            'image'             => 'nullable|' . self::ALLOWED_UPLOAD_RULE,
         ]);
 
         $model  = self::CATS[$data['kategori']]['model'];
         $record = $model::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
 
+        $poin = $this->calculatePoin($data['jenis_kegiatan_id'] ?? null, $data['level_kegiatan'] ?? null);
+
         $updateData = [
-            'kegiatan'      => $data['kegiatan'],
-            'komponen_id'   => $data['komponen_id'] ?? null,
-            'tipe_kegiatan' => $data['tipe_kegiatan'] ?? null,
-            'waktu'         => $data['waktu'],
-            'tempat'        => $data['tempat'],
-            'keterangan'    => $data['keterangan'] ?? null,
+            'kegiatan'          => $data['kegiatan'],
+            'komponen_id'       => $data['komponen_id'] ?? null,
+            'sub_aspek_id'      => $data['sub_aspek_id'] ?? null,
+            'jenis_kegiatan_id' => $data['jenis_kegiatan_id'] ?? null,
+            'level_kegiatan'    => $data['level_kegiatan'] ?? null,
+            'poin'              => $poin,
+            'tipe_kegiatan'     => $data['tipe_kegiatan'] ?? null,
+            'waktu'             => $data['waktu'],
+            'tempat'            => $data['tempat'],
+            'keterangan'        => $data['keterangan'] ?? null,
         ];
 
         if ($request->hasFile('image')) {
@@ -243,4 +276,37 @@ class AktivitasController extends Controller
 
         return back()->with('success', 'Aktivitas dihapus.');
     }
+
+    // ── JSON API untuk cascade form aktivitas ──────────────────
+    public function getSubAspek(Request $request)
+    {
+        $aspekId = $request->query('aspek_id');
+        if (!$aspekId) {
+            return response()->json([]);
+        }
+        $subAspeks = \App\Models\KomponenPenilaianSubAspek::where('aspek_id', $aspekId)
+            ->orderBy('urutan')
+            ->get(['id', 'nama_sub_aspek']);
+
+        return response()->json($subAspeks);
+    }
+
+    public function getJenis(Request $request)
+    {
+        $subAspekId = $request->query('sub_aspek_id');
+        if (!$subAspekId) {
+            return response()->json([]);
+        }
+        $jenis = \App\Models\KomponenPenilaianJenis::where('sub_aspek_id', $subAspekId)
+            ->orderBy('urutan')
+            ->get([
+                'id', 'nama_kegiatan',
+                'poin_a', 'poin_p', 'poin_f', 'poin_u',
+                'poin_w', 'poin_n', 'poin_i',
+                'keterangan_bukti',
+            ]);
+
+        return response()->json($jenis);
+    }
 }
+

@@ -13,6 +13,16 @@ interface AsramaJabatan { id:number; tahun:number; direktur:string|null; ketua:s
 interface Asrama { id:number; nama_asrama:string; kapasitas:number|null; jabatans:AsramaJabatan[] }
 interface Komponen { id:number; kode:string; nama_komponen:string; aspek:string; bobot:number }
 
+// ─── Komponen Penilaian (3-level) ─────────────────────────────────────────────
+interface JenisKegiatan {
+    id:number; nama_kegiatan:string; urutan:number;
+    poin_a:number|null; poin_p:number|null; poin_f:number|null; poin_u:number|null;
+    poin_w:number|null; poin_n:number|null; poin_i:number|null;
+    keterangan_bukti:string|null;
+}
+interface SubAspek { id:number; nama_sub_aspek:string; urutan:number; jenis_kegiatans:JenisKegiatan[] }
+interface KomponenPenilaianAspek { id:number; kode:string; nama_aspek:string; urutan:number; sub_aspeks:SubAspek[] }
+
 interface Props {
     settings: Settings;
     asramas: Asrama[];
@@ -21,6 +31,7 @@ interface Props {
     activityTypes: Record<string, string>;
     komponens: Komponen[];
     aspekList: string[];
+    komponenPenilaian: KomponenPenilaianAspek[];
 }
 
 // ─── Badge colours per activity type ─────────────────────────────────────────
@@ -107,7 +118,7 @@ function FormLabel({ children }: { children: React.ReactNode }) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export default function Pengaturan({ settings, asramas, pointRules, dailyTargets, activityTypes, komponens, aspekList }: Props) {
+export default function Pengaturan({ settings, asramas, pointRules, dailyTargets, activityTypes, komponens, aspekList, komponenPenilaian }: Props) {
     const { data, setData, post, processing } = useForm({ ...settings });
 
     // ── Asrama state ──────────────────────────────────────────────────────────
@@ -130,11 +141,66 @@ export default function Pengaturan({ settings, asramas, pointRules, dailyTargets
     const [editTarget, setEditTarget]           = useState<DailyTarget|null>(null);
     const targetForm = useForm<{ label:string; key:string; value:string; unit:string; description:string }>({ label: '', key: '', value: '', unit: '', description: '' });
 
-    // ── Komponen state ────────────────────────────────────────────────────────
+    // ── Komponen state (lama) ────────────────────────────────────────────────────
     const [komponenTab, setKomponenTab]         = useState(aspekList[0]);
     const [showKomponenModal, setShowKomponenModal] = useState(false);
     const [editKomponen, setEditKomponen]       = useState<Komponen|null>(null);
     const komponenForm = useForm<{ kode:string; nama_komponen:string; aspek:string; bobot:string }>({ kode: '', nama_komponen: '', aspek: aspekList[0], bobot: '1' });
+
+    // ── Komponen Penilaian Baru (3-level) state ─────────────────────────────────
+    const ASPEK_ICONS: Record<string,string> = { akademik:'📚', leadership:'👑', karakter_islami:'🕌', kreatifitas:'🎨' };
+    const [kpTab, setKpTab]                     = useState<string>(komponenPenilaian[0]?.kode ?? 'akademik');
+    const [expandedSub, setExpandedSub]         = useState<number|null>(null);
+    const [showJenisModal, setShowJenisModal]   = useState(false);
+    const [editJenis, setEditJenis]             = useState<JenisKegiatan|null>(null);
+    const [jenisSubAspekId, setJenisSubAspekId] = useState<number|null>(null);
+    const [showSubModal, setShowSubModal]       = useState(false);
+    const [editSub, setEditSub]                 = useState<SubAspek|null>(null);
+    const jenisForm = useForm<{
+        nama_kegiatan:string; urutan:string;
+        poin_a:string; poin_p:string; poin_f:string; poin_u:string;
+        poin_w:string; poin_n:string; poin_i:string;
+        keterangan_bukti:string;
+    }>({ nama_kegiatan:'', urutan:'', poin_a:'', poin_p:'', poin_f:'', poin_u:'', poin_w:'', poin_n:'', poin_i:'', keterangan_bukti:'' });
+    const subForm = useForm<{ nama_sub_aspek:string; aspek_id:string; urutan:string }>({ nama_sub_aspek:'', aspek_id:'', urutan:'' });
+
+    // Handlers
+    function openAddSub(aspekId: number) {
+        subForm.reset(); subForm.setData({ nama_sub_aspek:'', aspek_id: String(aspekId), urutan:'' });
+        setEditSub(null); setShowSubModal(true);
+    }
+    function openEditSub(s: SubAspek) {
+        subForm.setData({ nama_sub_aspek: s.nama_sub_aspek, aspek_id:'', urutan: String(s.urutan) });
+        setEditSub(s); setShowSubModal(true);
+    }
+    function submitSub() {
+        if (editSub) subForm.put(`/super/sub-aspek/${editSub.id}`, { onSuccess: () => setShowSubModal(false) });
+        else         subForm.post('/super/sub-aspek', { onSuccess: () => setShowSubModal(false) });
+    }
+    function deleteSub(id: number) { if (confirm('Hapus Sub-Aspek ini beserta semua jenis kegiatannya?')) router.delete(`/super/sub-aspek/${id}`, { preserveScroll: true }); }
+
+    function openAddJenis(subId: number) {
+        jenisForm.reset(); setEditJenis(null); setJenisSubAspekId(subId); setShowJenisModal(true);
+    }
+    function openEditJenis(j: JenisKegiatan) {
+        jenisForm.setData({
+            nama_kegiatan: j.nama_kegiatan, urutan: String(j.urutan),
+            poin_a: j.poin_a != null ? String(j.poin_a) : '',
+            poin_p: j.poin_p != null ? String(j.poin_p) : '',
+            poin_f: j.poin_f != null ? String(j.poin_f) : '',
+            poin_u: j.poin_u != null ? String(j.poin_u) : '',
+            poin_w: j.poin_w != null ? String(j.poin_w) : '',
+            poin_n: j.poin_n != null ? String(j.poin_n) : '',
+            poin_i: j.poin_i != null ? String(j.poin_i) : '',
+            keterangan_bukti: j.keterangan_bukti ?? '',
+        });
+        setEditJenis(j); setShowJenisModal(true);
+    }
+    function submitJenis() {
+        if (editJenis) jenisForm.put(`/super/jenis/${editJenis.id}`, { onSuccess: () => setShowJenisModal(false) });
+        else if (jenisSubAspekId) jenisForm.post(`/super/sub-aspek/${jenisSubAspekId}/jenis`, { onSuccess: () => setShowJenisModal(false) });
+    }
+    function deleteJenis(id: number) { if (confirm('Hapus jenis kegiatan ini?')) router.delete(`/super/jenis/${id}`, { preserveScroll: true }); }
 
     // ── Komponen handlers ─────────────────────────────────────────────────────
     function openAddKomponen() {
@@ -544,7 +610,122 @@ export default function Pengaturan({ settings, asramas, pointRules, dailyTargets
                         </p>
                     </div>
                 </Section>
+
+                {/* ── Komponen Penilaian Baru (3-Level) ────────────────────────── */}
+                <Section title="Komponen Penilaian (Baru)" icon="inventory_2">
+                    <p className="text-xs text-on-surface-variant -mt-3">
+                        Sistem penilaian 3-level: <strong>Aspek Utama</strong> (4, tetap) → <strong>Sub-Aspek</strong> (dinamis) → <strong>Jenis Kegiatan</strong> dengan poin berlevel Internal (A/P/F/U) & Eksternal (W/N/I).
+                    </p>
+
+                    {/* Tab 4 Aspek */}
+                    <div className="flex gap-2 flex-wrap -mt-1">
+                        {komponenPenilaian.map(a => (
+                            <button
+                                key={a.kode}
+                                onClick={() => setKpTab(a.kode)}
+                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 ${kpTab === a.kode ? 'bg-indigo-600 text-white shadow-md' : 'bg-surface-container/40 text-on-surface-variant hover:bg-surface-container/70'}`}
+                            >
+                                <span>{ASPEK_ICONS[a.kode]}</span> {a.nama_aspek}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Sub-Aspek Accordions */}
+                    {komponenPenilaian.filter(a => a.kode === kpTab).map(aspek => (
+                        <div key={aspek.id} className="space-y-3">
+                            {aspek.sub_aspeks.map(sub => (
+                                <div key={sub.id} className="border border-white/20 rounded-xl overflow-hidden">
+                                    {/* Sub-Aspek Header */}
+                                    <div className="flex items-center justify-between px-4 py-3 bg-surface-container/30">
+                                        <button
+                                            className="flex items-center gap-2 flex-1 text-left"
+                                            onClick={() => setExpandedSub(expandedSub === sub.id ? null : sub.id)}
+                                        >
+                                            <Icon name={expandedSub === sub.id ? 'expand_less' : 'expand_more'} className="text-base text-on-surface-variant" />
+                                            <span className="font-bold text-sm text-on-surface">{sub.nama_sub_aspek}</span>
+                                            <span className="text-xs text-on-surface-variant ml-1">({sub.jenis_kegiatans.length} kegiatan)</span>
+                                        </button>
+                                        <div className="flex gap-1">
+                                            <button onClick={() => openEditSub(sub)} className="w-7 h-7 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-blue-50 text-blue-600 transition-colors" title="Edit nama">
+                                                <Icon name="edit" className="text-xs" />
+                                            </button>
+                                            <button onClick={() => deleteSub(sub.id)} className="w-7 h-7 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-rose-50 text-rose-500 transition-colors" title="Hapus sub-aspek">
+                                                <Icon name="delete" className="text-xs" />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Tabel Jenis Kegiatan (expanded) */}
+                                    {expandedSub === sub.id && (
+                                        <div>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-xs">
+                                                    <thead>
+                                                        <tr className="border-b border-white/30">
+                                                            <th className="text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest text-on-surface-variant w-6">No</th>
+                                                            <th className="text-left px-3 py-2 text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Jenis Kegiatan</th>
+                                                            {/* Internal header */}
+                                                            <th colSpan={4} className="text-center px-2 py-1 text-[10px] font-black uppercase tracking-widest text-blue-700 bg-blue-50/60">Internal</th>
+                                                            {/* Eksternal header */}
+                                                            <th colSpan={3} className="text-center px-2 py-1 text-[10px] font-black uppercase tracking-widest text-red-700 bg-red-50/60">Eksternal</th>
+                                                            <th className="px-3 py-2 w-16" />
+                                                        </tr>
+                                                        <tr className="border-b border-white/20 text-[10px] font-bold uppercase">
+                                                            <th /><th />
+                                                            {['A','P','F','U'].map(l => <th key={l} className="text-center px-2 py-1 text-blue-600 bg-blue-50/40">{l}</th>)}
+                                                            {['W','N','I'].map(l => <th key={l} className="text-center px-2 py-1 text-red-600 bg-red-50/40">{l}</th>)}
+                                                            <th />
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {sub.jenis_kegiatans.map((j, idx) => (
+                                                            <tr key={j.id} className="border-b border-white/10 hover:bg-white/10 transition-colors">
+                                                                <td className="px-4 py-2.5 text-on-surface-variant text-center">{idx+1}</td>
+                                                                <td className="px-3 py-2.5 font-semibold text-on-surface">{j.nama_kegiatan}</td>
+                                                                {(['poin_a','poin_p','poin_f','poin_u'] as const).map(k => (
+                                                                    <td key={k} className="text-center px-2 py-2.5 bg-blue-50/20">
+                                                                        {j[k] != null ? <span className="font-bold text-blue-700">{j[k]}</span> : <span className="text-on-surface-variant/40">–</span>}
+                                                                    </td>
+                                                                ))}
+                                                                {(['poin_w','poin_n','poin_i'] as const).map(k => (
+                                                                    <td key={k} className="text-center px-2 py-2.5 bg-red-50/20">
+                                                                        {j[k] != null ? <span className="font-bold text-red-700">{j[k]}</span> : <span className="text-on-surface-variant/40">–</span>}
+                                                                    </td>
+                                                                ))}
+                                                                <td className="px-3 py-2.5">
+                                                                    <div className="flex gap-1 justify-end">
+                                                                        <button onClick={() => openEditJenis(j)} className="w-6 h-6 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-blue-50 text-blue-600 transition-colors">
+                                                                            <Icon name="edit" className="text-[10px]" />
+                                                                        </button>
+                                                                        <button onClick={() => deleteJenis(j.id)} className="w-6 h-6 rounded-lg bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-rose-50 text-rose-500 transition-colors">
+                                                                            <Icon name="delete" className="text-[10px]" />
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div className="px-4 py-3 border-t border-white/10">
+                                                <button onClick={() => openAddJenis(sub.id)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-300 text-emerald-700 bg-emerald-50 text-xs font-bold hover:bg-emerald-100 transition-colors">
+                                                    <Icon name="add" className="text-sm" /> Tambah Jenis Kegiatan
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+
+                            {/* Tambah Sub-Aspek */}
+                            <button onClick={() => openAddSub(aspek.id)} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-indigo-300 text-indigo-600 bg-indigo-50/40 text-sm font-bold hover:bg-indigo-50 transition-colors">
+                                <Icon name="add_circle" className="text-base" /> Tambah Sub-Aspek
+                            </button>
+                        </div>
+                    ))}
+                </Section>
             </div>
+
 
             {/* ── Asrama Modal ──────────────────────────────────────────────── */}
             {showAsramaModal && (
@@ -713,6 +894,121 @@ export default function Pengaturan({ settings, asramas, pointRules, dailyTargets
                             {komponenForm.processing ? 'Menyimpan...' : (editKomponen ? 'Simpan' : 'Tambah')}
                         </button>
                         <button onClick={() => setShowKomponenModal(false)} className="px-6 py-3 rounded-xl font-bold text-sm bg-zinc-100 text-on-surface-variant">Batal</button>
+                    </div>
+                </ModalShell>
+            )}
+
+            {/* ── Sub-Aspek Modal ─────────────────────────────────────────────── */}
+            {showSubModal && (
+                <ModalShell title={editSub ? 'Edit Sub-Aspek' : 'Tambah Sub-Aspek'} onClose={() => setShowSubModal(false)}>
+                    <div className="p-6 space-y-4">
+                        <div>
+                            <FormLabel>Nama Sub-Aspek *</FormLabel>
+                            <input
+                                value={subForm.data.nama_sub_aspek}
+                                onChange={e => subForm.setData('nama_sub_aspek', e.target.value)}
+                                className="glass-input w-full text-sm"
+                                placeholder="cth. Kompetisi Akademik"
+                            />
+                            {subForm.errors.nama_sub_aspek && <p className="text-xs text-rose-500 mt-1">{subForm.errors.nama_sub_aspek}</p>}
+                        </div>
+                        <div>
+                            <FormLabel>Urutan</FormLabel>
+                            <input
+                                type="number" min={0}
+                                value={subForm.data.urutan}
+                                onChange={e => subForm.setData('urutan', e.target.value)}
+                                className="glass-input w-full text-sm text-center" placeholder="0"
+                            />
+                        </div>
+                    </div>
+                    <div className="p-6 pt-0 flex gap-3">
+                        <button onClick={submitSub} disabled={subForm.processing} className="btn-primary flex-1 py-3 rounded-xl font-bold text-sm">
+                            {subForm.processing ? 'Menyimpan...' : (editSub ? 'Simpan' : 'Tambah')}
+                        </button>
+                        <button onClick={() => setShowSubModal(false)} className="px-6 py-3 rounded-xl font-bold text-sm bg-zinc-100 text-on-surface-variant">Batal</button>
+                    </div>
+                </ModalShell>
+            )}
+
+            {/* ── Jenis Kegiatan Modal ────────────────────────────────────────── */}
+            {showJenisModal && (
+                <ModalShell
+                    title={editJenis ? 'Edit Jenis Kegiatan' : 'Tambah Jenis Kegiatan'}
+                    subtitle="Kosongkan poin yang tidak relevan untuk level tersebut (akan tampil sebagai –)"
+                    onClose={() => setShowJenisModal(false)}
+                >
+                    <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                        <div>
+                            <FormLabel>Nama Kegiatan *</FormLabel>
+                            <input
+                                value={jenisForm.data.nama_kegiatan}
+                                onChange={e => jenisForm.setData('nama_kegiatan', e.target.value)}
+                                className="glass-input w-full text-sm"
+                                placeholder="cth. Juara I Lomba Esai"
+                            />
+                            {jenisForm.errors.nama_kegiatan && <p className="text-xs text-rose-500 mt-1">{jenisForm.errors.nama_kegiatan}</p>}
+                        </div>
+
+                        {/* Internal poin */}
+                        <div>
+                            <p className="text-xs font-black text-blue-700 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                <span className="w-3 h-3 rounded-sm bg-blue-600 inline-block" /> Poin Internal
+                            </p>
+                            <div className="grid grid-cols-4 gap-2">
+                                {([['a','Asrama'],['p','Prodi'],['f','Fakultas'],['u','Universitas']] as const).map(([code, label]) => (
+                                    <div key={code}>
+                                        <label className="text-[10px] font-bold text-blue-600 uppercase">{code.toUpperCase()} – {label}</label>
+                                        <input
+                                            type="number" min={0} max={20}
+                                            value={(jenisForm.data as any)[`poin_${code}`]}
+                                            onChange={e => jenisForm.setData(`poin_${code}` as any, e.target.value)}
+                                            className="glass-input w-full text-sm text-center mt-0.5"
+                                            placeholder="–"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Eksternal poin */}
+                        <div>
+                            <p className="text-xs font-black text-red-700 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                <span className="w-3 h-3 rounded-sm bg-red-500 inline-block" /> Poin Eksternal
+                            </p>
+                            <div className="grid grid-cols-3 gap-2">
+                                {([['w','Wilayah/JABODETABEK'],['n','Nasional'],['i','Internasional']] as const).map(([code, label]) => (
+                                    <div key={code}>
+                                        <label className="text-[10px] font-bold text-red-600 uppercase">{code.toUpperCase()} – {label}</label>
+                                        <input
+                                            type="number" min={0} max={20}
+                                            value={(jenisForm.data as any)[`poin_${code}`]}
+                                            onChange={e => jenisForm.setData(`poin_${code}` as any, e.target.value)}
+                                            className="glass-input w-full text-sm text-center mt-0.5"
+                                            placeholder="–"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Keterangan Bukti */}
+                        <div>
+                            <FormLabel>Keterangan Bukti</FormLabel>
+                            <textarea
+                                value={jenisForm.data.keterangan_bukti}
+                                onChange={e => jenisForm.setData('keterangan_bukti', e.target.value)}
+                                className="glass-input w-full text-sm resize-none"
+                                rows={3}
+                                placeholder="Dokumen/bukti yang perlu dilampirkan..."
+                            />
+                        </div>
+                    </div>
+                    <div className="p-6 pt-0 flex gap-3">
+                        <button onClick={submitJenis} disabled={jenisForm.processing} className="btn-primary flex-1 py-3 rounded-xl font-bold text-sm">
+                            {jenisForm.processing ? 'Menyimpan...' : (editJenis ? 'Simpan Perubahan' : 'Tambah Kegiatan')}
+                        </button>
+                        <button onClick={() => setShowJenisModal(false)} className="px-6 py-3 rounded-xl font-bold text-sm bg-zinc-100 text-on-surface-variant">Batal</button>
                     </div>
                 </ModalShell>
             )}

@@ -19,6 +19,16 @@ interface AktivitasItem {
     waktu: string; tempat: string; keterangan?: string; nilai?: string; created_at: string;
 }
 
+// Komponen Penilaian (3-level) types untuk cascade form
+interface KPAspek { id: number; kode: string; nama_aspek: string; urutan: number; }
+interface KPSubAspek { id: number; nama_sub_aspek: string; }
+interface KPJenis {
+    id: number; nama_kegiatan: string;
+    poin_a: number|null; poin_p: number|null; poin_f: number|null; poin_u: number|null;
+    poin_w: number|null; poin_n: number|null; poin_i: number|null;
+    keterangan_bukti: string|null;
+}
+
 function isPdfName(name?: string | null): boolean {
     return !!name && name.toLowerCase().endsWith('.pdf');
 }
@@ -26,6 +36,7 @@ interface AktivitasIndexProps extends PageProps {
     items: AktivitasItem[];
     komponens: Record<string, KomponenItem[]>;
     categories: Kategori[];
+    komponenPenilaian: KPAspek[];
     pagination: {
         current_page: number;
         per_page: number;
@@ -54,14 +65,21 @@ const ASPEK_MAP: Record<Kategori, string[]> = {
     kreativitas: ['Kreativitas', 'Kewirausahaan'], // both aspeks combined
 };
 
+// Poin level labels
+const LEVEL_LABELS: Record<string, string> = {
+    a: 'Asrama (A)', p: 'Prodi (P)', f: 'Fakultas (F)', u: 'Universitas (U)',
+    w: 'Wilayah/Jabodetabek (W)', n: 'Nasional (N)', i: 'Internasional (I)',
+};
+
 // ─── Form Modal ───────────────────────────────────────────────────────────────
 function AktivitasModal({
-    activeKat, komponens, editItem, onClose,
+    activeKat, komponens, editItem, onClose, komponenPenilaian,
 }: {
     activeKat: Kategori;
     komponens: Record<string, KomponenItem[]>;
     editItem: AktivitasItem | null;
     onClose: () => void;
+    komponenPenilaian: KPAspek[];
 }) {
     const [form, setForm] = useState<any>({
         kategori:      editItem?.kategori    ?? activeKat,
@@ -77,6 +95,45 @@ function AktivitasModal({
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [preview, setPreview] = useState<string | null>(editItem?.image ?? null);
     const [previewIsPdf, setPreviewIsPdf] = useState(isPdfName(editItem?.image_name));
+
+    // ── Cascade Komponen Penilaian ──────────────────────────────────────────────
+    // Map kategori → kode aspek
+    const KAT_TO_ASPEK: Record<Kategori, string> = {
+        akademik: 'akademik', leadership: 'leadership',
+        karakter: 'karakter_islami', kreativitas: 'kreatifitas',
+    };
+    const currentAspek = komponenPenilaian.find(a => a.kode === KAT_TO_ASPEK[form.kategori as Kategori]);
+    const [subAspeks, setSubAspeks] = useState<KPSubAspek[]>([]);
+    const [selectedSub, setSelectedSub] = useState<string>('');
+    const [jenisOptions, setJenisOptions] = useState<KPJenis[]>([]);
+    const [selectedJenis, setSelectedJenis] = useState<KPJenis|null>(null);
+    const [selectedLevel, setSelectedLevel] = useState<string>('');
+
+    // Fetch sub-aspek when aspek changes
+    useEffect(() => {
+        if (!currentAspek) return;
+        setSubAspeks([]); setSelectedSub(''); setJenisOptions([]); setSelectedJenis(null); setSelectedLevel('');
+        fetch(`/mahasiswa/komponen-penilaian/sub-aspek?aspek_id=${currentAspek.id}`)
+            .then(r => r.json()).then(setSubAspeks).catch(() => {});
+    }, [form.kategori]);
+
+    // Fetch jenis when sub-aspek changes
+    useEffect(() => {
+        if (!selectedSub) { setJenisOptions([]); setSelectedJenis(null); setSelectedLevel(''); return; }
+        fetch(`/mahasiswa/komponen-penilaian/jenis?sub_aspek_id=${selectedSub}`)
+            .then(r => r.json()).then(setJenisOptions).catch(() => {});
+        setSelectedJenis(null); setSelectedLevel('');
+    }, [selectedSub]);
+
+    // When jenis selected, get poin for chosen level
+    const availableLevels: { code: string; label: string; poin: number }[] = selectedJenis
+        ? Object.entries(LEVEL_LABELS)
+            .filter(([code]) => (selectedJenis as any)[`poin_${code}`] != null)
+            .map(([code, label]) => ({ code, label, poin: (selectedJenis as any)[`poin_${code}`] }))
+        : [];
+    const selectedPoin = selectedLevel && selectedJenis
+        ? (selectedJenis as any)[`poin_${selectedLevel}`]
+        : null;
 
     const aspeks = ASPEK_MAP[form.kategori as Kategori];
     // Flatten all matching aspeks (kreativitas has 2)
@@ -104,6 +161,9 @@ function AktivitasModal({
         // Use router.post with forceFormData for file uploads even on PUT (Laravel spoofing)
         router.post(url, {
             ...form,
+            sub_aspek_id:      selectedSub || null,
+            jenis_kegiatan_id: selectedJenis?.id || null,
+            level_kegiatan:    selectedLevel || null,
             _method: method.toUpperCase(),
         }, {
             forceFormData: true,
@@ -142,7 +202,90 @@ function AktivitasModal({
                     </select>
                 </div>
 
-                {/* Komponen */}
+                {/* Komponen Penilaian Baru (cascade 3-level) */}
+                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 space-y-3">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-indigo-700 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-indigo-600 inline-block" /> Sistem Penilaian Baru
+                    </p>
+
+                    {/* Sub-Aspek */}
+                    <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1 block">Sub-Aspek</label>
+                        <select
+                            value={selectedSub}
+                            onChange={e => setSelectedSub(e.target.value)}
+                            className="glass-input w-full text-sm"
+                        >
+                            <option value="">— Pilih Sub-Aspek —</option>
+                            {subAspeks.map(s => <option key={s.id} value={s.id}>{s.nama_sub_aspek}</option>)}
+                        </select>
+                    </div>
+
+                    {/* Jenis Kegiatan */}
+                    {selectedSub && (
+                        <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1 block">Jenis Kegiatan</label>
+                            <select
+                                value={selectedJenis?.id ?? ''}
+                                onChange={e => {
+                                    const found = jenisOptions.find(j => String(j.id) === e.target.value) ?? null;
+                                    setSelectedJenis(found); setSelectedLevel('');
+                                }}
+                                className="glass-input w-full text-sm"
+                            >
+                                <option value="">— Pilih Jenis Kegiatan —</option>
+                                {jenisOptions.map(j => <option key={j.id} value={j.id}>{j.nama_kegiatan}</option>)}
+                            </select>
+                        </div>
+                    )}
+
+                    {/* Cakupan/Level */}
+                    {selectedJenis && availableLevels.length > 0 && (
+                        <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1 block">Cakupan/Level Kegiatan</label>
+                            <div className="flex flex-wrap gap-2">
+                                {availableLevels.map(lv => (
+                                    <button key={lv.code} type="button"
+                                        onClick={() => setSelectedLevel(selectedLevel === lv.code ? '' : lv.code)}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 ${
+                                            selectedLevel === lv.code
+                                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-md'
+                                                : 'bg-white text-indigo-700 border-indigo-200 hover:border-indigo-400'
+                                        }`}
+                                    >
+                                        {lv.label}
+                                        <span className={`font-black ${selectedLevel === lv.code ? 'text-indigo-200' : 'text-indigo-500'}`}>{lv.poin} poin</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Poin Preview */}
+                    {selectedPoin != null && (
+                        <div className="bg-indigo-600 rounded-xl p-3 flex items-center justify-between">
+                            <div>
+                                <p className="text-[10px] font-black text-indigo-200 uppercase">Poin yang akan dicatat</p>
+                                <p className="text-2xl font-black text-white mt-0.5">{selectedPoin} <span className="text-sm font-bold text-indigo-200">poin</span></p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] text-indigo-200">Level: <span className="font-bold text-white">{LEVEL_LABELS[selectedLevel]}</span></p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Keterangan Bukti Info */}
+                    {selectedJenis?.keterangan_bukti && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                            <p className="text-[10px] font-black text-amber-700 uppercase mb-0.5 flex items-center gap-1">
+                                <Icon name="info" className="text-xs" filled /> Bukti yang diperlukan
+                            </p>
+                            <p className="text-xs text-amber-700">{selectedJenis.keterangan_bukti}</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Komponen lama (dipertahankan untuk kompatibilitas) */}
                 <div>
                     <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Komponen *</label>
                     <select value={form.komponen_id} onChange={e => set('komponen_id', e.target.value)}
@@ -186,32 +329,62 @@ function AktivitasModal({
                     {errors.kegiatan && <p className="text-xs text-rose-500 mt-1">{errors.kegiatan}</p>}
                 </div>
 
-                {/* Image Upload * */}
+                {/* Image & Camera Upload * */}
                 <div>
-                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Bukti Kegiatan *</label>
-                    <div className="flex items-start gap-4">
-                        <div className={`relative w-24 h-24 rounded-2xl border-2 border-dashed flex-shrink-0 flex items-center justify-center overflow-hidden transition-colors ${
-                            errors.image ? 'border-rose-400 bg-rose-50' : 'border-slate-200 hover:border-primary-container/50'
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Bukti Kegiatan (Foto / PDF) *</label>
+                    <div className="flex flex-col sm:flex-row items-start gap-4">
+                        <div className={`relative w-28 h-28 rounded-2xl border-2 border-dashed flex-shrink-0 flex items-center justify-center overflow-hidden transition-colors ${
+                            errors.image ? 'border-rose-400 bg-rose-50' : 'border-slate-300 bg-white/40 hover:border-primary-container/60'
                         }`}>
                             {preview ? (
                                 previewIsPdf ? (
-                                    <div className="flex flex-col items-center gap-1 text-rose-500">
+                                    <div className="flex flex-col items-center gap-1 text-rose-500 p-2 text-center">
                                         <Icon name="picture_as_pdf" className="text-3xl" />
-                                        <span className="text-[9px] font-bold">PDF</span>
+                                        <span className="text-[9px] font-bold truncate max-w-full">PDF File</span>
                                     </div>
                                 ) : (
-                                    <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                                    <img src={preview} alt="Preview Bukti" className="w-full h-full object-cover" />
                                 )
                             ) : (
-                                <Icon name="add_a_photo" className="text-2xl text-slate-300" />
+                                <div className="flex flex-col items-center gap-1 text-slate-400 text-center p-2">
+                                    <Icon name="add_a_photo" className="text-2xl" />
+                                    <span className="text-[9px] font-bold">Belum ada file</span>
+                                </div>
                             )}
-                            <input type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" onChange={handleFile} className="absolute inset-0 opacity-0 cursor-pointer" />
                         </div>
-                        <div className="flex-1">
+
+                        <div className="flex-1 space-y-2 w-full">
+                            <div className="grid grid-cols-2 gap-2">
+                                {/* Button 1: Camera */}
+                                <label className="relative flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 text-indigo-700 text-xs font-bold cursor-pointer transition-colors text-center">
+                                    <Icon name="photo_camera" className="text-base" />
+                                    <span>Ambil Kamera</span>
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        capture="environment" 
+                                        onChange={handleFile} 
+                                        className="absolute inset-0 opacity-0 cursor-pointer" 
+                                    />
+                                </label>
+
+                                {/* Button 2: File Picker */}
+                                <label className="relative flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold cursor-pointer transition-colors text-center">
+                                    <Icon name="upload_file" className="text-base text-slate-500" />
+                                    <span>Pilih File</span>
+                                    <input 
+                                        type="file" 
+                                        accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" 
+                                        onChange={handleFile} 
+                                        className="absolute inset-0 opacity-0 cursor-pointer" 
+                                    />
+                                </label>
+                            </div>
+
                             <p className="text-[10px] text-on-surface-variant leading-relaxed">
-                                Format JPG, PNG, atau PDF. Maksimal 20MB (gambar otomatis dikompres).
+                                Maksimal 20MB. Format yang didukung: JPG, PNG, atau PDF.
                             </p>
-                            {errors.image && <p className="text-xs text-rose-500 mt-1 font-bold">{errors.image}</p>}
+                            {errors.image && <p className="text-xs text-rose-500 font-bold">{errors.image}</p>}
                         </div>
                     </div>
                 </div>
@@ -400,7 +573,7 @@ function AktivitasRow({ item, index, onDetail, onEdit, onDelete }: { item: Aktiv
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export default function AktivitasIndex({ items, komponens, categories, pagination, filters }: AktivitasIndexProps) {
+export default function AktivitasIndex({ items, komponens, categories, pagination, filters, komponenPenilaian }: AktivitasIndexProps) {
     const [activeKat, setActiveKat] = useState<Kategori>('akademik');
     const [search, setSearch] = useState(filters.search || '');
     const [tipe, setTipe] = useState(filters.tipe || '');
@@ -576,6 +749,7 @@ export default function AktivitasIndex({ items, komponens, categories, paginatio
                     komponens={komponens}
                     editItem={editItem}
                     onClose={closeModal}
+                    komponenPenilaian={komponenPenilaian}
                 />
             )}
             {/* Detail Modal */}

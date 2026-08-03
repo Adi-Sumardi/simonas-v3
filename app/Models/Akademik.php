@@ -9,6 +9,10 @@ class Akademik extends Model
     protected $fillable = [
         'user_id', 
         'komponen_id', 
+        'sub_aspek_id',
+        'jenis_kegiatan_id',
+        'level_kegiatan',
+        'poin',
         'nama_warga', 
         'komponen', 
         'asrama', 
@@ -42,5 +46,15 @@ class Akademik extends Model
     public function komponen()
     {
         return $this->belongsTo(Komponen::class, 'komponen_id');
+    }
+
+    public function subAspek()
+    {
+        return $this->belongsTo(KomponenPenilaianSubAspek::class, 'sub_aspek_id');
+    }
+
+    public function jenisKegiatan()
+    {
+        return $this->belongsTo(KomponenPenilaianJenis::class, 'jenis_kegiatan_id');
     }
 }
