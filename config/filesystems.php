@@ -65,6 +65,13 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
         ],
 
+        // File rekaman Live Meet superadmin (LiveKit Egress menulis ke folder
+        // yang sama lewat volume mount Docker). Lihat config/livekit.php.
+        'live_meet_recordings' => [
+            'driver' => 'local',
+            'root' => env('LIVE_MEET_RECORDINGS_PATH', storage_path('app/live-meet-recordings')),
+        ],
+
     ],
 
     /*

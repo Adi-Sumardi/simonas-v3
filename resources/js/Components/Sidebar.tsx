@@ -65,6 +65,7 @@ const MENU_GROUPS: MenuGroup[] = [
             { label: 'Kegiatan',          icon: 'event',                href: '/super/kegiatan' },
             { label: 'Hafalan',           icon: 'menu_book',            href: '/super/hafalan' },
             { label: 'Leaderboard',       icon: 'leaderboard',          href: '/super/leaderboard' },
+            { label: 'Live Meet',         icon: 'video_camera_front',   href: '/super/live-meet',     permission: 'access-live-meet' },
             { label: 'Laporan',           icon: 'bar_chart',            href: '/super/laporan' },
             { label: 'Data Master',       icon: 'storage',              href: '/super/data-master' },
             { label: 'Pengaturan',        icon: 'settings',             href: '/super/pengaturan' },

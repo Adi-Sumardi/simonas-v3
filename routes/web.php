@@ -284,4 +284,29 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         Route::put('/warga/{id}',        [App\Http\Controllers\Web\Super\SuperController::class, 'wargaUpdate'])->name('warga.update');
     });
 
+    // ── Live Meet (superadmin only) ───────────────────────────
+    Route::middleware('can:access-live-meet')->prefix('super/live-meet')->name('super.live-meet.')->group(function () {
+        Route::get('/',            [App\Http\Controllers\Web\Super\LiveMeetController::class, 'index'])  ->name('index');
+        Route::post('/',           [App\Http\Controllers\Web\Super\LiveMeetController::class, 'store'])  ->name('store');
+        Route::get('/{room}',      [App\Http\Controllers\Web\Super\LiveMeetController::class, 'show'])   ->name('show');
+        Route::get('/{room}/join', [App\Http\Controllers\Web\Super\LiveMeetController::class, 'join'])   ->name('join');
+        Route::post('/{room}/join',[App\Http\Controllers\Web\Super\LiveMeetController::class, 'joinSubmit'])->name('join.submit');
+        Route::get('/{room}/waiting-status', [App\Http\Controllers\Web\Super\LiveMeetController::class, 'waitingStatus'])->name('waiting-status');
+
+        Route::post('/{room}/participants/{participant}/admit', [App\Http\Controllers\Web\Super\LiveMeetController::class, 'admit'])  ->name('participants.admit');
+        Route::post('/{room}/participants/{participant}/deny',  [App\Http\Controllers\Web\Super\LiveMeetController::class, 'deny'])   ->name('participants.deny');
+        Route::post('/{room}/participants/{participant}/promote', [App\Http\Controllers\Web\Super\LiveMeetController::class, 'promote'])->name('participants.promote');
+        Route::post('/{room}/participants/{participant}/demote',  [App\Http\Controllers\Web\Super\LiveMeetController::class, 'demote']) ->name('participants.demote');
+        Route::post('/{room}/participants/{participant}/kick',    [App\Http\Controllers\Web\Super\LiveMeetController::class, 'kick'])   ->name('participants.kick');
+
+        Route::post('/{room}/mute-all',   [App\Http\Controllers\Web\Super\LiveMeetController::class, 'muteAll'])  ->name('mute-all');
+        Route::post('/{room}/unmute-all', [App\Http\Controllers\Web\Super\LiveMeetController::class, 'unmuteAll'])->name('unmute-all');
+        Route::post('/{room}/recording/start', [App\Http\Controllers\Web\Super\LiveMeetController::class, 'startRecording'])->name('recording.start');
+        Route::post('/{room}/recording/stop',  [App\Http\Controllers\Web\Super\LiveMeetController::class, 'stopRecording']) ->name('recording.stop');
+        Route::post('/{room}/end', [App\Http\Controllers\Web\Super\LiveMeetController::class, 'end'])->name('end');
+
+        Route::get('/recordings/{recording}/download', [App\Http\Controllers\Web\Super\LiveMeetController::class, 'downloadRecording'])->name('recordings.download');
+        Route::delete('/recordings/{recording}',        [App\Http\Controllers\Web\Super\LiveMeetController::class, 'destroyRecording']) ->name('recordings.destroy');
+    });
+
 });

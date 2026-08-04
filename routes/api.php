@@ -159,3 +159,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // Guarded by a static bearer token (see EnsureYapinetApiKey), not Sanctum —
 // intentionally kept flat here, outside the auth:sanctum/v2 groups above.
 Route::middleware('yapinet.auth')->get('integrations/yapinet/summary', [YapinetSummaryController::class, 'summary']);
+
+// LiveKit server webhook (egress_ended, room_finished, ...). Verified via
+// signed JWT in the Authorization header inside the controller — not Sanctum.
+Route::post('/livekit/webhook', [App\Http\Controllers\Api\LiveKitWebhookController::class, 'handle']);

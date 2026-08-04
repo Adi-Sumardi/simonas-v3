@@ -23,6 +23,7 @@ class RolePermissionSeeder extends Seeder
             'access-admin',
             'access-alumni',
             'access-pengurus-asrama',
+            'access-live-meet',
 
             // Granular permissions
             'view-dashboard',

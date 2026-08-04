@@ -28,6 +28,11 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:generate-monthly-beasiswa-yayasan')
             ->monthlyOn(1, '02:00')
             ->withoutOverlapping();
+
+        // Reminder H-1 + hapus rekaman Live Meet superadmin yang lewat retensi 7 hari.
+        $schedule->command('app:cleanup-expired-live-meet-recordings')
+            ->daily()
+            ->withoutOverlapping();
     }
 
     /**
