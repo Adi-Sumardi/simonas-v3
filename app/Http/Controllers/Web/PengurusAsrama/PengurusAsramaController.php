@@ -60,7 +60,7 @@ class PengurusAsramaController extends Controller
         $data = $request->validate([
             'nama_kegiatan' => 'required|string|max:255',
             'tujuan'        => 'required|string|max:500',
-            'jenis_kegiatan'=> 'required|string|in:akademik,hafalan,kegiatan,olahraga,sosial,lainnya',
+            'jenis_kegiatan'=> 'required|string|in:akademik,hafalan,ibadah,kegiatan,olahraga,sosial,lainnya',
             'wajib_absen'   => 'nullable|boolean',
             'waktu'         => 'required|date',
             'tempat'        => 'required|string|max:255',
@@ -83,7 +83,7 @@ class PengurusAsramaController extends Controller
         $data = $request->validate([
             'nama_kegiatan' => 'required|string|max:255',
             'tujuan'        => 'required|string|max:500',
-            'jenis_kegiatan'=> 'required|string|in:akademik,hafalan,kegiatan,olahraga,sosial,lainnya',
+            'jenis_kegiatan'=> 'required|string|in:akademik,hafalan,ibadah,kegiatan,olahraga,sosial,lainnya',
             'wajib_absen'   => 'nullable|boolean',
             'waktu'         => 'required|date',
             'tempat'        => 'required|string|max:255',
@@ -109,6 +109,8 @@ class PengurusAsramaController extends Controller
     {
         abort_if($kegiatan->asrama !== $this->asrama(), 403);
 
+        $isPutri = $this->asrama() === 'Asrama Putri';
+
         $items = $kegiatan->attendances()
             ->with('user:id,name,avatar,asrama')
             ->orderByDesc('waktu_absen')
@@ -117,6 +119,8 @@ class PengurusAsramaController extends Controller
                 'id'          => $a->id,
                 'user'        => $a->user->only(['id', 'name', 'avatar', 'asrama']),
                 'asrama'      => $a->asrama,
+                'status'      => $a->status,
+                'keterangan'  => $a->keterangan,
                 'waktu_absen' => $a->waktu_absen->format('Y-m-d H:i'),
                 'latitude'    => $a->latitude,
                 'longitude'   => $a->longitude,
@@ -126,12 +130,30 @@ class PengurusAsramaController extends Controller
             ]);
 
         $wargaAsrama = \App\Models\User::where('role', 'mahasiswa')->where('asrama', $this->asrama())
-            ->orderBy('name')->get(['id', 'name']);
+            ->orderBy('name')->get(['id', 'name', 'avatar']);
+
+        $attendanceByUser = $kegiatan->attendances()->get()->keyBy('user_id');
+
+        // Rekap lengkap: seluruh warga asrama, termasuk yang belum dicatat sama sekali (status = null).
+        $roster = $wargaAsrama->map(function ($w) use ($attendanceByUser) {
+            $a = $attendanceByUser->get($w->id);
+            return [
+                'user_id'       => $w->id,
+                'name'          => $w->name,
+                'avatar'        => $w->avatar,
+                'attendance_id' => $a?->id,
+                'status'        => $a?->status,
+                'keterangan'    => $a?->keterangan,
+                'waktu_absen'   => $a?->waktu_absen?->format('Y-m-d H:i'),
+            ];
+        });
 
         return Inertia::render('PengurusAsrama/KegiatanAttendance', [
             'kegiatan' => $kegiatan,
             'items'    => $items,
+            'roster'   => $roster,
             'warga'    => $wargaAsrama,
+            'isPutri'  => $isPutri,
         ]);
     }
 
@@ -139,15 +161,28 @@ class PengurusAsramaController extends Controller
     {
         abort_if($kegiatan->asrama !== $this->asrama(), 403);
 
+        $isPutri = $this->asrama() === 'Asrama Putri';
+        $statusOptions = $isPutri
+            ? ['hadir', 'izin', 'sakit', 'alpa', 'haid']
+            : ['hadir', 'izin', 'sakit', 'alpa'];
+
         $data = $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_id'    => 'required|exists:users,id',
+            'status'     => ['nullable', 'string', 'in:' . implode(',', $statusOptions)],
+            'keterangan' => 'nullable|string|max:255',
         ]);
 
         $mahasiswa = \App\Models\User::findOrFail($data['user_id']);
 
-        \App\Models\KegiatanAttendance::firstOrCreate(
+        \App\Models\KegiatanAttendance::updateOrCreate(
             ['kegiatan_id' => $kegiatan->id, 'user_id' => $mahasiswa->id],
-            ['asrama' => $mahasiswa->asrama, 'waktu_absen' => now(), 'dicatat_oleh' => $request->user()->id]
+            [
+                'asrama'       => $mahasiswa->asrama,
+                'status'       => $data['status'] ?? 'hadir',
+                'keterangan'   => $data['keterangan'] ?? null,
+                'waktu_absen'  => now(),
+                'dicatat_oleh' => $request->user()->id,
+            ]
         );
 
         return back()->with('success', 'Kehadiran berhasil dicatat.');

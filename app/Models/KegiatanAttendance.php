@@ -10,6 +10,8 @@ class KegiatanAttendance extends Model
     protected $fillable = [
         'kegiatan_id',
         'user_id',
+        'status',
+        'keterangan',
         'asrama',
         'waktu_absen',
         'dicatat_oleh',
