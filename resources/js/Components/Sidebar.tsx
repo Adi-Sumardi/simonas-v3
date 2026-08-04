@@ -173,7 +173,12 @@ export function Sidebar({ user, drawerOpen = false, onClose, onOpen }: SidebarPr
 
     function handleLogout() { router.post('/logout'); }
 
-    const isLiveMeet = url.includes('/live-meet');
+    // Lock nav only while actually inside a live video call — not on list/dashboard
+    // pages like /super/live-meet (history) or /super/live-meet/{id}/join (passcode screen).
+    const urlPath = url.split('?')[0];
+    const isLiveMeet = /^\/mentor\/live-meet\/?$/.test(urlPath)
+        || /^\/mahasiswa\/live-meet\/join\/?$/.test(urlPath)
+        || /^\/super\/live-meet\/\d+\/?$/.test(urlPath);
 
     function NavItem({ item, mobile = false }: { item: MenuItem; mobile?: boolean }) {
         const active = isActive(item.href);
