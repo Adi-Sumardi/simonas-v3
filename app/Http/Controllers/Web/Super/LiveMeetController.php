@@ -10,6 +10,7 @@ use App\Models\Notification;
 use App\Services\LiveKitAdminClient;
 use App\Services\LiveKitTokenService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -95,6 +96,14 @@ class LiveMeetController extends Controller
     public function show(Request $request, LiveMeetingRoom $room, LiveKitTokenService $tokenService)
     {
         $user = $request->user();
+
+        // Meeting already ended (either "Akhiri untuk Semua" or LiveKit auto-closed
+        // it once everyone left) — nothing to render, send them back gracefully
+        // instead of a raw 403/abort.
+        if ($room->status === 'ended') {
+            return redirect()->route('super.live-meet.index')->with('message',"Meeting \"{$room->title}\" sudah berakhir.");
+        }
+
         $participant = $room->participants()->where('user_id', $user->id)->first();
 
         // Host viewing their own room dashboard even before others join.
@@ -109,7 +118,9 @@ class LiveMeetController extends Controller
             ]);
         }
 
-        abort_if($participant->status !== 'admitted', 403, 'Anda belum diizinkan masuk ke meeting ini.');
+        if ($participant->status !== 'admitted') {
+            return redirect()->route('super.live-meet.index')->with('message','Anda belum diizinkan masuk ke meeting ini, atau sudah dikeluarkan.');
+        }
 
         $token = $tokenService->generateToken(
             $room->room_name,
@@ -188,7 +199,7 @@ class LiveMeetController extends Controller
             return redirect()->route('super.live-meet.show', $room->id);
         }
 
-        return back()->with('info', 'Menunggu izin masuk dari host.');
+        return back()->with('message','Menunggu izin masuk dari host.');
     }
 
     public function waitingStatus(Request $request, LiveMeetingRoom $room)
@@ -251,7 +262,7 @@ class LiveMeetController extends Controller
         $this->authorizeHostAction($room, $request->user());
         abort_if($participant->room_id !== $room->id, 404);
 
-        $liveKit->removeParticipant($room->room_name, 'user_' . $participant->user_id);
+        $this->bestEffort(fn () => $liveKit->removeParticipant($room->room_name, 'user_' . $participant->user_id));
         $participant->update(['status' => 'left', 'left_at' => now()]);
 
         return back()->with('success', 'Peserta dikeluarkan dari meeting.');
@@ -261,7 +272,7 @@ class LiveMeetController extends Controller
     {
         $me = $this->authorizeHostAction($room, $request->user());
 
-        $liveKit->muteAllTracks($room->room_name, ['user_' . $me->user_id]);
+        $this->bestEffort(fn () => $liveKit->muteAllTracks($room->room_name, ['user_' . $me->user_id]));
 
         return back()->with('success', 'Semua peserta dibisukan.');
     }
@@ -270,7 +281,7 @@ class LiveMeetController extends Controller
     {
         $me = $this->authorizeHostAction($room, $request->user());
 
-        $liveKit->unmuteAllTracks($room->room_name, ['user_' . $me->user_id]);
+        $this->bestEffort(fn () => $liveKit->unmuteAllTracks($room->room_name, ['user_' . $me->user_id]));
 
         return back()->with('success', 'Semua peserta diizinkan bicara kembali.');
     }
@@ -316,11 +327,11 @@ class LiveMeetController extends Controller
 
         $activeRecording = $room->recordings()->where('status', 'recording')->latest()->first();
         if ($activeRecording) {
-            $liveKit->stopEgress($activeRecording->egress_id);
+            $this->bestEffort(fn () => $liveKit->stopEgress($activeRecording->egress_id));
             $activeRecording->update(['status' => 'processing']);
         }
 
-        $liveKit->endRoom($room->room_name);
+        $this->bestEffort(fn () => $liveKit->endRoom($room->room_name));
 
         $room->update(['status' => 'ended', 'ended_at' => now()]);
         $room->participants()->where('status', 'admitted')->update(['status' => 'left', 'left_at' => now()]);
@@ -359,6 +370,21 @@ class LiveMeetController extends Controller
     }
 
     // ── Helpers ────────────────────────────────────────────────
+
+    /**
+     * Run a LiveKit admin call without letting it crash the request — the LiveKit-side
+     * room/participant may already be gone (e.g. everyone left and LiveKit auto-closed
+     * the room) by the time the host clicks an action. Our own DB state is always the
+     * source of truth for the meeting lifecycle, so these calls are best-effort.
+     */
+    private function bestEffort(callable $fn): void
+    {
+        try {
+            $fn();
+        } catch (\Throwable $e) {
+            Log::warning('LiveKit admin action skipped (best-effort): ' . $e->getMessage());
+        }
+    }
 
     private function authorizeHostAction(LiveMeetingRoom $room, $user, bool $hostOnly = false): LiveMeetingParticipant
     {
