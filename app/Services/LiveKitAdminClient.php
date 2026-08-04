@@ -69,9 +69,19 @@ class LiveKitAdminClient
         return $response->json() ?? [];
     }
 
+    /**
+     * RoomService's `roomAdmin` grant is only honoured when the JWT's `video.room`
+     * claim matches the room being operated on — an unscoped admin token gets a
+     * blanket 401 "permissions denied", even with roomAdmin: true set.
+     */
+    private function callRoomScoped(string $method, string $room, array $body): array
+    {
+        return $this->call('RoomService', $method, $body, ['room' => $room]);
+    }
+
     public function listParticipants(string $room): array
     {
-        return $this->call('RoomService', 'ListParticipants', ['room' => $room])['participants'] ?? [];
+        return $this->callRoomScoped('ListParticipants', $room, ['room' => $room])['participants'] ?? [];
     }
 
     /**
@@ -85,7 +95,7 @@ class LiveKitAdminClient
                 continue;
             }
             foreach ($participant['tracks'] ?? [] as $track) {
-                $this->call('RoomService', 'MutePublishedTrack', [
+                $this->callRoomScoped('MutePublishedTrack', $room, [
                     'room'      => $room,
                     'identity'  => $participant['identity'],
                     'track_sid' => $track['sid'],
@@ -102,7 +112,7 @@ class LiveKitAdminClient
                 continue;
             }
             foreach ($participant['tracks'] ?? [] as $track) {
-                $this->call('RoomService', 'MutePublishedTrack', [
+                $this->callRoomScoped('MutePublishedTrack', $room, [
                     'room'      => $room,
                     'identity'  => $participant['identity'],
                     'track_sid' => $track['sid'],
@@ -114,12 +124,12 @@ class LiveKitAdminClient
 
     public function removeParticipant(string $room, string $identity): void
     {
-        $this->call('RoomService', 'RemoveParticipant', ['room' => $room, 'identity' => $identity]);
+        $this->callRoomScoped('RemoveParticipant', $room, ['room' => $room, 'identity' => $identity]);
     }
 
     public function endRoom(string $room): void
     {
-        $this->call('RoomService', 'DeleteRoom', ['room' => $room]);
+        $this->callRoomScoped('DeleteRoom', $room, ['room' => $room]);
     }
 
     /**
