@@ -43,8 +43,21 @@ class DashboardController extends Controller
         // Recent activities (ambil dari aktivitas model atau log model)
         $recent_activities = [];
 
+        // Radar profil penilaian (Akademik/Leadership/Karakter/Kreativitas/Hafalan)
+        $avgVal = fn ($model) => (float) ($model::where('user_id', $user->id)
+            ->selectRaw("AVG(NULLIF(nilai, '')::numeric) as avg_val")
+            ->value('avg_val') ?? 0);
+
+        $radarScores = [
+            ['subject' => 'Akademik',    'A' => round($avgVal(\App\Models\Akademik::class), 1),   'fullMark' => 100],
+            ['subject' => 'Leadership',  'A' => round($avgVal(\App\Models\Leadership::class), 1), 'fullMark' => 100],
+            ['subject' => 'Karakter',    'A' => round($avgVal(\App\Models\Karakter::class), 1),   'fullMark' => 100],
+            ['subject' => 'Kreativitas', 'A' => round($avgVal(\App\Models\Kreatif::class), 1),    'fullMark' => 100],
+            ['subject' => 'Hafalan',     'A' => (float) (\App\Models\HafalanLog::where('user_id', $user->id)->where('score', 'memtas')->count() * 10), 'fullMark' => 100],
+        ];
+
         return Inertia::render('Mahasiswa/Dashboard', compact(
-            'shalat', 'study_hours', 'hafalan', 'points', 'recent_activities'
+            'shalat', 'study_hours', 'hafalan', 'points', 'recent_activities', 'radarScores'
         ));
     }
 }

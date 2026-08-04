@@ -2,9 +2,19 @@ import { Head, Link, router } from '@inertiajs/react';
 import { AppLayout } from '@/Layouts/AppLayout';
 import { PageHeader } from '@/Components/ui/PageHeader';
 import { ProgressDonut } from '@/Components/ui/ProgressDonut';
+import {
+    RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+    Tooltip, ResponsiveContainer,
+} from 'recharts';
 
 import { Icon } from '@/Components/ui/Icon';
 import { PageProps, AktivitasItem } from '@/types';
+
+interface RadarScoreItem {
+    subject: string;
+    A: number;
+    fullMark: number;
+}
 
 interface DashboardMahasiswaProps extends PageProps {
     shalat: {
@@ -35,6 +45,7 @@ interface DashboardMahasiswaProps extends PageProps {
         to_next: number;
     };
     recent_activities: AktivitasItem[];
+    radarScores: RadarScoreItem[];
 }
 
 export default function Dashboard({
@@ -44,6 +55,7 @@ export default function Dashboard({
     hafalan,
     points,
     recent_activities,
+    radarScores,
 }: DashboardMahasiswaProps) {
     const prayerPercent = Math.round((shalat.completed / shalat.total) * 100);
 
@@ -175,6 +187,39 @@ export default function Dashboard({
                             </Link>
                         </div>
                     </div>
+                </div>
+
+                {/* Radar Profil Penilaian */}
+                <div className="glass-card p-6 rounded-xl shadow-glass-sm md:col-span-3 lg:col-span-2">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-display text-headline-md text-on-surface">Profil Penilaian</h3>
+                        <div className="p-2 bg-primary/5 rounded-full text-primary-container">
+                            <Icon name="radar" className="text-xl" />
+                        </div>
+                    </div>
+                    {radarScores.every(r => r.A === 0) ? (
+                        <p className="text-body-sm text-on-surface-variant text-center py-12">
+                            Belum ada data penilaian untuk ditampilkan.
+                        </p>
+                    ) : (
+                        <div className="h-[280px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <RadarChart data={radarScores} outerRadius="75%">
+                                    <PolarGrid stroke="#e2e8f0" />
+                                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: '#64748b' }} />
+                                    <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 9, fill: '#94a3b8' }} />
+                                    <Radar
+                                        name="Skor"
+                                        dataKey="A"
+                                        stroke="#2563eb"
+                                        fill="#2563eb"
+                                        fillOpacity={0.35}
+                                    />
+                                    <Tooltip />
+                                </RadarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    )}
                 </div>
 
                 {/* Recent Activities */}
