@@ -144,6 +144,9 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         // Bisnis directory
         Route::get('/bisnis',  [App\Http\Controllers\Web\Alumni\AlumniBusinessController::class, 'index']) ->name('bisnis.index');
         Route::post('/bisnis', [App\Http\Controllers\Web\Alumni\AlumniBusinessController::class, 'store']) ->name('bisnis.store');
+
+        // Leaderboard (read-only view of mahasiswa rankings)
+        Route::get('/leaderboard', [App\Http\Controllers\Web\Alumni\AlumniLeaderboardController::class, 'index'])->name('leaderboard.index');
     });
 
     // ── Mentor (permission-gated) ─────────────────────────────

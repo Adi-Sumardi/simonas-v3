@@ -7,6 +7,7 @@ const ALUMNI_NAV = [
     { href: '/alumni/hub',   icon: 'people',       label: 'Postingan' },
     { href: '/alumni/bisnis',icon: 'storefront',   label: 'Bisnis' },
     { href: '/alumni/jobs',  icon: 'work',         label: 'Lowongan & Magang' },
+    { href: '/alumni/leaderboard', icon: 'leaderboard', label: 'Leaderboard' },
 ];
 
 interface AlumniSidebarProps {

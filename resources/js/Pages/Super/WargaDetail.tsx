@@ -21,6 +21,11 @@ interface Warga {
     universitas: string | null;
     fakultas: string | null;
     prodi: string | null;
+    bio?: string | null;
+    prestasi?: string | null;
+    organisasi?: string | null;
+    asal_sekolah?: string | null;
+    tgl_lahir?: string | null;
 }
 
 interface ActivityRow {
@@ -141,120 +146,199 @@ export default function WargaDetail({ warga, stats, radarScores, radarRange, ipk
                 subtitle={`${warga.no_induk || 'Tanpa NIM'} · ${warga.asrama || 'Belum ada asrama'}`}
                 breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Warga', href: '/super/warga' }, { label: warga.name }]}
                 actions={
-                    <Link href={`/super/warga/${warga.id}/edit`} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary-container text-white text-sm font-bold hover:opacity-90 transition-opacity">
-                        <Icon name="edit" className="text-sm" /> Edit Warga
-                    </Link>
+                    <div className="flex items-center gap-2">
+                        <button onClick={() => window.print()} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-container text-on-surface-variant text-sm font-bold hover:bg-white/60 transition-colors print:hidden">
+                            <Icon name="print" className="text-sm" /> Cetak / PDF
+                        </button>
+                        <Link href={`/super/warga/${warga.id}/edit`} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary-container text-white text-sm font-bold hover:opacity-90 transition-opacity print:hidden">
+                            <Icon name="edit" className="text-sm" /> Edit Warga
+                        </Link>
+                    </div>
                 }
             />
 
-            {/* Profile card */}
-            <div className="glass-card rounded-2xl p-6 mb-6 flex flex-col sm:flex-row gap-6 items-start">
-                <div className="w-20 h-20 rounded-2xl bg-primary-container flex items-center justify-center text-2xl font-black text-white flex-shrink-0">
-                    {warga.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
-                </div>
-                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-                    <div><p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Email</p><p className="text-sm font-semibold text-on-surface">{warga.email}</p></div>
-                    <div><p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">No. Induk</p><p className="text-sm font-semibold text-on-surface">{warga.no_induk || '-'}</p></div>
-                    <div><p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Status</p>
-                        <span className={`inline-block mt-0.5 text-xs font-bold px-2.5 py-0.5 rounded-full ${warga.status_warga === 'aktif' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-                            {warga.status_warga === 'aktif' ? 'Aktif' : 'Nonaktif'}
-                        </span>
-                    </div>
-                    <div><p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Angkatan</p><p className="text-sm font-semibold text-on-surface">{warga.angkatan || '-'}</p></div>
-                    <div><p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">No. Telp</p><p className="text-sm font-semibold text-on-surface">{warga.no_telp || '-'}</p></div>
-                    <div><p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Tgl Masuk</p><p className="text-sm font-semibold text-on-surface">{warga.tgl_masuk || '-'}</p></div>
-                    <div><p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Universitas</p><p className="text-sm font-semibold text-on-surface">{warga.universitas || '-'}</p></div>
-                    <div><p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Prodi</p><p className="text-sm font-semibold text-on-surface">{warga.prodi || '-'}</p></div>
-                    <div className="sm:col-span-2 lg:col-span-1"><p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Alamat</p><p className="text-sm font-semibold text-on-surface">{warga.alamat || '-'}</p></div>
-                </div>
-            </div>
+            {/* CV Sheet */}
+            <div className="glass-card rounded-2xl overflow-hidden print:shadow-none print:border-none">
+                <div className="grid grid-cols-1 lg:grid-cols-3">
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-                <StatCard label="Total Poin" value={stats.points} icon="military_tech" badgeColor="amber" />
-                <StatCard label="Akademik" value={stats.akademik} icon="school" badgeColor="blue" />
-                <StatCard label="Leadership" value={stats.leadership} icon="groups" badgeColor="rose" />
-                <StatCard label="Karakter" value={stats.karakter} icon="favorite" badgeColor="emerald" />
-                <StatCard label="Kreativitas" value={stats.kreatif} icon="lightbulb" badgeColor="purple" />
-            </div>
-
-            {/* Radar profile */}
-            <div className="glass-card rounded-2xl p-6 mb-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-1">
-                    <div>
-                        <h3 className="font-bold text-on-surface text-sm">Profil Penilaian</h3>
-                        <p className="text-xs text-on-surface-variant mt-0.5">6 dimensi, skala 0-100 (20 aktivitas dalam rentang = 100)</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="date"
-                            value={radarFrom}
-                            onChange={e => { setRadarFrom(e.target.value); applyRadarRange(e.target.value, radarTo); }}
-                            className="glass-input text-xs py-1.5"
-                        />
-                        <span className="text-xs text-on-surface-variant">s/d</span>
-                        <input
-                            type="date"
-                            value={radarTo}
-                            onChange={e => { setRadarTo(e.target.value); applyRadarRange(radarFrom, e.target.value); }}
-                            className="glass-input text-xs py-1.5"
-                        />
-                        <button onClick={setThisMonth} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-primary-container/10 text-primary-container hover:bg-primary-container/20 transition-colors whitespace-nowrap">
-                            Bulan Ini
-                        </button>
-                    </div>
-                </div>
-                <div className="h-[280px] w-full mt-3">
-                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                        <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarScores}>
-                            <PolarGrid stroke="#e2e8f0" />
-                            <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 11 }} />
-                            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                            <Radar name={warga.name} dataKey="value" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
-                            <Tooltip
-                                contentStyle={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                            />
-                        </RadarChart>
-                    </ResponsiveContainer>
-                </div>
-            </div>
-
-            {/* Hafalan + IPK */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div className="glass-card rounded-2xl p-6">
-                    <h3 className="font-bold text-on-surface text-sm mb-4">Progress Hafalan</h3>
-                    {hafalan ? (
-                        <div className="grid grid-cols-3 gap-3 text-center">
-                            <div><p className="text-2xl font-black text-primary-container">{hafalan.current_juz}</p><p className="text-[10px] text-on-surface-variant uppercase font-bold">Juz</p></div>
-                            <div><p className="text-2xl font-black text-primary-container">{hafalan.total_ayah_completed}</p><p className="text-[10px] text-on-surface-variant uppercase font-bold">Ayat</p></div>
-                            <div><p className="text-2xl font-black text-primary-container">{hafalan.streak_days}</p><p className="text-[10px] text-on-surface-variant uppercase font-bold">Streak</p></div>
+                    {/* ── Left column: CV identity sidebar ── */}
+                    <div className="lg:col-span-1 bg-primary-container/5 border-b lg:border-b-0 lg:border-r border-white/40 p-6 space-y-6">
+                        <div className="flex flex-col items-center text-center">
+                            <div className="w-24 h-24 rounded-2xl bg-primary-container flex items-center justify-center text-3xl font-black text-white flex-shrink-0 overflow-hidden">
+                                {warga.avatar ? (
+                                    <img src={warga.avatar} alt={warga.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    warga.name.split(' ').map(n => n[0]).slice(0, 2).join('')
+                                )}
+                            </div>
+                            <h2 className="font-display text-headline-sm text-on-surface mt-4">{warga.name}</h2>
+                            <p className="text-xs text-on-surface-variant mt-1">{warga.prodi || warga.universitas || 'Mahasiswa'}</p>
+                            <span className={`inline-block mt-2 text-[10px] font-bold px-2.5 py-0.5 rounded-full ${warga.status_warga === 'aktif' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                                {warga.status_warga === 'aktif' ? 'Aktif' : 'Nonaktif'}
+                            </span>
                         </div>
-                    ) : (
-                        <p className="text-xs text-on-surface-variant text-center py-4">Belum ada data hafalan.</p>
-                    )}
-                </div>
-                <div className="glass-card rounded-2xl p-6">
-                    <h3 className="font-bold text-on-surface text-sm mb-4">Riwayat IPK</h3>
-                    {ipks.length === 0 ? (
-                        <p className="text-xs text-on-surface-variant text-center py-4">Belum ada data IPK.</p>
-                    ) : (
-                        <div className="flex flex-wrap gap-2">
-                            {ipks.map(i => (
-                                <span key={i.id} className="text-xs font-bold px-3 py-1.5 rounded-xl bg-surface-container/40">
-                                    Sem {i.semester}: <span className="text-primary-container">{i.ip}</span>
-                                </span>
-                            ))}
+
+                        {warga.bio && (
+                            <p className="text-xs text-on-surface-variant leading-relaxed text-center italic">"{warga.bio}"</p>
+                        )}
+
+                        {/* Contact block */}
+                        <div className="space-y-3">
+                            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Kontak</p>
+                            <div className="space-y-2 text-xs">
+                                <div className="flex items-center gap-2 text-on-surface"><Icon name="mail" className="text-sm text-on-surface-variant" />{warga.email}</div>
+                                <div className="flex items-center gap-2 text-on-surface"><Icon name="call" className="text-sm text-on-surface-variant" />{warga.no_telp || '-'}</div>
+                                <div className="flex items-start gap-2 text-on-surface"><Icon name="home" className="text-sm text-on-surface-variant mt-0.5" /><span>{warga.alamat || '-'}</span></div>
+                            </div>
                         </div>
-                    )}
+
+                        {/* Identitas block */}
+                        <div className="space-y-3">
+                            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Identitas</p>
+                            <div className="space-y-2 text-xs">
+                                <div className="flex justify-between gap-2"><span className="text-on-surface-variant">No. Induk</span><span className="font-semibold text-on-surface text-right">{warga.no_induk || '-'}</span></div>
+                                <div className="flex justify-between gap-2"><span className="text-on-surface-variant">Asrama</span><span className="font-semibold text-on-surface text-right">{warga.asrama || '-'}</span></div>
+                                <div className="flex justify-between gap-2"><span className="text-on-surface-variant">Angkatan</span><span className="font-semibold text-on-surface text-right">{warga.angkatan || '-'}</span></div>
+                                <div className="flex justify-between gap-2"><span className="text-on-surface-variant">Tgl Masuk</span><span className="font-semibold text-on-surface text-right">{warga.tgl_masuk || '-'}</span></div>
+                                {warga.tgl_lahir && (
+                                    <div className="flex justify-between gap-2"><span className="text-on-surface-variant">Tgl Lahir</span><span className="font-semibold text-on-surface text-right">{warga.tgl_lahir}</span></div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Quick stats */}
+                        <div className="space-y-3">
+                            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Ringkasan Poin</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                <StatCard label="Total Poin" value={stats.points} icon="military_tech" badgeColor="amber" />
+                                <StatCard label="Akademik" value={stats.akademik} icon="school" badgeColor="blue" />
+                                <StatCard label="Leadership" value={stats.leadership} icon="groups" badgeColor="rose" />
+                                <StatCard label="Karakter" value={stats.karakter} icon="favorite" badgeColor="emerald" />
+                                <StatCard label="Kreativitas" value={stats.kreatif} icon="lightbulb" badgeColor="purple" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── Right column: CV main content ── */}
+                    <div className="lg:col-span-2 p-6 space-y-8">
+
+                        {/* Riwayat Pendidikan */}
+                        <section>
+                            <h3 className="flex items-center gap-2 font-bold text-on-surface text-sm uppercase tracking-wide mb-3">
+                                <Icon name="school" className="text-base text-primary-container" /> Riwayat Pendidikan
+                            </h3>
+                            <div className="border-l-2 border-primary-container/20 pl-4 space-y-3">
+                                <div>
+                                    <p className="text-sm font-bold text-on-surface">{warga.universitas || 'Belum ada data universitas'}</p>
+                                    <p className="text-xs text-on-surface-variant">{warga.prodi || '-'} {warga.fakultas ? `· ${warga.fakultas}` : ''}</p>
+                                </div>
+                                {warga.asal_sekolah && (
+                                    <div>
+                                        <p className="text-sm font-semibold text-on-surface">{warga.asal_sekolah}</p>
+                                        <p className="text-xs text-on-surface-variant">Sekolah Asal</p>
+                                    </div>
+                                )}
+                                {ipks.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 pt-1">
+                                        {ipks.map(i => (
+                                            <span key={i.id} className="text-xs font-bold px-3 py-1.5 rounded-xl bg-surface-container/40">
+                                                Sem {i.semester}: <span className="text-primary-container">{i.ip}</span>
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+
+                        {/* Prestasi */}
+                        {warga.prestasi && (
+                            <section>
+                                <h3 className="flex items-center gap-2 font-bold text-on-surface text-sm uppercase tracking-wide mb-3">
+                                    <Icon name="workspace_premium" className="text-base text-amber-500" /> Prestasi
+                                </h3>
+                                <p className="text-sm text-on-surface leading-relaxed whitespace-pre-line">{warga.prestasi}</p>
+                            </section>
+                        )}
+
+                        {/* Organisasi */}
+                        {warga.organisasi && (
+                            <section>
+                                <h3 className="flex items-center gap-2 font-bold text-on-surface text-sm uppercase tracking-wide mb-3">
+                                    <Icon name="groups" className="text-base text-rose-500" /> Pengalaman Organisasi
+                                </h3>
+                                <p className="text-sm text-on-surface leading-relaxed whitespace-pre-line">{warga.organisasi}</p>
+                            </section>
+                        )}
+
+                        {/* Hafalan */}
+                        <section>
+                            <h3 className="flex items-center gap-2 font-bold text-on-surface text-sm uppercase tracking-wide mb-3">
+                                <Icon name="menu_book" className="text-base text-emerald-600" /> Progress Hafalan
+                            </h3>
+                            {hafalan ? (
+                                <div className="grid grid-cols-3 gap-3 text-center max-w-sm">
+                                    <div><p className="text-xl font-black text-primary-container">{hafalan.current_juz}</p><p className="text-[10px] text-on-surface-variant uppercase font-bold">Juz</p></div>
+                                    <div><p className="text-xl font-black text-primary-container">{hafalan.total_ayah_completed}</p><p className="text-[10px] text-on-surface-variant uppercase font-bold">Ayat</p></div>
+                                    <div><p className="text-xl font-black text-primary-container">{hafalan.streak_days}</p><p className="text-[10px] text-on-surface-variant uppercase font-bold">Streak</p></div>
+                                </div>
+                            ) : (
+                                <p className="text-xs text-on-surface-variant">Belum ada data hafalan.</p>
+                            )}
+                        </section>
+
+                        {/* Radar profile */}
+                        <section className="print:hidden">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-1">
+                                <h3 className="flex items-center gap-2 font-bold text-on-surface text-sm uppercase tracking-wide">
+                                    <Icon name="radar" className="text-base text-violet-500" /> Profil Penilaian
+                                </h3>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="date"
+                                        value={radarFrom}
+                                        onChange={e => { setRadarFrom(e.target.value); applyRadarRange(e.target.value, radarTo); }}
+                                        className="glass-input text-xs py-1.5"
+                                    />
+                                    <span className="text-xs text-on-surface-variant">s/d</span>
+                                    <input
+                                        type="date"
+                                        value={radarTo}
+                                        onChange={e => { setRadarTo(e.target.value); applyRadarRange(radarFrom, e.target.value); }}
+                                        className="glass-input text-xs py-1.5"
+                                    />
+                                    <button onClick={setThisMonth} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-primary-container/10 text-primary-container hover:bg-primary-container/20 transition-colors whitespace-nowrap">
+                                        Bulan Ini
+                                    </button>
+                                </div>
+                            </div>
+                            <p className="text-xs text-on-surface-variant mb-2">6 dimensi, skala 0-100 (20 aktivitas dalam rentang = 100)</p>
+                            <div className="h-[260px] w-full">
+                                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                                    <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarScores}>
+                                        <PolarGrid stroke="#e2e8f0" />
+                                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                                        <Radar name={warga.name} dataKey="value" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                                        />
+                                    </RadarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </section>
+                    </div>
                 </div>
             </div>
 
             {/* Activity tables */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <ActivityTable title="Aktivitas Akademik Terakhir" rows={akademiks} onView={setViewingActivity} />
-                <ActivityTable title="Aktivitas Leadership Terakhir" rows={leaderships} onView={setViewingActivity} />
-                <ActivityTable title="Aktivitas Karakter Terakhir" rows={karakters} onView={setViewingActivity} />
-                <ActivityTable title="Aktivitas Kreativitas Terakhir" rows={kreatifs} onView={setViewingActivity} />
+            <div className="mt-6">
+                <h3 className="font-bold text-on-surface text-sm uppercase tracking-wide mb-3 print:hidden">Riwayat Aktivitas Lengkap</h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 print:hidden">
+                    <ActivityTable title="Aktivitas Akademik Terakhir" rows={akademiks} onView={setViewingActivity} />
+                    <ActivityTable title="Aktivitas Leadership Terakhir" rows={leaderships} onView={setViewingActivity} />
+                    <ActivityTable title="Aktivitas Karakter Terakhir" rows={karakters} onView={setViewingActivity} />
+                    <ActivityTable title="Aktivitas Kreativitas Terakhir" rows={kreatifs} onView={setViewingActivity} />
+                </div>
             </div>
 
             {/* Activity detail modal */}
