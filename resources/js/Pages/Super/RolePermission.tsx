@@ -19,6 +19,7 @@ interface UserItem {
     role: string;
     roles: string[];
     avatar?: string;
+    asrama?: string | null;
 }
 
 interface Props extends PageProps {
@@ -49,6 +50,7 @@ export default function RolePermission({ roles, permissions, users }: Props) {
     const [newRoleName, setNewRoleName] = useState('');
     const [newPermName, setNewPermName] = useState('');
     const [userSearch, setUserSearch] = useState('');
+    const [asramaFilter, setAsramaFilter] = useState('');
 
     // Local copy of users — prevents list from blanking during Inertia reloads
     const [localUsers, setLocalUsers] = useState<UserItem[]>(users ?? []);
@@ -225,9 +227,14 @@ export default function RolePermission({ roles, permissions, users }: Props) {
         });
     }
 
+    const asramaOptions = Array.from(
+        new Set((localUsers ?? []).map(u => u.asrama).filter((a): a is string => !!a))
+    ).sort();
+
     const filteredUsers = (localUsers ?? []).filter(u =>
-        u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-        u.email.toLowerCase().includes(userSearch.toLowerCase())
+        (u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+            u.email.toLowerCase().includes(userSearch.toLowerCase())) &&
+        (asramaFilter === '' || u.asrama === asramaFilter)
     );
 
     const PERM_GROUPS: Record<string, string[]> = {};
@@ -457,15 +464,28 @@ export default function RolePermission({ roles, permissions, users }: Props) {
             {activeTab === 'users' && (
                 <div className="glass-card rounded-2xl overflow-hidden">
                     {/* Search */}
-                    <div className="p-5 border-b border-white/40 flex items-center gap-3">
+                    <div className="p-5 border-b border-white/40 flex flex-wrap items-center gap-3">
                         <Icon name="search" className="text-xl text-on-surface-variant" />
                         <input
                             type="text" value={userSearch}
                             onChange={e => setUserSearch(e.target.value)}
                             placeholder="Cari nama atau email..."
-                            className="bg-transparent outline-none flex-1 text-body-sm placeholder:text-on-surface-variant/60"
+                            className="bg-transparent outline-none flex-1 text-body-sm placeholder:text-on-surface-variant/60 min-w-[160px]"
                         />
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <Icon name="home_work" className="text-lg text-on-surface-variant" />
+                            <select
+                                value={asramaFilter}
+                                onChange={e => setAsramaFilter(e.target.value)}
+                                className="glass-input text-body-sm py-2 pr-8 rounded-xl"
+                            >
+                                <option value="">Semua Asrama</option>
+                                {asramaOptions.map(a => (
+                                    <option key={a} value={a}>{a}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="flex items-center gap-4 ml-auto">
                             <span className="text-label-caps text-on-surface-variant hidden sm:inline">{filteredUsers.length} users</span>
                             <button
                                 onClick={openAddModal}

@@ -25,7 +25,7 @@ class RolePermissionController extends Controller
 
         $permissions = Permission::orderBy('name')->pluck('name');
 
-        $users = User::select('id', 'name', 'email', 'role', 'avatar')
+        $users = User::select('id', 'name', 'email', 'role', 'avatar', 'asrama')
             ->orderBy('name')
             ->get()
             ->map(fn ($u) => [
@@ -35,6 +35,7 @@ class RolePermissionController extends Controller
                 'role'   => $u->role,
                 'roles'  => $u->getRoleNames(),
                 'avatar' => $u->avatar,
+                'asrama' => $u->asrama,
             ]);
 
         return Inertia::render('Super/RolePermission', compact('roles', 'permissions', 'users'));
