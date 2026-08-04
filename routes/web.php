@@ -284,10 +284,19 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         Route::put('/warga/{id}',        [App\Http\Controllers\Web\Super\SuperController::class, 'wargaUpdate'])->name('warga.update');
     });
 
-    // ── Live Meet (superadmin only) ───────────────────────────
+    // ── Live Meet ──────────────────────────────────────────────
+    // Dashboard/management (start meetings, see history) — superadmin only.
     Route::middleware('can:access-live-meet')->prefix('super/live-meet')->name('super.live-meet.')->group(function () {
-        Route::get('/',            [App\Http\Controllers\Web\Super\LiveMeetController::class, 'index'])  ->name('index');
-        Route::post('/',           [App\Http\Controllers\Web\Super\LiveMeetController::class, 'store'])  ->name('store');
+        Route::get('/',  [App\Http\Controllers\Web\Super\LiveMeetController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\Web\Super\LiveMeetController::class, 'store'])->name('store');
+        Route::delete('/recordings/{recording}', [App\Http\Controllers\Web\Super\LiveMeetController::class, 'destroyRecording'])->name('recordings.destroy');
+    });
+
+    // Room participation — any authenticated user (invited via link + passcode).
+    // Every action below is authorized inside the controller against the
+    // caller's role in `live_meeting_participants` (host/co-host/participant),
+    // not by a route-level permission, since invited co-hosts are often not superadmins.
+    Route::prefix('super/live-meet')->name('super.live-meet.')->group(function () {
         Route::get('/{room}',      [App\Http\Controllers\Web\Super\LiveMeetController::class, 'show'])   ->name('show');
         Route::get('/{room}/join', [App\Http\Controllers\Web\Super\LiveMeetController::class, 'join'])   ->name('join');
         Route::post('/{room}/join',[App\Http\Controllers\Web\Super\LiveMeetController::class, 'joinSubmit'])->name('join.submit');
@@ -306,7 +315,6 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         Route::post('/{room}/end', [App\Http\Controllers\Web\Super\LiveMeetController::class, 'end'])->name('end');
 
         Route::get('/recordings/{recording}/download', [App\Http\Controllers\Web\Super\LiveMeetController::class, 'downloadRecording'])->name('recordings.download');
-        Route::delete('/recordings/{recording}',        [App\Http\Controllers\Web\Super\LiveMeetController::class, 'destroyRecording']) ->name('recordings.destroy');
     });
 
 });

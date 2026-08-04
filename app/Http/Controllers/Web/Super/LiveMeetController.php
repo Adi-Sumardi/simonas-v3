@@ -332,6 +332,14 @@ class LiveMeetController extends Controller
 
     public function downloadRecording(Request $request, LiveMeetingRecording $recording)
     {
+        $user = $request->user();
+        $isParticipantHost = $recording->room
+            ?->participants()
+            ->where('user_id', $user->id)
+            ->whereIn('role', ['host', 'co-host'])
+            ->exists();
+        abort_unless($user->can('access-live-meet') || $isParticipantHost, 403, 'Hanya host/co-host meeting ini yang bisa mengunduh rekaman.');
+
         abort_unless($recording->status === 'ready' && $recording->file_path, 404, 'Rekaman belum siap.');
         abort_unless(Storage::disk('live_meet_recordings')->exists(basename($recording->file_path)), 404, 'File rekaman tidak ditemukan.');
 

@@ -32,6 +32,7 @@ export default function LiveMeetRoom({ room, myRole, token, wsUrl, hasActiveReco
     const isHostOrCoHost = myRole === 'host' || myRole === 'co-host';
     const isHost = myRole === 'host';
     const [copied, setCopied] = useState(false);
+    const [linkCopied, setLinkCopied] = useState(false);
     const [recording, setRecording] = useState(hasActiveRecording);
 
     // Poll participant/waiting-room state every 5s for host/co-host (no websockets in this app).
@@ -48,6 +49,14 @@ export default function LiveMeetRoom({ room, myRole, token, wsUrl, hasActiveReco
         navigator.clipboard.writeText(room.passcode);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    }
+
+    function copyInviteLink() {
+        const url = `${window.location.origin}/super/live-meet/${room.id}/join`;
+        const text = room.passcode ? `${url}\nPasscode: ${room.passcode}` : url;
+        navigator.clipboard.writeText(text);
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2000);
     }
 
     function post(url: string) {
@@ -117,10 +126,16 @@ export default function LiveMeetRoom({ room, myRole, token, wsUrl, hasActiveReco
                     {isHostOrCoHost && (
                         <div className="glass-card rounded-2xl p-4 flex flex-wrap items-center gap-2">
                             {room.passcode && (
-                                <button onClick={copyPasscode} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-surface-container text-on-surface-variant hover:bg-white/60 transition-colors">
-                                    <Icon name={copied ? 'check' : 'content_copy'} className="text-base" />
-                                    {copied ? 'Tersalin' : `Passcode: ${room.passcode}`}
-                                </button>
+                                <>
+                                    <button onClick={copyInviteLink} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-primary-container/10 text-primary-container hover:bg-primary-container/20 transition-colors">
+                                        <Icon name={linkCopied ? 'check' : 'link'} className="text-base" />
+                                        {linkCopied ? 'Link Tersalin' : 'Salin Link Undangan'}
+                                    </button>
+                                    <button onClick={copyPasscode} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-surface-container text-on-surface-variant hover:bg-white/60 transition-colors">
+                                        <Icon name={copied ? 'check' : 'content_copy'} className="text-base" />
+                                        {copied ? 'Tersalin' : `Passcode: ${room.passcode}`}
+                                    </button>
+                                </>
                             )}
                             <button onClick={() => post(`/super/live-meet/${room.id}/mute-all`)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors">
                                 <Icon name="mic_off" className="text-base" /> Mute All
