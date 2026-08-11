@@ -12,6 +12,7 @@ class KegiatanAttendance extends Model
         'user_id',
         'status',
         'keterangan',
+        'poin_deduction',
         'asrama',
         'waktu_absen',
         'dicatat_oleh',

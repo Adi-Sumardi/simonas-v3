@@ -128,9 +128,12 @@ class DashboardController extends Controller
             }
         }
 
-        return Inertia::render('Mentor/Dashboard', compact(
-            'stats', 'performance_trend', 'mentees', 'featured_mentee'
-        ));
+        return Inertia::render('Mentor/Dashboard', [
+            'stats'             => $stats,
+            'performance_trend' => $performance_trend,
+            'mentees'           => $mentees,
+            'featured_mentee'   => $featuredMentee,
+        ]);
     }
 
     public function submitEval(Request $request, $id)

@@ -138,13 +138,14 @@ class PengurusAsramaController extends Controller
         $roster = $wargaAsrama->map(function ($w) use ($attendanceByUser) {
             $a = $attendanceByUser->get($w->id);
             return [
-                'user_id'       => $w->id,
-                'name'          => $w->name,
-                'avatar'        => $w->avatar,
-                'attendance_id' => $a?->id,
-                'status'        => $a?->status,
-                'keterangan'    => $a?->keterangan,
-                'waktu_absen'   => $a?->waktu_absen?->format('Y-m-d H:i'),
+                'user_id'        => $w->id,
+                'name'           => $w->name,
+                'avatar'         => $w->avatar,
+                'attendance_id'  => $a?->id,
+                'status'         => $a?->status,
+                'keterangan'     => $a?->keterangan,
+                'poin_deduction' => $a?->poin_deduction ?? 0,
+                'waktu_absen'    => $a?->waktu_absen?->format('Y-m-d H:i'),
             ];
         });
 
@@ -173,15 +174,24 @@ class PengurusAsramaController extends Controller
         ]);
 
         $mahasiswa = \App\Models\User::findOrFail($data['user_id']);
+        $status    = $data['status'] ?? 'hadir';
+
+        // Potongan poin hanya berlaku untuk alpa pada kegiatan wajib_absen yang sudah selesai berlangsung.
+        $poinDeduction = 0;
+        if ($status === 'alpa' && $kegiatan->wajib_absen && $kegiatan->sudah_selesai) {
+            $rule = \App\Models\PointRule::where('activity_type', 'kegiatan')->where('is_active', true)->first();
+            $poinDeduction = $rule->poin ?? 20;
+        }
 
         \App\Models\KegiatanAttendance::updateOrCreate(
             ['kegiatan_id' => $kegiatan->id, 'user_id' => $mahasiswa->id],
             [
-                'asrama'       => $mahasiswa->asrama,
-                'status'       => $data['status'] ?? 'hadir',
-                'keterangan'   => $data['keterangan'] ?? null,
-                'waktu_absen'  => now(),
-                'dicatat_oleh' => $request->user()->id,
+                'asrama'         => $mahasiswa->asrama,
+                'status'         => $status,
+                'keterangan'     => $data['keterangan'] ?? null,
+                'poin_deduction' => $poinDeduction,
+                'waktu_absen'    => now(),
+                'dicatat_oleh'   => $request->user()->id,
             ]
         );
 
@@ -196,6 +206,56 @@ class PengurusAsramaController extends Controller
         $attendance->delete();
 
         return back()->with('success', 'Data kehadiran berhasil dihapus.');
+    }
+
+    // ── Warga Asrama ───────────────────────────────────────────
+
+    public function wargaIndex(Request $request)
+    {
+        $asrama  = $this->asrama();
+        $perPage = min((int)($request->per_page ?? 10), 100);
+
+        $query = \App\Models\User::where('role', 'mahasiswa')->where('asrama', $asrama);
+
+        if ($request->search) {
+            $q = $request->search;
+            $query->where(fn ($sub) => $sub
+                ->where('name', 'like', "%{$q}%")
+                ->orWhere('no_induk', 'like', "%{$q}%")
+            );
+        }
+
+        if ($request->status) {
+            $query->where('status_warga', $request->status);
+        }
+
+        $warga = $query->orderBy('name')
+            ->select(['id', 'name', 'email', 'no_induk', 'asrama', 'status_warga', 'avatar', 'angkatan'])
+            ->paginate($perPage)->withQueryString();
+
+        return Inertia::render('PengurusAsrama/Warga', [
+            'warga'   => $warga,
+            'asrama'  => $asrama,
+            'stats'   => [
+                'total'    => \App\Models\User::where('role', 'mahasiswa')->where('asrama', $asrama)->count(),
+                'aktif'    => \App\Models\User::where('role', 'mahasiswa')->where('asrama', $asrama)->where('status_warga', 'aktif')->count(),
+                'nonaktif' => \App\Models\User::where('role', 'mahasiswa')->where('asrama', $asrama)->where('status_warga', 'nonaktif')->count(),
+            ],
+            'filters' => $request->only(['search', 'status', 'per_page']),
+        ]);
+    }
+
+    public function wargaUpdateStatus(Request $request, \App\Models\User $warga)
+    {
+        abort_if($warga->role !== 'mahasiswa' || $warga->asrama !== $this->asrama(), 403);
+
+        $data = $request->validate([
+            'status_warga' => 'required|string|in:aktif,nonaktif',
+        ]);
+
+        $warga->update($data);
+
+        return back()->with('success', 'Status warga berhasil diperbarui.');
     }
 
     // ── Program Kerja ──────────────────────────────────────────

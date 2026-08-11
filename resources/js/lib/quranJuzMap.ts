@@ -14,7 +14,7 @@ export const JUZ_START: Record<number, JuzStart> = {
     6:  { surah: 4,   ayat: 148 },
     7:  { surah: 5,   ayat: 82  },
     8:  { surah: 6,   ayat: 111 },
-    9:  { surah: 7,   ayat: 87  },
+    9:  { surah: 7,   ayat: 88  },
     10: { surah: 8,   ayat: 41  },
     11: { surah: 9,   ayat: 93  },
     12: { surah: 11,  ayat: 6   },

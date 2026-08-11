@@ -40,19 +40,27 @@ class AktivitasController extends Controller
 
     public function index(Request $request)
     {
-        $user   = Auth::user();
-        $search = $request->query('search');
-        $tipe   = $request->query('tipe');
-        $all    = collect();
+        $user     = Auth::user();
+        $search   = $request->query('search');
+        $tipe     = $request->query('tipe');
+        $dateFrom = $request->query('date_from');
+        $dateTo   = $request->query('date_to');
+        $all      = collect();
 
         foreach (self::CATS as $cat => $cfg) {
             $query = $cfg['model']::where('user_id', $user->id)->with('komponen');
-            
+
             if ($search) {
                 $query->where('kegiatan', 'like', "%{$search}%");
             }
             if ($tipe) {
                 $query->where('tipe_kegiatan', $tipe);
+            }
+            if ($dateFrom) {
+                $query->whereDate('waktu', '>=', $dateFrom);
+            }
+            if ($dateTo) {
+                $query->whereDate('waktu', '<=', $dateTo);
             }
 
             $items = $query->latest()->get()->map(function($r) use ($cat) {
@@ -110,8 +118,10 @@ class AktivitasController extends Controller
                 'last_page'    => ceil($total / $perPage),
             ],
             'filters' => [
-                'search' => $search,
-                'tipe'   => $tipe,
+                'search'    => $search,
+                'tipe'      => $tipe,
+                'date_from' => $dateFrom,
+                'date_to'   => $dateTo,
             ],
         ]);
     }

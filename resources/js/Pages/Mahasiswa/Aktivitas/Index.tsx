@@ -47,6 +47,8 @@ interface AktivitasIndexProps extends PageProps {
     filters: {
         search: string | null;
         tipe: string | null;
+        date_from: string | null;
+        date_to: string | null;
     };
 }
 
@@ -568,6 +570,8 @@ export default function AktivitasIndex({ items, komponens, categories, paginatio
     const [activeKat, setActiveKat] = useState<Kategori>('akademik');
     const [search, setSearch] = useState(filters.search || '');
     const [tipe, setTipe] = useState(filters.tipe || '');
+    const [dateFrom, setDateFrom] = useState(filters.date_from || '');
+    const [dateTo, setDateTo] = useState(filters.date_to || '');
     const [showModal, setShowModal] = useState(false);
     const [editItem, setEditItem] = useState<AktivitasItem | null>(null);
     const [detailItem, setDetailItem] = useState<AktivitasItem | null>(null);
@@ -578,23 +582,26 @@ export default function AktivitasIndex({ items, komponens, categories, paginatio
     // Filter handling
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (search !== (filters.search || '') || tipe !== (filters.tipe || '')) {
-                router.get('/mahasiswa/aktivitas', { search, tipe, page: 1 }, {
+            if (search !== (filters.search || '') || tipe !== (filters.tipe || '')
+                || dateFrom !== (filters.date_from || '') || dateTo !== (filters.date_to || '')) {
+                router.get('/mahasiswa/aktivitas', { search, tipe, date_from: dateFrom, date_to: dateTo, page: 1 }, {
                     preserveState: true,
                     replace: true,
                 });
             }
         }, 500);
         return () => clearTimeout(timer);
-    }, [search, tipe]);
+    }, [search, tipe, dateFrom, dateTo]);
 
     const handlePageChange = (page: number) => {
-        router.get('/mahasiswa/aktivitas', { search, tipe, page }, { preserveScroll: true });
+        router.get('/mahasiswa/aktivitas', { search, tipe, date_from: dateFrom, date_to: dateTo, page }, { preserveScroll: true });
     };
 
     const handlePerPageChange = (perPage: number) => {
-        router.get('/mahasiswa/aktivitas', { search, tipe, perPage, page: 1 }, { preserveScroll: true });
+        router.get('/mahasiswa/aktivitas', { search, tipe, date_from: dateFrom, date_to: dateTo, perPage, page: 1 }, { preserveScroll: true });
     };
+
+    function resetDateRange() { setDateFrom(''); setDateTo(''); }
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -670,6 +677,32 @@ export default function AktivitasIndex({ items, komponens, categories, paginatio
                         <option value="Unggulan">Unggulan</option>
                     </select>
                 </div>
+            </div>
+
+            {/* Filter Rentang Tanggal */}
+            <div className="glass-card rounded-2xl p-3 mb-6 flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-on-surface-variant uppercase tracking-wide">
+                    <Icon name="date_range" className="text-base" />
+                    Rentang Tanggal
+                </div>
+                <div className="flex items-center gap-2">
+                    <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
+                        max={dateTo || undefined}
+                        className="glass-input text-sm py-1.5 px-3" />
+                    <span className="text-on-surface-variant text-sm">s/d</span>
+                    <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
+                        min={dateFrom || undefined}
+                        className="glass-input text-sm py-1.5 px-3" />
+                </div>
+                {(dateFrom || dateTo) && (
+                    <button onClick={resetDateRange}
+                        className="flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-700 transition-colors">
+                        <Icon name="close" className="text-sm" /> Reset Tanggal
+                    </button>
+                )}
+                <span className="text-[11px] text-on-surface-variant ml-auto">
+                    Lihat aktivitas sebelumnya dengan memilih rentang tanggal.
+                </span>
             </div>
 
             {/* Summary cards — 4 categories */}

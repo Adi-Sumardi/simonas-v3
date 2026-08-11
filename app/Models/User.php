@@ -92,7 +92,26 @@ class User extends Authenticatable implements MustVerifyEmail
         foreach ($rules as $rule) {
             $total += $this->countByActivityType($rule->activity_type) * $rule->poin;
         }
-        return $total;
+
+        $total -= $this->kegiatanPoinDeduction();
+
+        return max(0, $total);
+    }
+
+    /**
+     * Total poin yang dipotong dari alpa pada kegiatan asrama wajib_absen (lihat
+     * PengurusAsramaController::storeKegiatanAttendance, di mana poin_deduction diisi).
+     */
+    public function kegiatanPoinDeduction(?string $from = null, ?string $to = null): int
+    {
+        $query = \App\Models\KegiatanAttendance::where('user_id', $this->id)
+            ->where('status', 'alpa');
+
+        if ($from && $to) {
+            $query->whereBetween('waktu_absen', [$from, $to]);
+        }
+
+        return (int) $query->sum('poin_deduction');
     }
 
     private function countByActivityType(string $type, ?string $from = null, ?string $to = null): int

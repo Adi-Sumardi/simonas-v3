@@ -97,6 +97,7 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         Route::get('/portfolio',                [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'portfolio'])     ->name('portfolio');
         Route::put('/profil',                   [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'update'])        ->name('profil.update');
         Route::post('/profil/avatar',           [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'updateAvatar'])  ->name('profil.avatar');
+        Route::post('/profil/password',         [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'updatePassword'])->name('profil.password');
         Route::post('/profil/riwayat',          [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'storeRiwayat']) ->name('profil.riwayat.store');
         Route::put('/profil/riwayat/{riwayat}', [\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'updateRiwayat'])->name('profil.riwayat.update');
         Route::delete('/profil/riwayat/{riwayat}',[\App\Http\Controllers\Web\Mahasiswa\ProfileController::class, 'destroyRiwayat'])->name('profil.riwayat.destroy');
@@ -133,6 +134,7 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         Route::get('/profil',                    [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'index'])         ->name('profil.index');
         Route::put('/profil',                    [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'update'])        ->name('profil.update');
         Route::post('/profil/avatar',           [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'updateAvatar'])  ->name('profil.avatar');
+        Route::post('/profil/password',         [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'updatePassword'])->name('profil.password');
         Route::post('/profil/riwayat',           [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'storeRiwayat']) ->name('profil.riwayat.store');
         Route::put('/profil/riwayat/{riwayat}',  [App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'updateRiwayat'])->name('profil.riwayat.update');
         Route::delete('/profil/riwayat/{riwayat}',[App\Http\Controllers\Web\Alumni\AlumniProfileController::class, 'destroyRiwayat'])->name('profil.riwayat.destroy');
@@ -154,6 +156,12 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         // Dashboard
         Route::get('/',           [MentorDash::class, 'index'])->name('dashboard');
         Route::post('/eval/{id}', [MentorDash::class, 'submitEval'])->name('eval.submit');
+
+        // Profil
+        Route::get('/profil',          [\App\Http\Controllers\Web\Mentor\ProfileController::class, 'index'])         ->name('profil.index');
+        Route::put('/profil',          [\App\Http\Controllers\Web\Mentor\ProfileController::class, 'update'])        ->name('profil.update');
+        Route::post('/profil/avatar',  [\App\Http\Controllers\Web\Mentor\ProfileController::class, 'updateAvatar'])  ->name('profil.avatar');
+        Route::post('/profil/password',[\App\Http\Controllers\Web\Mentor\ProfileController::class, 'updatePassword'])->name('profil.password');
 
         // Mentees
         Route::get('/mentees',           [MenteesController::class, 'index'])->name('mentees.index');
@@ -203,6 +211,11 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
         Route::post('/program-kerja',              [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'programKerjaStore'])   ->name('program-kerja.store');
         Route::put('/program-kerja/{programKerja}',[\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'programKerjaUpdate'])  ->name('program-kerja.update');
         Route::delete('/program-kerja/{programKerja}',[\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'programKerjaDestroy'])->name('program-kerja.destroy');
+
+        Route::middleware('can:manage-warga')->group(function () {
+            Route::get('/warga',                    [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'wargaIndex'])       ->name('warga.index');
+            Route::patch('/warga/{warga}/status',    [\App\Http\Controllers\Web\PengurusAsrama\PengurusAsramaController::class, 'wargaUpdateStatus'])->name('warga.status');
+        });
     });
 
     // ── Super Admin (permission-gated) ────────────────────────

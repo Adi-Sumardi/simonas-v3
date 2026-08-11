@@ -99,6 +99,7 @@ const MENU_GROUPS: MenuGroup[] = [
         items: [
             { label: 'Kegiatan Asrama', icon: 'event',           href: '/pengurus-asrama/kegiatan',     permission: 'manage-kegiatan-asrama' },
             { label: 'Program Kerja',   icon: 'assignment_turned_in', href: '/pengurus-asrama/program-kerja', permission: 'manage-program-kerja' },
+            { label: 'Warga Asrama',    icon: 'groups',          href: '/pengurus-asrama/warga',        permission: 'manage-warga' },
         ],
     },
 ];

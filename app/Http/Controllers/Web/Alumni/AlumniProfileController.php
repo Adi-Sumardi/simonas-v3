@@ -10,6 +10,7 @@ use App\Models\ProfilRiwayat;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
 class AlumniProfileController extends Controller
@@ -142,6 +143,25 @@ class AlumniProfileController extends Controller
         );
 
         return back()->with('success', 'Profil berhasil diperbarui.');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $data = $request->validate([
+            'current_password' => 'required|string',
+            'password'         => 'required|string|min:8|confirmed',
+        ]);
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (! Hash::check($data['current_password'], $user->password)) {
+            return back()->withErrors(['current_password' => 'Password saat ini salah.']);
+        }
+
+        $user->update(['password' => Hash::make($data['password'])]);
+
+        return back()->with('success', 'Password berhasil diperbarui.');
     }
 
     public function updateAvatar(Request $request)

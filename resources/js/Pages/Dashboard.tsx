@@ -64,7 +64,6 @@ interface SuperStats {
     total_warga: number;
     total_mentor: number;
     total_alumni: number;
-    avg_score: number;
 }
 
 interface StudentScore {
@@ -661,11 +660,10 @@ function SuperDashboard({ stats, students = [], asramas = [], asrama_stats = [] 
     return (
         <div className="space-y-8">
             {/* Stat cards — equal height via items-stretch */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
                 <StatCard icon="people"            label="TOTAL WARGA"  value={stats.total_warga}  badge="Aktif"      badgeColor="blue" />
                 <StatCard icon="supervisor_account" label="MENTOR"       value={stats.total_mentor} badge="Terdaftar"  badgeColor="emerald" />
                 <StatCard icon="workspace_premium"  label="ALUMNI"       value={stats.total_alumni} badge="Total"      badgeColor="purple" />
-                <StatCard icon="analytics"          label="AVG. SCORE"   value={`${stats.avg_score}/100`} badge="Semester ini" badgeColor="amber" />
             </div>
 
             {/* Asrama Capacity Cards */}

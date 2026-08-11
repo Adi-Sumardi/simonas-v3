@@ -84,6 +84,7 @@ class RolePermissionSeeder extends Seeder
             'view-leaderboard',
             'manage-kegiatan-asrama',
             'manage-program-kerja',
+            'manage-warga',
         ]);
 
         // ── Sync existing users' role column → Spatie role ───────

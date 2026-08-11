@@ -237,6 +237,32 @@ export default function Profil({ user, alumni, riwayats, posts }: ProfilProps) {
     const [avatarProcessing, setAvatarProcessing] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [newPasswordConfirmation, setNewPasswordConfirmation] = useState('');
+    const [savingPassword, setSavingPassword] = useState(false);
+    const [passwordError, setPasswordError] = useState<string | null>(null);
+
+    function submitPassword(e: React.FormEvent) {
+        e.preventDefault();
+        setSavingPassword(true);
+        setPasswordError(null);
+        router.post('/alumni/profil/password', {
+            current_password: currentPassword,
+            password: newPassword,
+            password_confirmation: newPasswordConfirmation,
+        }, {
+            preserveState: true, preserveScroll: true,
+            onSuccess: () => {
+                setCurrentPassword(''); setNewPassword(''); setNewPasswordConfirmation('');
+            },
+            onError: (errors) => {
+                setPasswordError(errors.current_password || errors.password || 'Gagal memperbarui password.');
+            },
+            onFinish: () => setSavingPassword(false),
+        });
+    }
+
     function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (file) {
@@ -398,6 +424,36 @@ export default function Profil({ user, alumni, riwayats, posts }: ProfilProps) {
                                 ))}
                             </div>
                         )}
+                    </div>
+
+                    {/* Ubah Password */}
+                    <div className="glass-card rounded-3xl p-5">
+                        <h3 className="font-bold text-on-surface mb-3 flex items-center gap-2 text-sm">
+                            <Icon name="lock" className="text-lg" />
+                            Ubah Password
+                        </h3>
+                        <form onSubmit={submitPassword} className="space-y-3">
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1 block">Password Saat Ini</label>
+                                <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)}
+                                    className="glass-input w-full text-sm" required />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1 block">Password Baru</label>
+                                <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
+                                    className="glass-input w-full text-sm" minLength={8} required />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1 block">Konfirmasi Password Baru</label>
+                                <input type="password" value={newPasswordConfirmation} onChange={e => setNewPasswordConfirmation(e.target.value)}
+                                    className="glass-input w-full text-sm" minLength={8} required />
+                            </div>
+                            {passwordError && <p className="text-xs text-rose-600 font-semibold">{passwordError}</p>}
+                            <button type="submit" disabled={savingPassword}
+                                className="w-full py-2 rounded-xl text-xs font-bold bg-primary-container text-white disabled:opacity-50">
+                                {savingPassword ? 'Menyimpan...' : 'Perbarui Password'}
+                            </button>
+                        </form>
                     </div>
                 </div>
 

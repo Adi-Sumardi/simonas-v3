@@ -19,7 +19,7 @@ export function AppLayout({ children, searchPlaceholder }: AppLayoutProps) {
 
     const role = user.role ?? 'mahasiswa';
     const profileHref = role === 'mahasiswa'       ? '/mahasiswa/profil'
-        : role === 'mentor'          ? '/mentor'
+        : role === 'mentor'          ? '/mentor/profil'
         : role === 'super'           ? '/super/role-permission'
         : role === 'alumni'          ? '/alumni/profil'
         : role === 'pengurus_asrama' ? '/mahasiswa/profil'

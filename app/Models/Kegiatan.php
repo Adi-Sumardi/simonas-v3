@@ -24,10 +24,18 @@ class Kegiatan extends Model
 
     protected $casts = [
         'wajib_absen' => 'boolean',
+        'waktu'       => 'datetime',
     ];
+
+    protected $appends = ['sudah_selesai'];
 
     public function attendances(): HasMany
     {
         return $this->hasMany(KegiatanAttendance::class);
+    }
+
+    public function getSudahSelesaiAttribute(): bool
+    {
+        return $this->waktu !== null && $this->waktu->lt(now());
     }
 }

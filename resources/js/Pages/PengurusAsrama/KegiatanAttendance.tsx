@@ -24,9 +24,13 @@ interface RosterItem {
     attendance_id: number | null;
     status: string | null;
     keterangan: string | null;
+    poin_deduction: number;
     waktu_absen: string | null;
 }
-interface KegiatanData { id: number; nama_kegiatan: string; waktu: string; asrama: string | null }
+interface KegiatanData {
+    id: number; nama_kegiatan: string; waktu: string; asrama: string | null;
+    wajib_absen: boolean; sudah_selesai: boolean;
+}
 interface Props {
     kegiatan: KegiatanData;
     items: AttendanceItem[];
@@ -100,6 +104,22 @@ export default function KegiatanAttendance({ kegiatan, items, roster, warga, isP
                 }
             />
 
+            {/* Status kegiatan + info potongan poin */}
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+                <span className={`text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 ${
+                    kegiatan.sudah_selesai ? 'bg-gray-100 text-gray-600' : 'bg-emerald-100 text-emerald-700'
+                }`}>
+                    <Icon name={kegiatan.sudah_selesai ? 'check_circle' : 'schedule'} className="text-xs" />
+                    {kegiatan.sudah_selesai ? 'Kegiatan Selesai' : 'Belum Berlangsung'}
+                </span>
+                {kegiatan.wajib_absen && (
+                    <span className="text-xs font-bold px-3 py-1.5 rounded-full bg-rose-50 text-rose-600 flex items-center gap-1">
+                        <Icon name="rule" className="text-xs" /> Wajib Absen
+                        {kegiatan.sudah_selesai && ' · Alpa otomatis dipotong poin'}
+                    </span>
+                )}
+            </div>
+
             {/* Rekap status */}
             <div className="flex flex-wrap gap-2 mb-6">
                 {(['hadir', 'izin', 'sakit', 'alpa', ...(isPutri ? ['haid'] : [])] as const).map(key => (
@@ -139,6 +159,9 @@ export default function KegiatanAttendance({ kegiatan, items, roster, warga, isP
                                         <td className="px-5 py-3 font-semibold text-on-surface">{r.name}</td>
                                         <td className="px-4 py-3">
                                             <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${meta.color}`}>{meta.label}</span>
+                                            {r.poin_deduction > 0 && (
+                                                <span className="ml-1.5 text-[10px] font-black text-rose-600">-{r.poin_deduction} poin</span>
+                                            )}
                                         </td>
                                         <td className="px-4 py-3 text-on-surface-variant text-xs">{r.keterangan || '-'}</td>
                                         <td className="px-4 py-3 text-on-surface-variant text-xs">{r.waktu_absen || '-'}</td>

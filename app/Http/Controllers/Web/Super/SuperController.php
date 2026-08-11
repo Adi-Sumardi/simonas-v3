@@ -95,7 +95,6 @@ class SuperController extends Controller
                 'total'   => User::where('role', 'mahasiswa')->count(),
                 'aktif'   => User::where('role', 'mahasiswa')->where('status_warga', 'aktif')->count(),
                 'nonaktif'=> User::where('role', 'mahasiswa')->where('status_warga', 'nonaktif')->count(),
-                'avg_skor'=> 85,
             ],
             'filters' => $request->only(['search', 'asrama', 'status', 'per_page', 'semester', 'tingkat', 'percobaan_min_bulan']),
         ]);

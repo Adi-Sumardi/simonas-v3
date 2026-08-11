@@ -99,11 +99,10 @@ export default function Warga({ warga, asramas, stats, filters }: Props) {
                 }
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <StatCard icon="people"        label="TOTAL WARGA"  value={stats.total}    badgeColor="blue" />
                 <StatCard icon="check_circle"  label="AKTIF"        value={stats.aktif}    badge="Aktif"    badgeColor="emerald" />
                 <StatCard icon="cancel"        label="NONAKTIF"     value={stats.nonaktif} badge="Off"      badgeColor="rose" />
-                <StatCard icon="analytics"     label="AVG. SKOR"    value={`${stats.avg_skor}/100`} badge="Semester ini" badgeColor="amber" />
             </div>
 
             <div className="glass-card rounded-2xl p-4 mb-6 flex flex-col md:flex-row gap-4">

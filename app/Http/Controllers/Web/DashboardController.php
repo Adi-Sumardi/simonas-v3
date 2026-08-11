@@ -325,8 +325,8 @@ class DashboardController extends Controller
         $radarFrom = $request?->query('radar_from') ?: now()->startOfMonth()->toDateString();
         $radarTo   = $request?->query('radar_to')   ?: now()->endOfMonth()->toDateString();
 
-        // Build real student radar data from DB
-        $mahasiswas = \App\Models\User::where('role', 'mahasiswa')->take(20)->get();
+        // Build real student radar data from DB — all warga, not just a sample
+        $mahasiswas = \App\Models\User::where('role', 'mahasiswa')->get();
 
         $students = $mahasiswas->map(function ($m) use ($radarFrom, $radarTo) {
             $scores = $m->radarScores($radarFrom, $radarTo);
@@ -351,14 +351,11 @@ class DashboardController extends Controller
             ];
         });
 
-        $avgScore = $students->count() > 0 ? round($students->avg('total')) : 0;
-
         return [
             'stats' => [
                 'total_warga'   => $totalWarga,
                 'total_mentor'  => $totalMentor,
                 'total_alumni'  => $totalAlumni,
-                'avg_score'     => $avgScore,
             ],
             'students'      => $students->values(),
             'asramas'       => $asramas,
