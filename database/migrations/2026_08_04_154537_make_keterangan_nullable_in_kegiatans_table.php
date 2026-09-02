@@ -10,7 +10,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement('ALTER TABLE kegiatans ALTER COLUMN keterangan DROP NOT NULL');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE kegiatans ALTER COLUMN keterangan DROP NOT NULL');
+        }
     }
 
     /**
@@ -18,7 +20,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("UPDATE kegiatans SET keterangan = '' WHERE keterangan IS NULL");
-        DB::statement('ALTER TABLE kegiatans ALTER COLUMN keterangan SET NOT NULL');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("UPDATE kegiatans SET keterangan = '' WHERE keterangan IS NULL");
+            DB::statement('ALTER TABLE kegiatans ALTER COLUMN keterangan SET NOT NULL');
+        }
     }
 };

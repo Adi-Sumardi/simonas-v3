@@ -12,6 +12,11 @@ import { PageProps } from '@/types';
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Kategori = 'akademik' | 'leadership' | 'karakter' | 'kreativitas';
 
+interface DailyQuota {
+    limit: number;
+    counts: Record<Kategori, number>;
+}
+
 interface KomponenItem { id: number; nama: string; kode: string; }
 interface AktivitasItem {
     id: number; kategori: Kategori; kegiatan: string; komponen: string; komponen_id?: number;
@@ -37,6 +42,7 @@ interface AktivitasIndexProps extends PageProps {
     items: AktivitasItem[];
     komponens: Record<string, KomponenItem[]>;
     categories: Kategori[];
+    dailyQuota: DailyQuota;
     komponenPenilaian: KPAspek[];
     pagination: {
         current_page: number;
@@ -69,13 +75,14 @@ const LEVEL_LABELS: Record<string, string> = {
 
 // ─── Form Modal ───────────────────────────────────────────────────────────────
 function AktivitasModal({
-    activeKat, editItem, onClose, komponenPenilaian,
+    activeKat, editItem, onClose, komponenPenilaian, dailyQuota,
 }: {
     activeKat: Kategori;
     komponens: Record<string, KomponenItem[]>;
     editItem: AktivitasItem | null;
     onClose: () => void;
     komponenPenilaian: KPAspek[];
+    dailyQuota?: DailyQuota;
 }) {
     const [form, setForm] = useState<any>({
         kategori:      editItem?.kategori    ?? activeKat,
@@ -90,6 +97,11 @@ function AktivitasModal({
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [preview, setPreview] = useState<string | null>(editItem?.image ?? null);
     const [previewIsPdf, setPreviewIsPdf] = useState(isPdfName(editItem?.image_name));
+
+    // Daily quota calculation
+    const currentKatCount = dailyQuota?.counts?.[form.kategori as Kategori] ?? 0;
+    const dailyLimit = dailyQuota?.limit ?? 10;
+    const isQuotaFull = !editItem && currentKatCount >= dailyLimit;
 
     // ── Cascade Komponen Penilaian ──────────────────────────────────────────────
     // Map kategori → kode aspek
@@ -162,7 +174,7 @@ function AktivitasModal({
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        if (!isKomponenValid) return;
+        if (!isKomponenValid || isQuotaFull) return;
         setSaving(true);
 
         const method = editItem ? 'put' : 'post';
@@ -193,25 +205,52 @@ function AktivitasModal({
                         className="px-5 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface-variant hover:bg-black/10 transition-colors">
                         Batal
                     </button>
-                    <button form="aktivitas-form" type="submit" disabled={saving || !isKomponenValid}
-                        title={!isKomponenValid ? 'Pilih Sub-Aspek, Jenis Kegiatan, dan Cakupan/Level dulu' : undefined}
+                    <button form="aktivitas-form" type="submit" disabled={saving || !isKomponenValid || isQuotaFull}
+                        title={isQuotaFull ? `Batas kuota harian (${dailyLimit}/${dailyLimit}) untuk kategori ini telah tercapai` : !isKomponenValid ? 'Pilih Sub-Aspek, Jenis Kegiatan, dan Cakupan/Level dulu' : undefined}
                         className="px-5 py-2.5 rounded-xl font-bold text-sm text-white bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all disabled:opacity-50 flex items-center gap-2">
                         <Icon name="save" className="text-base" />
-                        {saving ? 'Menyimpan...' : editItem ? 'Simpan' : 'Log Aktivitas'}
+                        {saving ? 'Menyimpan...' : isQuotaFull ? `Kuota Penuh (${dailyLimit}/${dailyLimit})` : editItem ? 'Simpan' : 'Log Aktivitas'}
                     </button>
                 </>
             }>
             <form id="aktivitas-form" onSubmit={submit} className="space-y-4">
-                {/* Kategori select */}
+                {/* Kategori select & Daily Quota Notice */}
                 <div>
-                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1.5 block">Kategori *</label>
+                    <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant block">Kategori *</label>
+                        <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                            isQuotaFull ? 'bg-rose-100 text-rose-700 font-black border border-rose-200' : 'bg-slate-100 text-on-surface-variant'
+                        }`}>
+                            Hari ini: {currentKatCount} / {dailyLimit} {isQuotaFull ? '(Penuh)' : `(Sisa ${dailyLimit - currentKatCount})`}
+                        </span>
+                    </div>
                     <select value={form.kategori} onChange={e => set('kategori', e.target.value)}
                         className="glass-input w-full text-sm">
                         {Object.entries(KAT_META).map(([k, v]) => (
-                            <option key={k} value={k}>{v.label}</option>
+                            <option key={k} value={k}>
+                                {v.label} (Hari ini: {dailyQuota?.counts?.[k as Kategori] ?? 0}/{dailyLimit})
+                            </option>
                         ))}
                     </select>
+                    {errors.kategori && (
+                        <p className="text-xs text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                            <Icon name="error" className="text-sm" filled /> {errors.kategori}
+                        </p>
+                    )}
                 </div>
+
+                {/* Quota Full Alert */}
+                {isQuotaFull && (
+                    <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 flex items-start gap-2.5 text-rose-800 animate-fade-in">
+                        <Icon name="block" className="text-lg text-rose-600 flex-shrink-0 mt-0.5" filled />
+                        <div className="text-xs leading-relaxed">
+                            <p className="font-bold">Batas Input Harian Tercapai ({dailyLimit}/{dailyLimit})</p>
+                            <p className="mt-0.5 text-rose-700">
+                                Anda telah mencapai batas maksimal <strong>{dailyLimit} data {KAT_META[form.kategori as Kategori]?.label}</strong> untuk hari ini. Silakan lanjutkan pencatatan besok atau pilih kategori lain yang masih memiliki kuota.
+                            </p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Komponen Penilaian (cascade 3-level: Sub-Aspek → Jenis Kegiatan → Level) */}
                 <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 space-y-3">
@@ -566,7 +605,7 @@ function AktivitasRow({ item, index, onDetail, onEdit, onDelete }: { item: Aktiv
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export default function AktivitasIndex({ items, komponens, categories, pagination, filters, komponenPenilaian }: AktivitasIndexProps) {
+export default function AktivitasIndex({ items, komponens, categories, pagination, filters, komponenPenilaian, dailyQuota }: AktivitasIndexProps) {
     const [activeKat, setActiveKat] = useState<Kategori>('akademik');
     const [search, setSearch] = useState(filters.search || '');
     const [tipe, setTipe] = useState(filters.tipe || '');
@@ -637,6 +676,10 @@ export default function AktivitasIndex({ items, komponens, categories, paginatio
         return acc;
     }, {} as Record<string, number>);
 
+    const activeTodayCount = dailyQuota?.counts?.[activeKat] ?? 0;
+    const dailyLimit = dailyQuota?.limit ?? 10;
+    const isActiveQuotaFull = activeTodayCount >= dailyLimit;
+
     return (
         <AppLayout searchPlaceholder="Cari aktivitas...">
             <Head title="Aktivitas Saya" />
@@ -705,29 +748,74 @@ export default function AktivitasIndex({ items, komponens, categories, paginatio
                 </span>
             </div>
 
-            {/* Summary cards — 4 categories */}
+            {/* Summary cards — 4 categories with daily quota tracking */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                {(Object.entries(KAT_META) as [Kategori, typeof KAT_META[Kategori]][]).map(([k, meta]) => (
-                    <button key={k} onClick={() => setActiveKat(k)}
-                        className={`rounded-2xl p-3 text-left transition-all border ${
-                            activeKat === k ? `${meta.bg} ${meta.border} shadow-md` : 'glass-card border-transparent hover:shadow-sm'
-                        }`}>
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${meta.bg}`}>
-                            <Icon name={meta.icon} className={`text-base ${meta.color}`} filled />
-                        </div>
-                        <p className="text-[10px] font-black uppercase text-on-surface-variant leading-tight">{meta.label}</p>
-                        <p className={`text-xl font-bold mt-0.5 ${meta.color}`}>{counts[k] ?? 0}</p>
-                    </button>
-                ))}
+                {(Object.entries(KAT_META) as [Kategori, typeof KAT_META[Kategori]][]).map(([k, meta]) => {
+                    const todayCount = dailyQuota?.counts?.[k] ?? 0;
+                    const isFull = todayCount >= dailyLimit;
+                    const pct = Math.min(100, Math.round((todayCount / dailyLimit) * 100));
+
+                    return (
+                        <button key={k} onClick={() => setActiveKat(k)}
+                            className={`rounded-2xl p-3.5 text-left transition-all border relative overflow-hidden flex flex-col justify-between ${
+                                activeKat === k ? `${meta.bg} ${meta.border} shadow-md ring-2 ring-primary/20` : 'glass-card border-transparent hover:shadow-sm'
+                            }`}>
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${meta.bg}`}>
+                                        <Icon name={meta.icon} className={`text-base ${meta.color}`} filled />
+                                    </div>
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                        isFull ? 'bg-rose-100 text-rose-700 font-black border border-rose-200' : 'bg-white/80 text-on-surface-variant border border-slate-200/50'
+                                    }`}>
+                                        Hari ini: {todayCount}/{dailyLimit}
+                                    </span>
+                                </div>
+                                <p className="text-[10px] font-black uppercase text-on-surface-variant leading-tight">{meta.label}</p>
+                                <p className={`text-xl font-bold mt-0.5 ${meta.color}`}>
+                                    {counts[k] ?? 0} <span className="text-xs font-medium text-on-surface-variant">total</span>
+                                </p>
+                            </div>
+
+                            {/* Mini progress bar for today's quota */}
+                            <div className="mt-3 pt-2 border-t border-black/5">
+                                <div className="w-full bg-slate-200/80 h-1.5 rounded-full overflow-hidden">
+                                    <div
+                                        className={`h-full transition-all rounded-full ${isFull ? 'bg-rose-500' : 'bg-primary'}`}
+                                        style={{ width: `${pct}%` }}
+                                    />
+                                </div>
+                                <div className="flex justify-between items-center mt-1 text-[9px] text-on-surface-variant font-medium">
+                                    <span className={isFull ? 'text-rose-600 font-bold' : ''}>
+                                        {isFull ? 'Kuota penuh' : `Sisa ${dailyLimit - todayCount}`}
+                                    </span>
+                                    <span>{pct}%</span>
+                                </div>
+                            </div>
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Tab header */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <h3 className={`font-bold text-on-surface flex items-center gap-2`}>
                     <Icon name={KAT_META[activeKat].icon} className={`text-xl ${KAT_META[activeKat].color}`} filled />
                     {KAT_META[activeKat].label}
                     <span className="text-sm font-normal text-on-surface-variant">({filteredByTab.length} kegiatan)</span>
                 </h3>
+                <div className="flex items-center gap-2">
+                    <span className={`text-xs px-3 py-1 rounded-full font-bold flex items-center gap-1.5 ${
+                        isActiveQuotaFull
+                            ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    }`}>
+                        <span className={`w-2 h-2 rounded-full ${
+                            isActiveQuotaFull ? 'bg-rose-500' : 'bg-emerald-500 animate-pulse'
+                        }`} />
+                        Input Hari Ini: {activeTodayCount} / {dailyLimit} data {isActiveQuotaFull ? '(Penuh)' : `(Sisa ${dailyLimit - activeTodayCount})`}
+                    </span>
+                </div>
             </div>
 
             {/* List */}
@@ -774,6 +862,7 @@ export default function AktivitasIndex({ items, komponens, categories, paginatio
                     editItem={editItem}
                     onClose={closeModal}
                     komponenPenilaian={komponenPenilaian}
+                    dailyQuota={dailyQuota}
                 />
             )}
             {/* Detail Modal */}

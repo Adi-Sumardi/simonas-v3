@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web\Mahasiswa;
 
 use App\Http\Controllers\Controller;
 use App\Models\Akademik;
+use App\Models\AppSetting;
 use App\Models\Karakter;
 use App\Models\Komponen;
 use App\Models\Kreatif;
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class AktivitasController extends Controller
@@ -46,8 +48,14 @@ class AktivitasController extends Controller
         $dateFrom = $request->query('date_from');
         $dateTo   = $request->query('date_to');
         $all      = collect();
+        $today    = now()->today();
+        $todayCounts = [];
 
         foreach (self::CATS as $cat => $cfg) {
+            $todayCounts[$cat] = $cfg['model']::where('user_id', $user->id)
+                ->whereDate('created_at', $today)
+                ->count();
+
             $query = $cfg['model']::where('user_id', $user->id)->with('komponen');
 
             if ($search) {
@@ -104,10 +112,16 @@ class AktivitasController extends Controller
                 'kode' => $k->kode,
             ])->values());
 
+        $dailyLimit = (int) AppSetting::val('max_daily_activity_per_category', 10);
+
         return Inertia::render('Mahasiswa/Aktivitas/Index', [
             'items'             => $paged,
             'komponens'         => $komponens,
             'categories'        => array_keys(self::CATS),
+            'dailyQuota'        => [
+                'limit'  => $dailyLimit,
+                'counts' => $todayCounts,
+            ],
             // Komponen Penilaian baru untuk cascade form
             'komponenPenilaian' => \App\Models\KomponenPenilaianAspek::select('id','kode','nama_aspek','urutan')
                                     ->orderBy('urutan')->get(),
@@ -152,7 +166,21 @@ class AktivitasController extends Controller
             'image'             => 'required|' . self::ALLOWED_UPLOAD_RULE,
         ]);
 
-        $model = self::CATS[$data['kategori']]['model'];
+        $catCfg     = self::CATS[$data['kategori']];
+        $model      = $catCfg['model'];
+        $label      = $catCfg['label'];
+        $dailyLimit = (int) AppSetting::val('max_daily_activity_per_category', 10);
+
+        $todayCount = $model::where('user_id', Auth::id())
+            ->whereDate('created_at', now()->today())
+            ->count();
+
+        if ($todayCount >= $dailyLimit) {
+            throw ValidationException::withMessages([
+                'kategori' => "Batas harian tercapai. Anda hanya dapat mencatat maksimal {$dailyLimit} aktivitas {$label} per hari. Silakan lanjutkan besok.",
+            ]);
+        }
+
         $file  = $this->processUpload($request->file('image'));
         $poin  = $this->calculatePoin($data['jenis_kegiatan_id'], $data['level_kegiatan']);
 
@@ -231,9 +259,12 @@ class AktivitasController extends Controller
      * sequence"). decode(hex) di sisi Postgres yang menuliskan bytea-nya,
      * bukan parameter binding, jadi aman dari isu encoding ini.
      */
-    private function binaryExpr(string $binary): \Illuminate\Database\Query\Expression
+    private function binaryExpr(string $binary): mixed
     {
-        return DB::raw("decode('" . bin2hex($binary) . "', 'hex')");
+        if (DB::getDriverName() === 'pgsql') {
+            return DB::raw("decode('" . bin2hex($binary) . "', 'hex')");
+        }
+        return $binary;
     }
 
     /**

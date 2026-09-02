@@ -5,7 +5,7 @@ import { PageHeader } from '@/Components/ui/PageHeader';
 import { Icon } from '@/Components/ui/Icon';
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
-interface Settings { app_name:string; app_url:string; mail_driver:string; google_oauth:boolean; maintenance_mode:boolean }
+interface Settings { app_name:string; app_url:string; mail_driver:string; google_oauth:boolean; maintenance_mode:boolean; max_daily_activity_per_category?:number }
 
 interface PointRule { id:number; label:string; activity_type:string; poin:number; unit:string|null; is_active:boolean }
 interface DailyTarget { id:number; label:string; key:string; value:number; unit:string|null; description:string|null; is_active:boolean }
@@ -273,6 +273,19 @@ export default function Pengaturan({ settings, asramas, pointRules, dailyTargets
                     </Field>
                     <Field label="Mode Maintenance" hint="Matikan akses untuk non-admin sementara">
                         <Toggle checked={data.maintenance_mode} onChange={v => setData('maintenance_mode', v)} />
+                    </Field>
+                    <Field label="Batas Input Aktivitas Harian" hint="Maksimal data per kategori yang dapat di-input mahasiswa per hari">
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="number"
+                                min={1}
+                                max={100}
+                                value={data.max_daily_activity_per_category ?? 10}
+                                onChange={e => setData('max_daily_activity_per_category', parseInt(e.target.value) || 10)}
+                                className="glass-input w-28 text-sm font-bold"
+                            />
+                            <span className="text-xs text-on-surface-variant font-medium">data / kategori / hari</span>
+                        </div>
                     </Field>
                     <div className="pt-2">
                         <button onClick={handleSave} disabled={processing} className="btn-primary px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 disabled:opacity-50">

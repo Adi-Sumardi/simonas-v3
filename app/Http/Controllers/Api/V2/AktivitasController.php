@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\V2;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\{Akademik, Leadership, Karakter, Kreatif}; // Gunakan group use
+use App\Models\{Akademik, AppSetting, Leadership, Karakter, Kreatif}; // Gunakan group use
 use Illuminate\Support\Facades\{Auth, Validator, DB, Log}; // Gunakan group use
 use Exception;
 
@@ -58,6 +58,18 @@ class AktivitasController extends Controller
     private function createActivity($model, Request $request, $folder)
     {
         try {
+            $dailyLimit = (int) AppSetting::val('max_daily_activity_per_category', 10);
+            $todayCount = $model::where('user_id', Auth::id())
+                ->whereDate('created_at', now()->today())
+                ->count();
+
+            if ($todayCount >= $dailyLimit) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Batas harian tercapai. Anda hanya dapat mencatat maksimal {$dailyLimit} aktivitas {$folder} per hari. Silakan lanjutkan besok."
+                ], 422);
+            }
+
             DB::beginTransaction();
 
             $validator = $this->validateRequest($request);

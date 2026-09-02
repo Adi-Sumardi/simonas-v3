@@ -310,6 +310,19 @@ komponen_penilaian_jenis
 
 ---
 
+## 8. Pembatasan Pembuatan Data Aktivitas Harian — ✅ Selesai & live
+
+Pembatasan input aktivitas mahasiswa maksimal 10 data per kategori per hari (Akademik, Leadership, Karakter Islami, Kreativitas) untuk mencegah penumpukan data di akhir bulan dan meningkatkan kedisiplinan pencatatan.
+
+- [x] Backend: Pengecekan kuota harian (`whereDate('created_at', today())`) di Web & API v2
+- [x] Backend: Pengaturan dinamis via `AppSetting::val('max_daily_activity_per_category', 10)`
+- [x] Super Admin: Konfigurasi kuota input harian di menu Pengaturan
+- [x] Frontend: Indikator kuota harian & progress bar pada kartu ringkasan kategori
+- [x] Frontend: Validasi preventif & peringatan pada modal input saat kuota harian penuh (10/10)
+- [x] Automated Tests: 6 skenario pengujian di `DailyActivityLimitTest.php` lulus 100%
+
+---
+
 ## Catatan
 
 Beberapa item di atas masih perlu klarifikasi/desain lebih lanjut sebelum implementasi (khususnya #1 dan #2 poin "warga percobaan"). Urutan pengerjaan menyusul sesuai prioritas.

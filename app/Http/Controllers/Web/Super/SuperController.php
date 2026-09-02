@@ -1222,6 +1222,7 @@ class SuperController extends Controller
                 'mail_driver'      => env('MAIL_MAILER', 'smtp'),
                 'google_oauth'     => !empty(env('GOOGLE_CLIENT_ID')),
                 'maintenance_mode' => (bool) ($s['maintenance_mode'] ?? false),
+                'max_daily_activity_per_category' => (int) ($s['max_daily_activity_per_category'] ?? 10),
             ],
         ]);
     }
@@ -1230,7 +1231,12 @@ class SuperController extends Controller
     {
         $data = $request->validate([
             'maintenance_mode' => 'boolean',
+            'max_daily_activity_per_category' => 'nullable|integer|min:1|max:100',
         ]);
+
+        if (isset($data['max_daily_activity_per_category'])) {
+            $data['max_daily_activity_per_category'] = (int) $data['max_daily_activity_per_category'];
+        }
 
         \App\Models\AppSetting::setMany($data);
 
