@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\HafalanLog;
 use App\Models\User;
 use App\Models\LiveMeeting;
+use App\Services\LiveKitAdminClient;
 use App\Services\LiveKitTokenService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class LiveMeetController extends Controller
@@ -113,10 +115,31 @@ class LiveMeetController extends Controller
 
     /**
      * Stop/end the current live meeting session.
+     *
+     * The UI's confirm dialog explicitly tells the mentor every connected student
+     * will be disconnected, so we must actually close the LiveKit room here — just
+     * flipping the DB flag (the old behavior) leaves the room open on the LiveKit
+     * server, and a student already inside keeps their video call running
+     * indefinitely since nothing ever fires their client's onDisconnected event.
      */
-    public function stop(Request $request)
+    public function stop(Request $request, LiveKitAdminClient $liveKit)
     {
         $mentor = $request->user();
+
+        $meeting = LiveMeeting::where('mentor_id', $mentor->id)
+            ->where('is_active', true)
+            ->first();
+
+        if ($meeting) {
+            try {
+                $liveKit->endRoom($meeting->room_name);
+            } catch (\Throwable $e) {
+                // Best-effort: the LiveKit-side room may already be gone (e.g. LiveKit's
+                // own idle timeout already closed it) — our DB state below is the source
+                // of truth for whether the meeting is "active" from the app's perspective.
+                Log::warning('LiveKit endRoom skipped (best-effort): ' . $e->getMessage());
+            }
+        }
 
         LiveMeeting::where('mentor_id', $mentor->id)
             ->where('is_active', true)

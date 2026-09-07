@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\LiveMeeting;
 use App\Models\LiveMeetingRecording;
 use App\Models\LiveMeetingRoom;
 use Firebase\JWT\JWT;
@@ -103,6 +104,15 @@ class LiveKitWebhookController extends Controller
         ]);
     }
 
+    /**
+     * Covers both live-meet systems in this codebase: the full-featured
+     * LiveMeetingRoom (Super) and the simpler 1:1 mentor<->student LiveMeeting.
+     * Without this, a room that closes for any reason other than the mentor
+     * explicitly clicking "Akhiri Pertemuan" (browser crash, lost connection,
+     * LiveKit's own idle timeout) leaves `LiveMeeting.is_active` stuck true
+     * forever, so students keep seeing "mentor sedang live" and can attempt
+     * to join a room that no longer exists on the LiveKit server.
+     */
     private function handleRoomFinished(array $payload): void
     {
         $room = $payload['room'] ?? [];
@@ -115,5 +125,9 @@ class LiveKitWebhookController extends Controller
         LiveMeetingRoom::where('room_name', $roomName)
             ->where('status', '!=', 'ended')
             ->update(['status' => 'ended', 'ended_at' => now()]);
+
+        LiveMeeting::where('room_name', $roomName)
+            ->where('is_active', true)
+            ->update(['is_active' => false, 'ended_at' => now()]);
     }
 }

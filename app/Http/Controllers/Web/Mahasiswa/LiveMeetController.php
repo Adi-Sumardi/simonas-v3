@@ -54,13 +54,18 @@ class LiveMeetController extends Controller
             return redirect()->back()->with('error', 'Mentor Anda tidak sedang mengadakan pertemuan Live Meet.');
         }
 
-        // Generate token for the student (isAdmin = false)
-        $token = $tokenService->generateToken(
-            $meeting->room_name,
-            "mahasiswa_" . $mahasiswa->id,
-            $mahasiswa->name,
-            false
-        );
+        // Generate token for the student (never gets roomCreate/roomAdmin)
+        try {
+            $token = $tokenService->generateToken(
+                $meeting->room_name,
+                "mahasiswa_" . $mahasiswa->id,
+                $mahasiswa->name,
+                false
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('LiveKit token generation failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Live Meet sedang tidak dapat diakses. Silakan coba lagi beberapa saat lagi.');
+        }
 
         $wsUrl = config('livekit.host');
 

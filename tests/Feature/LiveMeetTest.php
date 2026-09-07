@@ -32,6 +32,7 @@ class LiveMeetTest extends TestCase
         $mentor = User::factory()->create([
             'role' => 'mentor',
             'email' => 'mentor@example.com',
+            'onboarding_completed_at' => now(),
         ]);
         $mentor->assignRole('mentor');
 
@@ -71,6 +72,7 @@ class LiveMeetTest extends TestCase
         $mentor = User::factory()->create([
             'role' => 'mentor',
             'email' => 'mentor@example.com',
+            'onboarding_completed_at' => now(),
         ]);
         $mentor->assignRole('mentor');
 
@@ -78,6 +80,7 @@ class LiveMeetTest extends TestCase
             'role' => 'mahasiswa',
             'mentor_id' => $mentor->id,
             'email' => 'student@example.com',
+            'onboarding_completed_at' => now(),
         ]);
         $student->assignRole('mahasiswa');
 
@@ -109,6 +112,7 @@ class LiveMeetTest extends TestCase
             'role' => 'mentor',
             'name' => 'Ust. Ahmad',
             'email' => 'mentor@example.com',
+            'onboarding_completed_at' => now(),
         ]);
         $mentor->assignRole('mentor');
 
@@ -116,6 +120,7 @@ class LiveMeetTest extends TestCase
             'role' => 'mahasiswa',
             'mentor_id' => $mentor->id,
             'email' => 'student@example.com',
+            'onboarding_completed_at' => now(),
         ]);
         $student->assignRole('mahasiswa');
 
@@ -144,6 +149,7 @@ class LiveMeetTest extends TestCase
         $mentor = User::factory()->create([
             'role' => 'mentor',
             'email' => 'mentor@example.com',
+            'onboarding_completed_at' => now(),
         ]);
         $mentor->assignRole('mentor');
 

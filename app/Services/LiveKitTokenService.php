@@ -7,15 +7,19 @@ use Firebase\JWT\JWT;
 class LiveKitTokenService
 {
     /**
-     * Generate an access token for a LiveKit room.
+     * Generate a client-facing access token for a LiveKit room. This token goes
+     * straight into the browser (LiveKit client SDK), so it never carries the
+     * `roomAdmin` grant — privileged RoomService calls (mute/kick/end room,
+     * recording) are always performed server-side via LiveKitAdminClient using
+     * its own short-lived admin token instead. See LiveKitAdminClient's class doc.
      *
      * @param string $roomName Name of the room to join
      * @param string $identity Unique identity of the user
      * @param string $name Display name of the user
-     * @param bool $isAdmin Whether the user is the room creator/admin
+     * @param bool $canCreateRoom Whether this identity may create the room if it doesn't exist yet (the session host)
      * @return string Signed JWT token
      */
-    public function generateToken(string $roomName, string $identity, string $name, bool $isAdmin = false): string
+    public function generateToken(string $roomName, string $identity, string $name, bool $canCreateRoom = false): string
     {
         $apiKey = config('livekit.api_key');
         $apiSecret = config('livekit.api_secret');
@@ -34,14 +38,13 @@ class LiveKitTokenService
             'exp' => $expireAt,
             'name' => $name,
             'video' => [
-                'roomCreate' => $isAdmin,
+                'roomCreate' => $canCreateRoom,
                 'roomJoin'   => true,
                 'room'       => $roomName,
                 'publisher'  => true,
                 'subscriber' => true,
                 'canPublish' => true,
                 'canSubscribe' => true,
-                'roomAdmin'  => $isAdmin,
             ],
         ];
 
