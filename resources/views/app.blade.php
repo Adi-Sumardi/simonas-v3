@@ -102,6 +102,42 @@
     {{-- Fonts are self-hosted via npm (material-symbols + fontsource) --}}
     {{-- No external CDN calls needed --}}
 
+    {{-- Splash watchdog: if the main JS bundle itself fails to load/execute after a
+    deploy (stale service-worker cache pointing at a now-deleted hashed filename —
+    unrelated to app.tsx's own vite:preloadError handler, which can't run if the
+    bundle never started), the splash below stays up forever. After 10s, unregister
+    any service worker + clear the Cache Storage so the retry fetches fresh files,
+    then reload once. Guarded by sessionStorage so a genuinely down server can't
+    reload-loop forever. Pure vanilla JS: must not depend on the bundle we're
+    working around. --}}
+    <script>
+        (function () {
+            var GUARD_KEY = '_simonas_splash_reload';
+            setTimeout(function () {
+                if (!document.getElementById('app-splash')) return; // app mounted fine
+                var last = parseInt(sessionStorage.getItem(GUARD_KEY) || '0', 10);
+                if (Date.now() - last < 15000) return; // already tried recently, don't loop
+                sessionStorage.setItem(GUARD_KEY, String(Date.now()));
+
+                Promise.resolve()
+                    .then(function () {
+                        if (!('serviceWorker' in navigator)) return;
+                        return navigator.serviceWorker.getRegistrations().then(function (regs) {
+                            return Promise.all(regs.map(function (r) { return r.unregister(); }));
+                        });
+                    })
+                    .then(function () {
+                        if (!('caches' in window)) return;
+                        return caches.keys().then(function (keys) {
+                            return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+                        });
+                    })
+                    .catch(function () {})
+                    .finally(function () { window.location.reload(); });
+            }, 10000);
+        })();
+    </script>
+
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.tsx'])
     @inertiaHead
