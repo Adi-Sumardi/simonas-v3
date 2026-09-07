@@ -84,7 +84,7 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        return User::create([
+        $user = User::create([
             'name' => $data['name'],
             'no_induk' => $data['no_induk'],
             'asrama' => $data['asrama'],
@@ -93,5 +93,14 @@ class RegisterController extends Controller
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
+
+        // Without this, `role` is just a plain column with no Spatie
+        // model_has_roles row, so every can()/permission check (including the
+        // `access-mahasiswa` route middleware and the sidebar's permission
+        // filtering) silently fails for every self-registered account — they
+        // can log in, but most of the app 403s or the menu renders half-empty.
+        $user->assignRole($data['role']);
+
+        return $user;
     }
 }

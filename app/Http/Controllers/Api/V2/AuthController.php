@@ -325,6 +325,7 @@ class AuthController extends Controller
                 'tgl_keluar' => $request->tgl_keluar,
                 'role' => 'mahasiswa',
             ]);
+            $user->assignRole('mahasiswa');
 
             Log::info('User registered successfully:', ['user_id' => $user->id]);
 
