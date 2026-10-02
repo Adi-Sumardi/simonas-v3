@@ -41,11 +41,13 @@ export default function DashboardMentor({
     function handleSubmitEval() {
         if (!featured_mentee) return;
         setSubmitting(true);
-        router.post(`/mentor/penilaian/${featured_mentee.id}`, {
+        router.post(`/mentor/eval/${featured_mentee.id}`, {
             spiritual: evalSpiritual,
             community: evalCommunity,
             notes: evalNotes,
         }, {
+            preserveScroll: true,
+            onSuccess: () => setEvalNotes(''),
             onFinish: () => setSubmitting(false),
         });
     }

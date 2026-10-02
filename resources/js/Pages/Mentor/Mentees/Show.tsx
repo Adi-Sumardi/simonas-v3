@@ -46,10 +46,20 @@ interface HafalanLog {
 
 interface TrendPoint { label: string; count: number }
 
+interface Evaluation {
+    id: number;
+    spiritual: number;
+    community: number;
+    notes: string | null;
+    mentor: string | null;
+    created_at: string;
+}
+
 interface Props {
     mentee: MenteeDetail;
     hafalan_logs: HafalanLog[];
     trend: TrendPoint[];
+    evaluations: Evaluation[];
 }
 
 type ShowTab = 'logs' | 'quran';
@@ -139,7 +149,76 @@ function ScoringModal({ log, onClose }: { log: HafalanLog; onClose: () => void }
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-export default function MenteeShow({ mentee, hafalan_logs, trend }: Props) {
+function EvaluationSection({ menteeId, evaluations }: { menteeId: number; evaluations: Evaluation[] }) {
+    const form = useForm({ spiritual: 8, community: 8, notes: '' });
+
+    function submit(e: React.FormEvent) {
+        e.preventDefault();
+        form.post(`/mentor/eval/${menteeId}`, {
+            preserveScroll: true,
+            onSuccess: () => form.reset('notes'),
+        });
+    }
+
+    const slider = (field: 'spiritual' | 'community', label: string) => (
+        <div>
+            <div className="flex justify-between mb-1">
+                <span className="text-xs text-on-surface-variant">{label}</span>
+                <span className="text-xs font-bold text-primary-container">{form.data[field]}/10</span>
+            </div>
+            <input type="range" min={0} max={10} value={form.data[field]}
+                onChange={e => form.setData(field, Number(e.target.value))}
+                className="w-full accent-primary-container" />
+            {form.errors[field] && <p className="text-xs text-rose-600 mt-1">{form.errors[field]}</p>}
+        </div>
+    );
+
+    return (
+        <section className="glass-card rounded-2xl p-5 space-y-4">
+            <h3 className="font-bold text-on-surface text-sm flex items-center gap-2">
+                <Icon name="rate_review" className="text-primary-container" /> Evaluasi Mentor
+            </h3>
+            <form onSubmit={submit} className="space-y-3">
+                {slider('spiritual', 'Spiritual')}
+                {slider('community', 'Komunitas / Sosial')}
+                <textarea value={form.data.notes} onChange={e => form.setData('notes', e.target.value)}
+                    rows={3} maxLength={1000} placeholder="Catatan evaluasi (opsional)..."
+                    className="glass-input w-full text-sm resize-none" />
+                {form.errors.notes && <p className="text-xs text-rose-600">{form.errors.notes}</p>}
+                <button type="submit" disabled={form.processing}
+                    className="w-full py-2 rounded-xl text-xs font-bold bg-primary-container text-white disabled:opacity-50">
+                    {form.processing ? 'Menyimpan...' : 'Simpan Evaluasi'}
+                </button>
+            </form>
+
+            <div className="border-t border-outline-variant/30 pt-3">
+                <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-2">
+                    Riwayat Evaluasi ({evaluations.length})
+                </p>
+                {evaluations.length === 0 ? (
+                    <p className="text-xs text-on-surface-variant/70 italic">Belum ada evaluasi.</p>
+                ) : (
+                    <ul className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                        {evaluations.map(ev => (
+                            <li key={ev.id} className="rounded-xl bg-surface-container/40 p-3">
+                                <div className="flex items-center justify-between text-[11px] text-on-surface-variant mb-1">
+                                    <span>{ev.created_at}{ev.mentor ? ` · ${ev.mentor}` : ''}</span>
+                                </div>
+                                <div className="flex gap-2 text-xs font-bold">
+                                    <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">Spiritual {ev.spiritual}/10</span>
+                                    <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Komunitas {ev.community}/10</span>
+                                </div>
+                                {ev.notes && <p className="text-xs text-on-surface mt-1.5 whitespace-pre-line">{ev.notes}</p>}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+        </section>
+    );
+}
+
+export default function MenteeShow({ mentee, hafalan_logs, trend, evaluations = [] }: Props) {
     const [scoringLog,  setScoringLog]  = useState<HafalanLog | null>(null);
     const [filterScore, setFilterScore] = useState<string>('');
     const [activeTab,   setActiveTab]   = useState<ShowTab>('logs');
@@ -299,6 +378,8 @@ export default function MenteeShow({ mentee, hafalan_logs, trend }: Props) {
                                 })}
                             </div>
                         </section>
+
+                        <EvaluationSection menteeId={mentee.id} evaluations={evaluations} />
                     </div>
 
                     {/* ── Right: Hafalan Logs ── */}

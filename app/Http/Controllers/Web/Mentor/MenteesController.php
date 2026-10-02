@@ -164,10 +164,25 @@ class MenteesController extends Controller
             'total_logs'    => $hafalanLogs->count(),
         ];
 
+        $evaluations = \App\Models\MentorEvaluation::where('mentee_id', $mentee->id)
+            ->with('mentor:id,name')
+            ->latest()
+            ->limit(20)
+            ->get()
+            ->map(fn ($e) => [
+                'id'         => $e->id,
+                'spiritual'  => $e->spiritual,
+                'community'  => $e->community,
+                'notes'      => $e->notes,
+                'mentor'     => $e->mentor?->name,
+                'created_at' => $e->created_at->format('d M Y H:i'),
+            ]);
+
         return Inertia::render('Mentor/Mentees/Show', [
             'mentee'       => $menteeSummary,
             'hafalan_logs' => $hafalanLogs->values(),
             'trend'        => $trend,
+            'evaluations'  => $evaluations,
         ]);
     }
 }

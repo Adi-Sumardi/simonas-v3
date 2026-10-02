@@ -54,6 +54,12 @@ Route::middleware(['auth', 'verified', 'onboarding.complete'])->group(function (
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // ── Profile ───────────────────────────────────────────────
+    // Generic account profile (admin, super) — other roles have their own.
+    Route::get('/akun/profil',            [\App\Http\Controllers\Web\AccountProfileController::class, 'index'])         ->name('akun.profil');
+    Route::put('/akun/profil',            [\App\Http\Controllers\Web\AccountProfileController::class, 'update'])        ->name('akun.profil.update');
+    Route::post('/akun/profil/avatar',    [\App\Http\Controllers\Web\AccountProfileController::class, 'updateAvatar'])  ->name('akun.profil.avatar');
+    Route::post('/akun/profil/password',  [\App\Http\Controllers\Web\AccountProfileController::class, 'updatePassword'])->name('akun.profil.password');
+
     Route::post('/change-password', [\App\Http\Controllers\UserController::class, 'changePassword'])
         ->name('user.changePassword');
 

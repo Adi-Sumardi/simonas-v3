@@ -136,16 +136,29 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function submitEval(Request $request, $id)
+    public function submitEval(Request $request, int $id)
     {
-        $request->validate([
+        $data = $request->validate([
             'spiritual'  => 'required|integer|min:0|max:10',
             'community'  => 'required|integer|min:0|max:10',
             'notes'      => 'nullable|string|max:1000',
         ]);
 
-        // TODO: save to a dedicated MentorEval model if needed
-        return redirect()->route('mentor.dashboard')
-            ->with('success', 'Evaluasi berhasil disimpan.');
+        $mentor = $request->user();
+
+        $mentee = User::where('id', $id)
+            ->where('mentor_id', $mentor->id)
+            ->where('role', 'mahasiswa')
+            ->firstOrFail();
+
+        \App\Models\MentorEvaluation::create([
+            'mentor_id' => $mentor->id,
+            'mentee_id' => $mentee->id,
+            'spiritual' => $data['spiritual'],
+            'community' => $data['community'],
+            'notes'     => $data['notes'] ?? null,
+        ]);
+
+        return back()->with('success', "Evaluasi untuk {$mentee->name} berhasil disimpan.");
     }
 }
