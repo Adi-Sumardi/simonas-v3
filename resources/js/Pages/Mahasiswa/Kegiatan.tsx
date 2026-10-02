@@ -28,6 +28,7 @@ type Step = 'lokasi' | 'selfie' | 'foto_lokasi' | 'review' | 'done';
 const TIPE_META: Record<string, { icon: string; bg: string; text: string }> = {
     akademik:  { icon: 'school',         bg: 'bg-blue-100',    text: 'text-blue-600' },
     hafalan:   { icon: 'auto_stories',   bg: 'bg-emerald-100', text: 'text-emerald-600' },
+    ibadah:    { icon: 'mosque',         bg: 'bg-amber-100',   text: 'text-amber-600' },
     kegiatan:  { icon: 'event',          bg: 'bg-purple-100',  text: 'text-purple-600' },
     olahraga:  { icon: 'fitness_center', bg: 'bg-teal-100',    text: 'text-teal-600' },
     sosial:    { icon: 'handshake',      bg: 'bg-rose-100',    text: 'text-rose-600' },

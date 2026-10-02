@@ -36,6 +36,7 @@ interface HafalanPageProps extends PageProps {
     logs: HafalanLog[];
     weekly: { completed_pages: number; target_pages: number; percent: number };
     quality: { mutqin_percent: number; murajaah_percent: number };
+    mentorName: string | null;
 }
 
 // ─── Score config ─────────────────────────────────────────────────────────────
@@ -98,7 +99,7 @@ const SURAH_START_PAGES: Record<number, number> = {
 };
 
 // ─── Log Form Modal ───────────────────────────────────────────────────────────
-function LogModal({ editItem, onClose }: { editItem: HafalanLog | null; onClose: () => void }) {
+function LogModal({ editItem, onClose, mentorName }: { editItem: HafalanLog | null; onClose: () => void; mentorName: string | null }) {
     const [form, setForm] = useState({
         surah:         editItem?.surah         ?? '',
         ayat_start:    editItem?.ayat_start    ?? 1,
@@ -208,10 +209,17 @@ function LogModal({ editItem, onClose }: { editItem: HafalanLog | null; onClose:
                         rows={3} className="glass-input w-full text-sm resize-none"
                         placeholder="Ada bagian yang terasa sulit? Ceritakan di sini..." />
                 </div>
-                <p className="text-xs text-on-surface-variant bg-amber-50 px-3 py-2 rounded-xl flex items-start gap-2">
-                    <Icon name="info" className="text-amber-600 text-sm flex-shrink-0 mt-0.5" />
-                    Setoran akan dikirim ke mentor untuk dinilai. Status awal: <strong>Menunggu Mentor</strong>.
-                </p>
+                {mentorName ? (
+                    <p className="text-xs text-on-surface-variant bg-amber-50 px-3 py-2 rounded-xl flex items-start gap-2">
+                        <Icon name="info" className="text-amber-600 text-sm flex-shrink-0 mt-0.5" />
+                        <span>Setoran akan dikirim ke mentor <strong>{mentorName}</strong> untuk dinilai. Status awal: <strong>Menunggu Mentor</strong>.</span>
+                    </p>
+                ) : (
+                    <p className="text-xs text-rose-800 bg-rose-50 border border-rose-200 px-3 py-2 rounded-xl flex items-start gap-2">
+                        <Icon name="warning" className="text-rose-600 text-sm flex-shrink-0 mt-0.5" filled />
+                        <span>Kamu <strong>belum memiliki mentor</strong>, jadi setoran ini belum bisa dinilai siapa pun. Setoran tetap tersimpan dan akan muncul di mentor begitu kamu ditugaskan — hubungi pengurus asrama.</span>
+                    </p>
+                )}
             </form>
         </Modal>
     );
@@ -276,7 +284,7 @@ function LogCard({ log, onEdit, onDelete }: { log: HafalanLog; onEdit: () => voi
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export default function Hafalan({ hafalan, logs, weekly, quality }: HafalanPageProps) {
+export default function Hafalan({ hafalan, logs, weekly, quality, mentorName }: HafalanPageProps) {
     const [activeTab, setActiveTab] = useState<ActiveTab>('baca');
     const [showModal, setShowModal] = useState(false);
     const [editItem,  setEditItem]  = useState<HafalanLog | null>(null);
@@ -388,7 +396,7 @@ export default function Hafalan({ hafalan, logs, weekly, quality }: HafalanPageP
             <PageHeader
                 title="Hafalan Qur'an"
                 subtitle="Baca, hafal, dan catat setoran harianmu."
-                breadcrumbs={[{ label: 'Beranda', href: '/mahasiswa' }, { label: 'Hafalan' }]}
+                breadcrumbs={[{ label: 'Beranda', href: '/dashboard' }, { label: 'Hafalan' }]}
                 actions={
                     activeTab !== 'baca' ? (
                         <button onClick={openAdd}
@@ -583,7 +591,7 @@ export default function Hafalan({ hafalan, logs, weekly, quality }: HafalanPageP
                 </div>
             )}
 
-            {showModal && <LogModal editItem={editItem} onClose={closeModal} />}
+            {showModal && <LogModal editItem={editItem} onClose={closeModal} mentorName={mentorName} />}
         </AppLayout>
     );
 }

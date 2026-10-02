@@ -18,7 +18,7 @@ class DashboardController extends Controller
         $user = $request->user();
 
         // Share role-based data based on user's role column
-        // (Spatie roles are synced from $user->role on login via RoleSyncService)
+        // (Spatie roles are self-healed from $user->role on login via EnsureSpatieRoleMatchesColumn)
         $role = $user->role ?? 'mahasiswa';
 
         $payload = match ($role) {

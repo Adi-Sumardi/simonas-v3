@@ -26,14 +26,9 @@ class Handler extends ExceptionHandler
                 default => 'Errors/Error404',
             };
 
-            $user = Auth::user();
-            $dashboardUrl = match ($user?->role) {
-                'super'   => '/super/dashboard',
-                'admin'   => '/admin/dashboard',
-                'mentor'  => '/mentor',
-                'alumni'  => '/alumni/dashboard',
-                default   => $user ? '/dashboard' : '/',
-            };
+            // Every role lands on the unified /dashboard (role-specific
+            // /super/dashboard, /admin/dashboard, /alumni/dashboard don't exist).
+            $dashboardUrl = Auth::check() ? '/dashboard' : '/';
 
             return Inertia::render($component, [
                 'status'       => $response->getStatusCode(),

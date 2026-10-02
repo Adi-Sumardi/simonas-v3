@@ -5,12 +5,22 @@ import { ERROR_REPORT_WHATSAPP_URL } from '@/lib/adminContact';
 
 interface Props {
     dashboardUrl?: string;
+    status?: number;
 }
 
-export default function Error404({ dashboardUrl = '/' }: Props) {
+// The exception handler renders this page for 403/419/500 too, not just 404.
+const COPY: Record<number, { title: string; headline: string; body: string; badge: string }> = {
+    404: { title: '404 — Not Found', headline: 'Oops! This page is not in our archives.', body: 'Di Digital Asrama YAPI pun, terkadang kita tersesat. Halaman yang kamu cari sepertinya tidak ditemukan.', badge: 'Lost' },
+    403: { title: '403 — Akses Ditolak', headline: 'Kamu tidak punya akses ke halaman ini.', body: 'Akun kamu belum memiliki izin untuk membuka halaman ini. Jika menurutmu ini keliru, hubungi admin agar role/izin akunmu diperiksa.', badge: 'Locked' },
+    419: { title: '419 — Sesi Kedaluwarsa', headline: 'Sesi kamu sudah kedaluwarsa.', body: 'Halaman terlalu lama terbuka sehingga sesi keamanan habis. Muat ulang halaman lalu coba lagi.', badge: 'Expired' },
+    500: { title: '500 — Server Error', headline: 'Terjadi kesalahan di server.', body: 'Ada yang tidak beres di sistem kami. Coba lagi beberapa saat lagi; jika terus terjadi, laporkan ke admin.', badge: 'Error' },
+};
+
+export default function Error404({ dashboardUrl = '/', status = 404 }: Props) {
+    const copy = COPY[status] ?? COPY[status >= 500 ? 500 : 404];
     return (
         <>
-            <Head title="404 — Not Found" />
+            <Head title={copy.title} />
             <header className="px-6 py-4 flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg overflow-hidden">
                     <img src="/images/simonas_logo.png" alt="SIMONAS" className="w-full h-full object-cover" />
@@ -25,7 +35,7 @@ export default function Error404({ dashboardUrl = '/' }: Props) {
                         <div className="aspect-square rounded-xl bg-gradient-to-br from-surface-container-high to-surface-container-low flex items-center justify-center relative overflow-hidden">
                             <Icon name="local_library" className="text-8xl text-primary-container/40" filled />
                             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-display-md font-display italic text-primary-container/70">
-                                Lost
+                                {copy.badge}
                             </div>
                         </div>
                         <div className="mt-4 status-pill-info inline-flex items-center gap-1">
@@ -39,11 +49,10 @@ export default function Error404({ dashboardUrl = '/' }: Props) {
                 <div>
                     <div className="text-label-caps text-primary-container mb-3">System Notice</div>
                     <h1 className="font-display text-display-lg text-on-surface mb-4">
-                        Oops! This page is not in our archives.
+                        {copy.headline}
                     </h1>
                     <p className="text-body-md text-on-surface-variant mb-8">
-                        Di Digital Asrama YAPI pun, terkadang kita tersesat. Halaman yang kamu cari
-                        sepertinya tidak ditemukan.
+                        {copy.body}
                     </p>
 
                     <div className="flex flex-wrap gap-3">
@@ -68,7 +77,7 @@ export default function Error404({ dashboardUrl = '/' }: Props) {
                         </span>
                         <span className="flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-error" />
-                            Error Code: 404
+                            Error Code: {status}
                         </span>
                     </div>
                 </div>

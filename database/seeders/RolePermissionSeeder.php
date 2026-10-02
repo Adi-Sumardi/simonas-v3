@@ -87,11 +87,14 @@ class RolePermissionSeeder extends Seeder
             'manage-warga',
         ]);
 
-        // ── Sync existing users' role column → Spatie role ───────
+        // ── Ensure every user has (at least) the Spatie role matching their
+        // `role` column. Additive only: syncRoles() here would wipe extra roles
+        // assigned via Super > Role & Permission (e.g. mahasiswa + mentor +
+        // pengurus_asrama) every time this seeder is re-run on production.
         $roleMap = ['mahasiswa', 'mentor', 'admin', 'super', 'alumni', 'pengurus_asrama'];
         User::whereIn('role', $roleMap)->each(function (User $user) {
-            if ($user->role) {
-                $user->syncRoles([$user->role]);
+            if ($user->role && ! $user->hasRole($user->role)) {
+                $user->assignRole($user->role);
             }
         });
 

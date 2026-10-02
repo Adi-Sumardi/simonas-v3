@@ -342,7 +342,7 @@ export default function Kalender({ events, upcoming, today }: KalenderProps) {
             <PageHeader
                 title="Kalender Kegiatan"
                 subtitle="Jadwal dan kegiatan harian kamu."
-                breadcrumbs={[{ label: 'Beranda', href: '/mahasiswa' }, { label: 'Kalender' }]}
+                breadcrumbs={[{ label: 'Beranda', href: '/dashboard' }, { label: 'Kalender' }]}
                 actions={
                     <button onClick={() => openAdd(today)}
                         className="btn-primary flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl font-bold">

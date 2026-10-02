@@ -72,7 +72,7 @@ export default function AktivitasForm({}: AktivitasFormProps) {
                 title="Input Aktivitas"
                 subtitle="Catat aktivitas spiritual dan akademikmu sehari-hari di Digital Asrama YAPI."
                 breadcrumbs={[
-                    { label: 'Beranda', href: '/mahasiswa' },
+                    { label: 'Beranda', href: '/dashboard' },
                     { label: 'Aktivitas', href: '/mahasiswa/aktivitas' },
                     { label: 'Input Baru' },
                 ]}

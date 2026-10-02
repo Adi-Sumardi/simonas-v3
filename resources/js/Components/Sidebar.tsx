@@ -75,7 +75,7 @@ const MENU_GROUPS: MenuGroup[] = [
         section: 'Admin',
         forRoles: ['admin'],
         items: [
-            { label: 'Role & Permission', icon: 'admin_panel_settings', href: '/super/role-permission' },
+            { label: 'Role & Permission', icon: 'admin_panel_settings', href: '/super/role-permission', permission: 'access-super' },
             { label: 'Warga Asrama',      icon: 'people',               href: '/admin/warga',      soon: true },
             { label: 'Kegiatan Asrama',   icon: 'event',                href: '/admin/kegiatan',   soon: true },
             { label: 'Hafalan',           icon: 'auto_stories',         href: '/admin/hafalan',    soon: true },

@@ -687,7 +687,7 @@ export default function AktivitasIndex({ items, komponens, categories, paginatio
             <PageHeader
                 title="Aktivitas Saya"
                 subtitle="Log semua kegiatan akademik, leadership, dan pengembangan diri."
-                breadcrumbs={[{ label: 'Beranda', href: '/mahasiswa' }, { label: 'Aktivitas' }]}
+                breadcrumbs={[{ label: 'Beranda', href: '/dashboard' }, { label: 'Aktivitas' }]}
                 actions={
                     <button onClick={openAdd}
                         className="btn-primary flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl font-bold">

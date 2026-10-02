@@ -115,6 +115,7 @@ class HafalanController extends Controller
             'logs'    => $logs,
             'weekly'  => $weekly,
             'quality' => $quality,
+            'mentorName' => $user->mentor_id ? \App\Models\User::whereKey($user->mentor_id)->value('name') : null,
         ]);
     }
 
@@ -157,10 +158,10 @@ class HafalanController extends Controller
             'surah'         => $data['surah'],
             'ayat_start'    => $data['ayat_start'],
             'ayat_end'      => $data['ayat_end'],
-            'halaman_start' => $data['halaman_start'],
-            'halaman_end'   => $data['halaman_end'],
+            'halaman_start' => $data['halaman_start'] ?? null,
+            'halaman_end'   => $data['halaman_end'] ?? null,
             'score'         => 'pending',
-            'notes'         => $data['notes'],
+            'notes'         => $data['notes'] ?? null,
             'tested_at'     => $data['tested_at'] ?? now(),
         ]);
 

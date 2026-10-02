@@ -20,6 +20,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         \Illuminate\Auth\Events\Login::class => [
             \App\Listeners\UpdateLastLoginAt::class,
+            \App\Listeners\EnsureSpatieRoleMatchesColumn::class,
         ],
     ];
 
