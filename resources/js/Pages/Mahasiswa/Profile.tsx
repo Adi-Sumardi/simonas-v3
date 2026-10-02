@@ -22,9 +22,73 @@ interface UserInfo {
     nim?: string; asrama?: string; angkatan?: string; bio?: string; no_hp?: string;
 }
 
+interface MentorEvaluation {
+    id: number; spiritual: number; community: number;
+    notes: string | null; mentor: string | null; created_at: string;
+}
+
+function EvaluasiMentorCard({ evaluations }: { evaluations: MentorEvaluation[] }) {
+    const [showAll, setShowAll] = useState(false);
+    const latest = evaluations[0];
+    const rest = showAll ? evaluations.slice(1) : evaluations.slice(1, 3);
+    const bar = (value: number, color: string) => (
+        <div className="w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
+            <div className={`h-full rounded-full ${color}`} style={{ width: `${value * 10}%` }} />
+        </div>
+    );
+
+    return (
+        <div className="glass-card rounded-3xl p-5">
+            <h3 className="font-bold text-on-surface mb-3 flex items-center gap-2 text-sm">
+                <Icon name="rate_review" className="text-indigo-600 text-lg" filled />
+                Evaluasi dari Mentor
+            </h3>
+            {!latest ? (
+                <p className="text-sm text-on-surface-variant">Belum ada evaluasi dari mentor.</p>
+            ) : (
+                <div className="space-y-3">
+                    <div className="rounded-2xl bg-indigo-50/60 border border-indigo-100 p-3 space-y-2">
+                        <p className="text-[11px] text-on-surface-variant">Terbaru · {latest.created_at}{latest.mentor ? ` · ${latest.mentor}` : ''}</p>
+                        <div>
+                            <div className="flex justify-between text-xs mb-1"><span>Spiritual</span><strong>{latest.spiritual}/10</strong></div>
+                            {bar(latest.spiritual, 'bg-purple-500')}
+                        </div>
+                        <div>
+                            <div className="flex justify-between text-xs mb-1"><span>Komunitas / Sosial</span><strong>{latest.community}/10</strong></div>
+                            {bar(latest.community, 'bg-blue-500')}
+                        </div>
+                        {latest.notes && <p className="text-xs text-on-surface whitespace-pre-line pt-1">"{latest.notes}"</p>}
+                    </div>
+
+                    {rest.length > 0 && (
+                        <ul className="space-y-2">
+                            {rest.map(ev => (
+                                <li key={ev.id} className="text-xs rounded-xl bg-surface-container/40 p-2.5">
+                                    <div className="flex justify-between text-on-surface-variant">
+                                        <span>{ev.created_at}</span>
+                                        <span className="font-bold text-on-surface">S {ev.spiritual} · K {ev.community}</span>
+                                    </div>
+                                    {ev.notes && <p className="mt-1 text-on-surface line-clamp-2">{ev.notes}</p>}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                    {evaluations.length > 3 && (
+                        <button type="button" onClick={() => setShowAll(v => !v)}
+                            className="text-xs font-bold text-primary-container hover:underline">
+                            {showAll ? 'Tampilkan lebih sedikit' : `Lihat semua (${evaluations.length})`}
+                        </button>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
+
 interface ProfileProps extends PageProps {
     user: UserInfo;
     mentor: MentorInfo | null;
+    evaluations: MentorEvaluation[];
     riwayats: Record<Tipe, Riwayat[]>;
     asramas: string[];
 }
@@ -204,7 +268,7 @@ function RiwayatCard({ item, onEdit, onDelete }: { item: Riwayat; onEdit: () => 
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────────
-export default function Profile({ user, mentor, riwayats, asramas }: ProfileProps) {
+export default function Profile({ user, mentor, riwayats, asramas, evaluations = [] }: ProfileProps) {
     const [activeTab, setActiveTab] = useState<Tipe>('pendidikan');
     const [modalTipe, setModalTipe] = useState<Tipe | null>(null);
     const [editItem, setEditItem] = useState<Riwayat | null>(null);
@@ -395,6 +459,8 @@ export default function Profile({ user, mentor, riwayats, asramas }: ProfileProp
                             </div>
                         )}
                     </div>
+
+                    <EvaluasiMentorCard evaluations={evaluations} />
 
                     {/* Ubah Password */}
                     <div className="glass-card rounded-3xl p-5">

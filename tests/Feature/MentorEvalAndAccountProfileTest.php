@@ -46,6 +46,25 @@ class MentorEvalAndAccountProfileTest extends TestCase
             ->assertInertia(fn ($page) => $page->has('evaluations', 1)->where('evaluations.0.notes', 'Bagus'));
     }
 
+    public function test_mahasiswa_sees_only_own_evaluations_and_gets_notified(): void
+    {
+        [$mentor, $mentee] = $this->mentorWithMentee();
+        $other = User::factory()->create(['role' => 'mahasiswa', 'mentor_id' => $mentor->id]);
+        $other->assignRole('mahasiswa');
+
+        $this->actingAs($mentor)->post("/mentor/eval/{$mentee->id}", ['spiritual' => 8, 'community' => 6, 'notes' => 'Untuk kamu']);
+        $this->actingAs($mentor)->post("/mentor/eval/{$other->id}", ['spiritual' => 3, 'community' => 3, 'notes' => 'Bukan kamu']);
+
+        $this->actingAs($mentee)->get('/mahasiswa/profil')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('evaluations', 1)
+                ->where('evaluations.0.notes', 'Untuk kamu')
+                ->where('evaluations.0.mentor', $mentor->name));
+
+        $this->assertDatabaseHas('notifications', ['user_id' => $mentee->id, 'title' => 'Evaluasi baru dari mentor']);
+    }
+
     public function test_mentor_cannot_evaluate_someone_elses_mentee(): void
     {
         [, $mentee] = $this->mentorWithMentee();

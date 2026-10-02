@@ -54,6 +54,19 @@ class ProfileController extends Controller
                 'no_hp'    => $user->no_hp,
             ],
             'mentor'   => $mentor,
+            'evaluations' => \App\Models\MentorEvaluation::where('mentee_id', $user->id)
+                ->with('mentor:id,name')
+                ->latest()
+                ->limit(20)
+                ->get()
+                ->map(fn ($e) => [
+                    'id'         => $e->id,
+                    'spiritual'  => $e->spiritual,
+                    'community'  => $e->community,
+                    'notes'      => $e->notes,
+                    'mentor'     => $e->mentor?->name,
+                    'created_at' => $e->created_at->format('d M Y'),
+                ]),
             'riwayats' => $riwayats,
             'asramas'  => \App\Models\Asrama::orderBy('nama_asrama')->pluck('nama_asrama'),
         ]);

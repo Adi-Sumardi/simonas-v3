@@ -159,6 +159,14 @@ class DashboardController extends Controller
             'notes'     => $data['notes'] ?? null,
         ]);
 
+        \App\Models\Notification::send(
+            $mentee->id,
+            'Evaluasi baru dari mentor',
+            "{$mentor->name} memberikan evaluasi: Spiritual {$data['spiritual']}/10, Komunitas {$data['community']}/10.",
+            'info',
+            route('mahasiswa.profil.index')
+        );
+
         return back()->with('success', "Evaluasi untuk {$mentee->name} berhasil disimpan.");
     }
 }
