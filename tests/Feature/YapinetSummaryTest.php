@@ -32,11 +32,11 @@ class YapinetSummaryTest extends TestCase
         $this->getJson('/api/integrations/yapinet/summary')->assertUnauthorized();
     }
 
-    public function test_ringkasan_v11_agregat_tanpa_nama_warga(): void
+    public function test_ringkasan_v11_dengan_daftar_warga_per_asrama(): void
     {
         $this->warga('Putra', 'aktif', ['3,60', '3,40']);
-        $this->warga('Putra', 'aktif', ['2,50']);
-        $this->warga('Putri', 'aktif', ['3,20']);
+        $rendah = $this->warga('Putra', 'aktif', ['2,50']);
+        $putriAktif = $this->warga('Putri', 'aktif', ['3,20']);
         $this->warga('Putri', 'nonaktif');
         User::factory()->create(['role' => 'alumni', 'asrama' => 'Putri', 'name' => 'Alumni Rahasia']);
 
@@ -48,10 +48,20 @@ class YapinetSummaryTest extends TestCase
 
         $json = $response->json();
 
-        // Tidak ada nama warga di payload — hanya agregat.
-        foreach (User::pluck('name') as $name) {
-            $this->assertStringNotContainsString($name, $response->getContent());
+        // Nama warga hanya ada di daftar per asrama, tidak di cakupan "semua asrama"; alumni tidak ikut.
+        $allScope = json_encode(collect($json['sections'])->where('when.asrama', 'all')->values());
+        foreach (User::where('role', 'mahasiswa')->pluck('name') as $name) {
+            $this->assertStringNotContainsString($name, $allScope);
         }
+        $this->assertStringNotContainsString('Alumni Rahasia', $response->getContent());
+
+        $putri = collect($json['sections'])->where('when.asrama', 'Putri')->firstWhere('type', 'table');
+        $this->assertSame('Warga Putri (2)', $putri['title']);
+        $this->assertSame(['Aktif', 'Nonaktif'], collect($putri['rows'])->pluck('status')->all());
+        $this->assertSame($putriAktif->name, $putri['rows'][0]['nama']);
+
+        $putra = collect(collect($json['sections'])->where('when.asrama', 'Putra')->firstWhere('type', 'table')['rows']);
+        $this->assertSame('warning', $putra->firstWhere('nama', $rendah->name)['_emphasis']['ipk']);
 
         $all = collect($json['metrics'])->where('when.asrama', 'all')->keyBy('label');
         $this->assertSame(3, $all['Warga aktif']['value']);

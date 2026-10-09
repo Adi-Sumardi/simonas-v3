@@ -16,9 +16,10 @@ use Illuminate\Support\Collection;
 
 /**
  * Ringkasan untuk portal Yapinet — kontrak v1.1 (yapinet/rules/detail-pages.md).
- * Dipanggil server Yapinet (middleware `yapinet.auth`). Sengaja hanya AGREGAT:
- * nama & IPK per warga tetap di Simonas, Yapinet cukup melihat jumlah yang
- * perlu pembinaan. Satu payload memuat varian per asrama (`when: {asrama}`).
+ * Dipanggil server Yapinet (middleware `yapinet.auth`). Satu payload memuat
+ * varian per asrama (`when: {asrama}`). Cakupan "semua asrama" hanya agregat;
+ * daftar nama warga (IPK & poin) tampil saat satu asrama dipilih — permintaan
+ * pengurus yayasan.
  */
 class YapinetSummaryController extends Controller
 {
@@ -41,9 +42,12 @@ class YapinetSummaryController extends Controller
 
     public function summary(): JsonResponse
     {
-        $warga = User::where('role', 'mahasiswa')->get(['id', 'asrama', 'status_warga']);
+        $warga = User::where('role', 'mahasiswa')->get(['id', 'name', 'asrama', 'status_warga', 'universitas', 'prodi', 'angkatan']);
         $ipk = $this->ipkPerUser($warga->pluck('id'));
         $asramas = $warga->pluck('asrama')->filter()->unique()->sort()->values();
+        // Mesin poin yang sama dengan dashboard mahasiswa (User::calculatePoints()), dihitung sekali.
+        $points = User::whereIn('id', $warga->where('status_warga', 'aktif')->pluck('id'))->get()
+            ->mapWithKeys(fn (User $u) => [$u->id => $u->calculatePoints()]);
 
         $scopes = collect([['key' => 'all', 'label' => 'Semua asrama']])
             ->merge($asramas->map(fn ($a) => ['key' => $a, 'label' => $a]));
@@ -68,8 +72,10 @@ class YapinetSummaryController extends Controller
             $sections[] = $this->activityChart($members->where('status_warga', 'aktif')->pluck('id')) + ['when' => $when];
 
             if ($scope['key'] === 'all') {
-                $sections[] = $this->asramaTable($asramas, $warga, $ipk) + ['when' => $when];
+                $sections[] = $this->asramaTable($asramas, $warga, $ipk, $points) + ['when' => $when];
                 $all = $d;
+            } else {
+                $sections[] = $this->memberTable($scope['label'], $members, $ipk, $points) + ['when' => $when];
             }
         }
 
@@ -221,7 +227,7 @@ class YapinetSummaryController extends Controller
         ];
     }
 
-    private function asramaTable(Collection $asramas, Collection $warga, Collection $ipk): array
+    private function asramaTable(Collection $asramas, Collection $warga, Collection $ipk, Collection $points): array
     {
         return [
             'type' => 'table',
@@ -234,11 +240,10 @@ class YapinetSummaryController extends Controller
                 ['key' => 'poin', 'label' => 'Rata poin', 'format' => 'number'],
                 ['key' => 'rendah', 'label' => 'IPK < 2,75', 'format' => 'number'],
             ],
-            'rows' => $asramas->map(function (string $asrama) use ($warga, $ipk) {
+            'rows' => $asramas->map(function (string $asrama) use ($warga, $ipk, $points) {
                 $d = $this->scopeData($warga->where('asrama', $asrama), $ipk, $asrama);
                 $aktifIds = $warga->where('asrama', $asrama)->where('status_warga', 'aktif')->pluck('id');
-                // Mesin poin yang sama dengan dashboard mahasiswa (User::calculatePoints()).
-                $poin = User::whereIn('id', $aktifIds)->get()->avg(fn (User $u) => $u->calculatePoints());
+                $poin = $aktifIds->map(fn ($id) => $points[$id] ?? null)->filter(fn ($v) => $v !== null)->avg();
 
                 return array_filter([
                     'asrama' => $asrama,
@@ -250,6 +255,43 @@ class YapinetSummaryController extends Controller
                     '_emphasis' => $d['low_ipk'] > 0 ? ['rendah' => 'warning'] : null,
                 ], fn ($v) => $v !== null);
             })->values(),
+        ];
+    }
+
+    /** Daftar warga satu asrama: aktif dulu, lalu urut nama. */
+    private function memberTable(string $asrama, Collection $members, Collection $ipk, Collection $points): array
+    {
+        return [
+            'type' => 'table',
+            'title' => "Warga {$asrama} ({$members->count()})",
+            'columns' => [
+                ['key' => 'nama', 'label' => 'Nama'],
+                ['key' => 'kampus', 'label' => 'Kampus / prodi'],
+                ['key' => 'angkatan', 'label' => 'Angkatan'],
+                ['key' => 'status', 'label' => 'Status'],
+                ['key' => 'ipk', 'label' => 'IPK terakhir'],
+                ['key' => 'poin', 'label' => 'Poin', 'format' => 'number'],
+            ],
+            'rows' => $members
+                ->sortBy(fn ($u) => [$u->status_warga === 'aktif' ? 0 : 1, mb_strtolower((string) $u->name)])
+                ->map(function ($u) use ($ipk, $points) {
+                    $current = $ipk[$u->id]['current'] ?? null;
+                    $aktif = $u->status_warga === 'aktif';
+
+                    return array_filter([
+                        'nama' => $u->name,
+                        'kampus' => trim(implode(' · ', array_filter([$u->universitas, $u->prodi]))) ?: '—',
+                        'angkatan' => $u->angkatan ? (string) $u->angkatan : '—',
+                        'status' => $aktif ? 'Aktif' : 'Nonaktif',
+                        'ipk' => $current !== null ? number_format($current, 2, ',', '.') : '—',
+                        'poin' => $aktif ? (int) ($points[$u->id] ?? 0) : null,
+                        '_emphasis' => array_filter([
+                            'ipk' => $current !== null && $current < self::LOW_IPK ? 'warning' : null,
+                            'status' => $aktif ? null : 'neutral',
+                        ]) ?: null,
+                    ], fn ($v) => $v !== null);
+                })
+                ->values(),
         ];
     }
 }
