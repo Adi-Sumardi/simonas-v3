@@ -74,6 +74,13 @@ class YapinetSummaryTest extends TestCase
         $table = collect($json['sections'])->firstWhere('title', 'Per asrama');
         $this->assertSame(['rendah' => 'warning'], collect($table['rows'])->firstWhere('asrama', 'Putra')['_emphasis']);
 
+        // v1.2: hero warga aktif + cincin rasio nonaktif, daftar warga sebagai kartu.
+        $hero = collect($json['hero'])->firstWhere('when.asrama', 'all');
+        $this->assertSame(3, $hero['value']);
+        $this->assertSame(['Nonaktif'], $hero['side']);
+        $this->assertSame('ring', $all['Nonaktif']['display']);
+        $this->assertSame('cards', $putri['display']);
+
         file_put_contents(sys_get_temp_dir().'/yapinet-summary-simonas.json', json_encode($json));
     }
 }

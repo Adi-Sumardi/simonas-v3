@@ -55,6 +55,7 @@ class YapinetSummaryController extends Controller
         $metrics = [];
         $attention = [];
         $sections = [];
+        $hero = [];
 
         foreach ($scopes as $scope) {
             $when = ['asrama' => $scope['key']];
@@ -67,6 +68,7 @@ class YapinetSummaryController extends Controller
             foreach ($this->attention($d) as $item) {
                 $attention[] = $item + ['when' => $when];
             }
+            $hero[] = $this->hero($d) + ['when' => $when];
 
             $sections[] = $this->ipkChart($d) + ['when' => $when];
             $sections[] = $this->activityChart($members->where('status_warga', 'aktif')->pluck('id')) + ['when' => $when];
@@ -93,6 +95,7 @@ class YapinetSummaryController extends Controller
                 'options' => $scopes->map(fn ($s) => ['value' => $s['key'], 'label' => $s['label']])->values(),
             ]],
             'attention' => $attention,
+            'hero' => $hero,
             'metrics' => $metrics,
             'sections' => $sections,
             'detail_path' => '/super/warga',
@@ -151,7 +154,14 @@ class YapinetSummaryController extends Controller
 
         return [
             ['label' => 'Warga aktif', 'value' => $d['aktif'], 'format' => 'number', 'hint' => 'dari '.($d['aktif'] + $d['nonaktif']).' warga terdaftar'],
-            ['label' => 'Nonaktif', 'value' => $d['nonaktif'], 'format' => 'number', 'hint' => (int) round($d['nonaktif_ratio'] * 100).'% dari total warga'],
+            [
+                'label' => 'Nonaktif',
+                'value' => $d['nonaktif'],
+                'format' => 'number',
+                'hint' => (int) round($d['nonaktif_ratio'] * 100).'% dari total warga',
+                'progress' => round($d['nonaktif_ratio'], 4),
+                'display' => 'ring',
+            ],
             array_filter([
                 'label' => 'Rata-rata IPK',
                 'value' => $d['avg_ipk'] !== null ? number_format($d['avg_ipk'], 2, ',', '.') : '—',
@@ -160,6 +170,22 @@ class YapinetSummaryController extends Controller
                 'trend' => $trend,
             ], fn ($v) => $v !== null),
             ['label' => 'Alumni', 'value' => $d['alumni'], 'format' => 'number'],
+        ];
+    }
+
+    /** v1.2: angka utama panel atas; label sama dengan metric supaya tidak tampil dua kali. */
+    private function hero(array $d): array
+    {
+        $total = $d['aktif'] + $d['nonaktif'];
+
+        return [
+            'value' => $d['aktif'],
+            'format' => 'number',
+            'label' => 'Warga aktif',
+            'story' => "dari **{$total}** warga terdaftar"
+                .($d['avg_ipk'] !== null ? ' · rata-rata IPK **'.number_format($d['avg_ipk'], 2, ',', '.').'**' : '')
+                .($d['low_ipk'] > 0 ? " · **{$d['low_ipk']}** perlu pendampingan akademik." : '.'),
+            'side' => ['Nonaktif'],
         ];
     }
 
@@ -263,6 +289,7 @@ class YapinetSummaryController extends Controller
     {
         return [
             'type' => 'table',
+            'display' => 'cards',
             'title' => "Warga {$asrama} ({$members->count()})",
             'columns' => [
                 ['key' => 'nama', 'label' => 'Nama'],
