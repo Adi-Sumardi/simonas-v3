@@ -15,23 +15,34 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 
 /**
- * Ringkasan untuk portal Yapinet — kontrak v1.1 (yapinet/rules/detail-pages.md).
+ * Ringkasan untuk portal Yapinet — kontrak v1.2 (yapinet/rules/detail-pages.md).
  * Dipanggil server Yapinet (middleware `yapinet.auth`). Satu payload memuat
  * varian per asrama (`when: {asrama}`). Cakupan "semua asrama" hanya agregat;
- * daftar nama warga (IPK & poin) tampil saat satu asrama dipilih — permintaan
- * pengurus yayasan.
+ * daftar nama warga tampil saat satu asrama dipilih — permintaan pengurus yayasan.
+ *
+ * Poin & keaktifan memakai metrik yang sama persis dengan Leaderboard / Dashboard
+ * Simonas: jumlah kolom `poin` (Komponen Penilaian: jenis kegiatan × level) di
+ * akademik, leadership, karakter & kreatif pada bulan berjalan (kolom `waktu`).
+ * "Aktif mengisi" = punya ≥1 catatan bulan ini — bukan `status_warga`, yang
+ * tidak selalu diperbarui pengurus.
  */
 class YapinetSummaryController extends Controller
 {
     /** IPK di bawah ini dianggap perlu pendampingan akademik. */
     private const LOW_IPK = 2.75;
 
-    /**
-     * Rasio warga nonaktif di atas ini → perlu perhatian. `status_warga` di
-     * Simonas hanya `aktif` / `nonaktif` — endpoint lama keliru melabeli
-     * nonaktif sebagai "Cuti".
-     */
-    private const HIGH_INACTIVE_RATIO = 0.2;
+    /** Sama dengan SuperController::MONTHLY_ACTIVITY_TARGET (target poin per bulan). */
+    private const MONTHLY_TARGET = 120;
+
+    /** Rasio warga yang belum mengisi bulan ini di atas ini → perlu perhatian. */
+    private const HIGH_IDLE_RATIO = 0.3;
+
+    private const ACTIVITY_MODELS = [
+        'akademik' => Akademik::class,
+        'leadership' => Leadership::class,
+        'karakter' => Karakter::class,
+        'kreatif' => Kreatif::class,
+    ];
 
     private const IPK_BUCKETS = [
         ['label' => '3,50 – 4,00', 'min' => 3.5, 'max' => 4.01],
@@ -45,9 +56,7 @@ class YapinetSummaryController extends Controller
         $warga = User::where('role', 'mahasiswa')->get(['id', 'name', 'asrama', 'status_warga', 'universitas', 'prodi', 'angkatan']);
         $ipk = $this->ipkPerUser($warga->pluck('id'));
         $asramas = $warga->pluck('asrama')->filter()->unique()->sort()->values();
-        // Mesin poin yang sama dengan dashboard mahasiswa (User::calculatePoints()), dihitung sekali.
-        $points = User::whereIn('id', $warga->where('status_warga', 'aktif')->pluck('id'))->get()
-            ->mapWithKeys(fn (User $u) => [$u->id => $u->calculatePoints()]);
+        $month = $this->monthActivity($warga->pluck('id'));
 
         $scopes = collect([['key' => 'all', 'label' => 'Semua asrama']])
             ->merge($asramas->map(fn ($a) => ['key' => $a, 'label' => $a]));
@@ -60,7 +69,7 @@ class YapinetSummaryController extends Controller
         foreach ($scopes as $scope) {
             $when = ['asrama' => $scope['key']];
             $members = $scope['key'] === 'all' ? $warga : $warga->where('asrama', $scope['key']);
-            $d = $this->scopeData($members, $ipk, $scope['key']);
+            $d = $this->scopeData($members, $ipk, $month, $scope['key']);
 
             foreach ($this->metrics($d) as $metric) {
                 $metrics[] = $metric + ['when' => $when];
@@ -70,23 +79,23 @@ class YapinetSummaryController extends Controller
             }
             $hero[] = $this->hero($d) + ['when' => $when];
 
+            $sections[] = $this->activityChart($members->pluck('id')) + ['when' => $when];
             $sections[] = $this->ipkChart($d) + ['when' => $when];
-            $sections[] = $this->activityChart($members->where('status_warga', 'aktif')->pluck('id')) + ['when' => $when];
 
             if ($scope['key'] === 'all') {
-                $sections[] = $this->asramaTable($asramas, $warga, $ipk, $points) + ['when' => $when];
+                $sections[] = $this->asramaTable($asramas, $warga, $ipk, $month) + ['when' => $when];
                 $all = $d;
             } else {
-                $sections[] = $this->memberTable($scope['label'], $members, $ipk, $points) + ['when' => $when];
+                $sections[] = $this->memberTable($scope['label'], $members, $ipk, $month) + ['when' => $when];
             }
         }
 
-        $status = ($all['low_ipk'] > 0 || $all['nonaktif_ratio'] > self::HIGH_INACTIVE_RATIO) ? 'warning' : 'ok';
+        $status = ($all['low_ipk'] > 0 || $all['idle_ratio'] > self::HIGH_IDLE_RATIO) ? 'warning' : 'ok';
 
         return response()->json([
             'contract_version' => 2,
             'status' => $status,
-            'headline' => "{$all['aktif']} warga aktif di asrama".($all['low_ipk'] > 0 ? " · {$all['low_ipk']} perlu pendampingan akademik" : ''),
+            'headline' => "{$all['filled']} dari {$all['total']} warga aktif mengisi Simonas {$month['label']}",
             'updated_at' => now()->toIso8601String(),
             'filters' => [[
                 'key' => 'asrama',
@@ -100,6 +109,34 @@ class YapinetSummaryController extends Controller
             'sections' => $sections,
             'detail_path' => '/super/warga',
         ]);
+    }
+
+    /**
+     * Poin & jumlah catatan bulan berjalan per warga — rentang & kolom sama
+     * dengan SuperController::leaderboard().
+     *
+     * @return array{label: string, points: Collection<int, int>, entries: Collection<int, int>}
+     */
+    private function monthActivity(Collection $userIds): array
+    {
+        $from = now()->startOfMonth()->toDateString();
+        $to = now()->endOfMonth()->toDateString();
+        $points = collect();
+        $entries = collect();
+
+        foreach (self::ACTIVITY_MODELS as $model) {
+            $rows = $model::whereIn('user_id', $userIds)
+                ->whereBetween('waktu', [$from, $to])
+                ->selectRaw('user_id, SUM(poin) as poin, COUNT(*) as jumlah')
+                ->groupBy('user_id')
+                ->get();
+            foreach ($rows as $row) {
+                $points[$row->user_id] = ($points[$row->user_id] ?? 0) + (int) $row->poin;
+                $entries[$row->user_id] = ($entries[$row->user_id] ?? 0) + (int) $row->jumlah;
+            }
+        }
+
+        return ['label' => now()->locale('id')->translatedFormat('F Y'), 'points' => $points, 'entries' => $entries];
     }
 
     /**
@@ -122,22 +159,42 @@ class YapinetSummaryController extends Controller
             });
     }
 
-    private function scopeData(Collection $members, Collection $ipk, string $scope): array
+    private function scopeData(Collection $members, Collection $ipk, array $month, string $scope): array
     {
         $aktif = $members->where('status_warga', 'aktif');
         $current = $aktif->map(fn ($u) => $ipk[$u->id]['current'] ?? null)->filter();
         $previous = $aktif->map(fn ($u) => $ipk[$u->id]['previous'] ?? null)->filter();
         $total = $members->count();
+        $points = $members->map(fn ($u) => (int) ($month['points'][$u->id] ?? 0));
+        $filled = $members->filter(fn ($u) => ($month['entries'][$u->id] ?? 0) > 0)->count();
 
         return [
-            'aktif' => $aktif->count(),
+            'month' => $month['label'],
+            'total' => $total,
+            'filled' => $filled,
+            'filled_ratio' => $total > 0 ? $filled / $total : 0,
+            'idle_ratio' => $total > 0 ? ($total - $filled) / $total : 0,
+            'avg_points' => $total > 0 ? (int) round($points->avg()) : 0,
+            'on_target' => $points->filter(fn ($p) => $p >= self::MONTHLY_TARGET)->count(),
             'nonaktif' => $total - $aktif->count(),
-            'nonaktif_ratio' => $total > 0 ? ($total - $aktif->count()) / $total : 0,
             'ipk_values' => $current,
             'avg_ipk' => $current->isNotEmpty() ? round($current->avg(), 2) : null,
             'prev_avg_ipk' => $previous->isNotEmpty() ? round($previous->avg(), 2) : null,
             'low_ipk' => $current->filter(fn ($v) => $v < self::LOW_IPK)->count(),
             'alumni' => User::where('role', 'alumni')->when($scope !== 'all', fn ($q) => $q->where('asrama', $scope))->count(),
+        ];
+    }
+
+    /** v1.2: angka utama panel atas; label sama dengan metric supaya tidak tampil dua kali. */
+    private function hero(array $d): array
+    {
+        return [
+            'value' => $d['total'],
+            'format' => 'number',
+            'label' => 'Warga terdaftar',
+            'story' => "**{$d['filled']}** aktif mengisi Simonas {$d['month']} · rata-rata **{$d['avg_points']} poin**"
+                ." · **{$d['on_target']}** mencapai target ".self::MONTHLY_TARGET.' poin.',
+            'side' => ['Aktif mengisi'],
         ];
     }
 
@@ -153,61 +210,48 @@ class YapinetSummaryController extends Controller
         }
 
         return [
-            ['label' => 'Warga aktif', 'value' => $d['aktif'], 'format' => 'number', 'hint' => 'dari '.($d['aktif'] + $d['nonaktif']).' warga terdaftar'],
+            ['label' => 'Warga terdaftar', 'value' => $d['total'], 'format' => 'number'],
             [
-                'label' => 'Nonaktif',
-                'value' => $d['nonaktif'],
-                'format' => 'number',
-                'hint' => (int) round($d['nonaktif_ratio'] * 100).'% dari total warga',
-                'progress' => round($d['nonaktif_ratio'], 4),
+                'label' => 'Aktif mengisi',
+                'value' => $d['filled_ratio'],
+                'format' => 'percent',
+                'progress' => round($d['filled_ratio'], 4),
                 'display' => 'ring',
+                'hint' => "{$d['filled']} dari {$d['total']} warga punya catatan {$d['month']}",
             ],
+            ['label' => 'Rata-rata poin', 'value' => $d['avg_points'], 'format' => 'number', 'hint' => 'target '.self::MONTHLY_TARGET.' poin/bulan'],
+            ['label' => 'Capai target', 'value' => $d['on_target'], 'format' => 'number', 'hint' => '≥ '.self::MONTHLY_TARGET.' poin bulan ini'],
             array_filter([
                 'label' => 'Rata-rata IPK',
                 'value' => $d['avg_ipk'] !== null ? number_format($d['avg_ipk'], 2, ',', '.') : '—',
                 'format' => 'text',
-                'hint' => 'semester terakhir',
+                'hint' => 'semester terakhir, warga berstatus aktif',
                 'trend' => $trend,
             ], fn ($v) => $v !== null),
             ['label' => 'Alumni', 'value' => $d['alumni'], 'format' => 'number'],
         ];
     }
 
-    /** v1.2: angka utama panel atas; label sama dengan metric supaya tidak tampil dua kali. */
-    private function hero(array $d): array
-    {
-        $total = $d['aktif'] + $d['nonaktif'];
-
-        return [
-            'value' => $d['aktif'],
-            'format' => 'number',
-            'label' => 'Warga aktif',
-            'story' => "dari **{$total}** warga terdaftar"
-                .($d['avg_ipk'] !== null ? ' · rata-rata IPK **'.number_format($d['avg_ipk'], 2, ',', '.').'**' : '')
-                .($d['low_ipk'] > 0 ? " · **{$d['low_ipk']}** perlu pendampingan akademik." : '.'),
-            'side' => ['Nonaktif'],
-        ];
-    }
-
     private function attention(array $d): array
     {
         $items = [];
+        $idle = $d['total'] - $d['filled'];
+
+        if ($d['idle_ratio'] > self::HIGH_IDLE_RATIO) {
+            $items[] = [
+                'tone' => 'warning',
+                'title' => "{$idle} warga belum mengisi Simonas {$d['month']}",
+                'description' => (int) round($d['idle_ratio'] * 100).'% dari '.$d['total'].' warga belum punya catatan kegiatan bulan ini.',
+                'link' => '/super/leaderboard',
+                'link_label' => 'Lihat leaderboard',
+            ];
+        }
 
         if ($d['low_ipk'] > 0) {
             $items[] = [
                 'tone' => 'warning',
                 'title' => "{$d['low_ipk']} warga IPK di bawah ".number_format(self::LOW_IPK, 2, ',', '.'),
                 'description' => 'Perlu pendampingan akademik dari mentor.',
-                'link' => '/super/warga',
-                'link_label' => 'Lihat warga',
-            ];
-        }
-
-        if ($d['nonaktif_ratio'] > self::HIGH_INACTIVE_RATIO) {
-            $items[] = [
-                'tone' => 'warning',
-                'title' => (int) round($d['nonaktif_ratio'] * 100).'% warga berstatus nonaktif',
-                'description' => "{$d['nonaktif']} dari ".($d['aktif'] + $d['nonaktif']).' warga — periksa apakah datanya masih perlu diperbarui.',
                 'link' => '/super/warga',
                 'link_label' => 'Lihat warga',
             ];
@@ -229,22 +273,24 @@ class YapinetSummaryController extends Controller
         ];
     }
 
-    /** Jumlah aktivitas pembinaan tercatat 30 hari terakhir, per aspek. */
+    /** Jumlah aktivitas pembinaan bulan berjalan per aspek (semua warga di cakupan). */
     private function activityChart(Collection $userIds): array
     {
-        $since = now()->subDays(30);
-        $events = fn (string $type) => (int) UserEvent::whereIn('user_id', $userIds)->where('type', $type)
-            ->where('created_at', '>=', $since)->get()->sum(fn ($e) => count($e->completed_at_dates ?? []));
-        $count = fn (string $model) => $model::whereIn('user_id', $userIds)->where('created_at', '>=', $since)->count();
+        $from = now()->startOfMonth();
+        $fromDate = $from->toDateString();
+        $toDate = now()->endOfMonth()->toDateString();
+        $events = fn (string $type) => (int) UserEvent::whereIn('user_id', $userIds)->where('type', $type)->get()
+            ->sum(fn ($e) => collect($e->completed_at_dates ?? [])->filter(fn ($day) => $day >= $fromDate && $day <= $toDate)->count());
+        $count = fn (string $model) => $model::whereIn('user_id', $userIds)->whereBetween('waktu', [$fromDate, $toDate])->count();
 
         return [
             'type' => 'chart',
-            'title' => 'Aktivitas pembinaan 30 hari',
+            'title' => 'Aktivitas pembinaan '.$from->locale('id')->translatedFormat('F'),
             'format' => 'number',
             'items' => [
                 ['label' => 'Shalat', 'value' => $events('shalat')],
                 ['label' => 'Kegiatan', 'value' => $events('kegiatan')],
-                ['label' => 'Hafalan', 'value' => HafalanLog::whereIn('user_id', $userIds)->where('score', 'memtas')->where('created_at', '>=', $since)->count()],
+                ['label' => 'Hafalan', 'value' => HafalanLog::whereIn('user_id', $userIds)->where('score', 'memtas')->whereBetween('tested_at', [$fromDate, $toDate])->count()],
                 ['label' => 'Akademik', 'value' => $count(Akademik::class)],
                 ['label' => 'Leadership', 'value' => $count(Leadership::class)],
                 ['label' => 'Karakter', 'value' => $count(Karakter::class)],
@@ -253,39 +299,42 @@ class YapinetSummaryController extends Controller
         ];
     }
 
-    private function asramaTable(Collection $asramas, Collection $warga, Collection $ipk, Collection $points): array
+    private function asramaTable(Collection $asramas, Collection $warga, Collection $ipk, array $month): array
     {
         return [
             'type' => 'table',
-            'title' => 'Per asrama',
+            'title' => "Per asrama · {$month['label']}",
             'columns' => [
                 ['key' => 'asrama', 'label' => 'Asrama'],
-                ['key' => 'aktif', 'label' => 'Aktif', 'format' => 'number'],
-                ['key' => 'nonaktif', 'label' => 'Nonaktif', 'format' => 'number'],
-                ['key' => 'ipk', 'label' => 'Rata IPK'],
+                ['key' => 'warga', 'label' => 'Warga', 'format' => 'number'],
+                ['key' => 'mengisi', 'label' => 'Aktif mengisi', 'format' => 'progress'],
                 ['key' => 'poin', 'label' => 'Rata poin', 'format' => 'number'],
+                ['key' => 'target', 'label' => 'Capai target', 'format' => 'number'],
+                ['key' => 'ipk', 'label' => 'Rata IPK'],
                 ['key' => 'rendah', 'label' => 'IPK < 2,75', 'format' => 'number'],
             ],
-            'rows' => $asramas->map(function (string $asrama) use ($warga, $ipk, $points) {
-                $d = $this->scopeData($warga->where('asrama', $asrama), $ipk, $asrama);
-                $aktifIds = $warga->where('asrama', $asrama)->where('status_warga', 'aktif')->pluck('id');
-                $poin = $aktifIds->map(fn ($id) => $points[$id] ?? null)->filter(fn ($v) => $v !== null)->avg();
+            'rows' => $asramas->map(function (string $asrama) use ($warga, $ipk, $month) {
+                $d = $this->scopeData($warga->where('asrama', $asrama), $ipk, $month, $asrama);
 
                 return array_filter([
                     'asrama' => $asrama,
-                    'aktif' => $d['aktif'],
-                    'nonaktif' => $d['nonaktif'],
+                    'warga' => $d['total'],
+                    'mengisi' => round($d['filled_ratio'], 4),
+                    'poin' => $d['avg_points'],
+                    'target' => $d['on_target'],
                     'ipk' => $d['avg_ipk'] !== null ? number_format($d['avg_ipk'], 2, ',', '.') : '—',
-                    'poin' => (int) round($poin ?? 0),
                     'rendah' => $d['low_ipk'],
-                    '_emphasis' => $d['low_ipk'] > 0 ? ['rendah' => 'warning'] : null,
-                ], fn ($v) => $v !== null);
+                    '_emphasis' => array_filter([
+                        'mengisi' => $d['idle_ratio'] > self::HIGH_IDLE_RATIO ? 'warning' : 'ok',
+                        'rendah' => $d['low_ipk'] > 0 ? 'warning' : null,
+                    ]),
+                ], fn ($v) => $v !== null && $v !== []);
             })->values(),
         ];
     }
 
-    /** Daftar warga satu asrama: aktif dulu, lalu urut nama. */
-    private function memberTable(string $asrama, Collection $members, Collection $ipk, Collection $points): array
+    /** Daftar warga satu asrama: poin terbanyak dulu; yang belum mengisi ditandai. */
+    private function memberTable(string $asrama, Collection $members, Collection $ipk, array $month): array
     {
         return [
             'type' => 'table',
@@ -295,28 +344,32 @@ class YapinetSummaryController extends Controller
                 ['key' => 'nama', 'label' => 'Nama'],
                 ['key' => 'kampus', 'label' => 'Kampus / prodi'],
                 ['key' => 'angkatan', 'label' => 'Angkatan'],
+                ['key' => 'catatan', 'label' => 'Catatan'],
+                ['key' => 'ipk', 'label' => 'IPK'],
                 ['key' => 'status', 'label' => 'Status'],
-                ['key' => 'ipk', 'label' => 'IPK terakhir'],
                 ['key' => 'poin', 'label' => 'Poin', 'format' => 'number'],
             ],
             'rows' => $members
-                ->sortBy(fn ($u) => [$u->status_warga === 'aktif' ? 0 : 1, mb_strtolower((string) $u->name)])
-                ->map(function ($u) use ($ipk, $points) {
+                ->sortBy(fn ($u) => [-(int) ($month['points'][$u->id] ?? 0), mb_strtolower((string) $u->name)])
+                ->map(function ($u) use ($ipk, $month) {
                     $current = $ipk[$u->id]['current'] ?? null;
-                    $aktif = $u->status_warga === 'aktif';
+                    $points = (int) ($month['points'][$u->id] ?? 0);
+                    $entries = (int) ($month['entries'][$u->id] ?? 0);
 
-                    return array_filter([
+                    return [
                         'nama' => $u->name,
                         'kampus' => trim(implode(' · ', array_filter([$u->universitas, $u->prodi]))) ?: '—',
                         'angkatan' => $u->angkatan ? (string) $u->angkatan : '—',
-                        'status' => $aktif ? 'Aktif' : 'Nonaktif',
+                        'catatan' => $entries > 0 ? (string) $entries : 'belum ada',
                         'ipk' => $current !== null ? number_format($current, 2, ',', '.') : '—',
-                        'poin' => $aktif ? (int) ($points[$u->id] ?? 0) : null,
+                        'status' => $u->status_warga === 'aktif' ? 'Aktif' : 'Nonaktif',
+                        'poin' => $points,
                         '_emphasis' => array_filter([
+                            'poin' => $entries === 0 ? 'neutral' : ($points >= self::MONTHLY_TARGET ? 'ok' : 'info'),
+                            'catatan' => $entries === 0 ? 'warning' : null,
                             'ipk' => $current !== null && $current < self::LOW_IPK ? 'warning' : null,
-                            'status' => $aktif ? null : 'neutral',
-                        ]) ?: null,
-                    ], fn ($v) => $v !== null);
+                        ]),
+                    ];
                 })
                 ->values(),
         ];
